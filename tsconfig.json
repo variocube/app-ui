@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "module": "esnext",
+    "target": "es2015",
+    "outDir": "./esm",
+    "declaration": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "jsx": "react"
+  },
+  "exclude": [
+    "node_modules",
+    "src/dev.tsx"
+  ],
+  "include": [
+    "src/**/*",
+    "src/custom.d.ts"
+  ]
+}
