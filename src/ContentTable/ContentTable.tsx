@@ -52,7 +52,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     }
 }));
 
-type ColumnType = { [sortKey: string]: { show: boolean, name: string } }
+export type ColumnType = { [sortKey: string]: { show: boolean, name: string } }
 
 type ContentTableProps<T> = {
     paging: Paging,

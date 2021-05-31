@@ -1,4 +1,6 @@
 export * from "./AppContainer";
 export * from "./AppNavbar";
+export * from "./ContentTable";
+export * from "./Paging";
 export * from "./TextInput";
 export * from "./VCLogo";

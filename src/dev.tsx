@@ -54,6 +54,7 @@ export const DevApp = () => {
                             { title: 'Menu 3', prioritised: true }
                         ]}
                        logoPath={VCLogo}
+                       appName="Test App"
             />
             <AppContainer>
                 <Paper>
