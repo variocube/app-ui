@@ -7,7 +7,7 @@ import {
     List,
     ListItem,
     makeStyles, Theme,
-    Toolbar,
+    Toolbar, Typography,
 } from "@material-ui/core";
 import {MenuIcon} from "../icons";
 
@@ -20,8 +20,12 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
         width: 280
     },
     navLogo: {
-        minWidth: 150,
-        maxHeight: '50px !important'
+        display: 'flex',
+        alignItems: 'center',
+        '& > img': {
+            minWidth: 150,
+            maxHeight: '50px !important'
+        }
     },
     navMenu: {
         display: 'flex',
@@ -31,23 +35,33 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
         fontSize: "1rem",
         fontWeight: "bold",
         textTransform: "uppercase",
-        color: theme.palette.grey["800"]
+        color: '#777'
     },
     navMenuActive: {
         color: theme.palette.primary.main
     }
 }));
 
+export type NavItem = { title: string, active?: boolean, prioritised?: boolean, onClick?: () => void };
+
 type AppNavbarProps = {
-    navItems: { title: string, active?: boolean, prioritised?: boolean, onClick?: () => void }[],
+    navItems: NavItem[],
+    appName?: string,
     logoPath?: string
 }
 
-export const AppNavbar = ({navItems, logoPath}: AppNavbarProps) => {
+export const AppNavbar = ({navItems, appName, logoPath}: AppNavbarProps) => {
     const [drawerOpen, setDrawerOpen] = useState(false);
 
     const toggleDrawer = () => {
         setDrawerOpen(!drawerOpen)
+    }
+
+    const handleDrawerMenuClick = (navItem: NavItem) => {
+        toggleDrawer();
+        if (navItem.onClick) {
+            navItem.onClick()
+        }
     }
 
     const classes = useStyles();
@@ -56,7 +70,7 @@ export const AppNavbar = ({navItems, logoPath}: AppNavbarProps) => {
         <Fragment>
             <AppBar position="fixed" className={classes.appBar}>
                 <Toolbar>
-                    <Box display="flex" flexGrow={1}>
+                    <Box display="flex" flexGrow={1} alignItems="center">
                         <IconButton
                             edge="start"
                             onClick={toggleDrawer}
@@ -64,15 +78,19 @@ export const AppNavbar = ({navItems, logoPath}: AppNavbarProps) => {
                             <MenuIcon />
                         </IconButton>
                         {logoPath && (
-                            <Box p={1} display="flex" alignContent="center">
-                                <img className={classes.navLogo} src={logoPath} alt="App" />
-                            </Box>
+                            <a href="/" className={classes.navLogo}>
+                                <img src={logoPath} alt="App" />
+                            </a>
+                        )}
+                        <Box mx={1}/>
+                        {appName && (
+                            <Typography variant="h6" color="textPrimary"><strong>{appName}</strong></Typography>
                         )}
                     </Box>
                     <Box display="flex">
                         <List className={classes.navMenu}>
                             {navItems.filter(i => i.prioritised).map((item, index) => (
-                                <NavItem key={'nav-item-' + index}
+                                <AppNavItem key={'nav-item-' + index}
                                          isActive={item.active === true}
                                          title={item.title}
                                          onClick={item.onClick}
@@ -96,16 +114,16 @@ export const AppNavbar = ({navItems, logoPath}: AppNavbarProps) => {
                 }}
             >
                 {logoPath && (
-                    <Box p={1} my={1} display="flex" alignContent="center">
-                        <img className={classes.navLogo} src={logoPath} alt="App" />
+                    <Box p={1} my={1} className={classes.navLogo}>
+                        <img src={logoPath} alt="App" />
                     </Box>
                 )}
                 <List>
                     {navItems.map((item, index) => (
-                        <NavItem key={'drawer-nav-item-' + index}
+                        <AppNavItem key={'drawer-nav-item-' + index}
                                  isActive={item.active === true}
                                  title={item.title}
-                                 onClick={item.onClick}
+                                 onClick={() => handleDrawerMenuClick(item)}
                         />
                     ))}
                 </List>
@@ -114,13 +132,13 @@ export const AppNavbar = ({navItems, logoPath}: AppNavbarProps) => {
     )
 }
 
-type NavItemProps = {
+type AppNavItemProps = {
     isActive: boolean;
     title: string;
     onClick?: () => void;
 }
 
-const NavItem = ({isActive, title, onClick}: NavItemProps) => {
+const AppNavItem = ({isActive, title, onClick}: AppNavItemProps) => {
     const classes = useStyles();
     const className = useMemo(() => {
         const cls = [classes.navMenuItem];
