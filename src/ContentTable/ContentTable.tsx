@@ -57,7 +57,7 @@ export type ColumnType = { [sortKey: string]: { show: boolean, name: string } }
 type ContentTableProps<T> = {
     paging: Paging,
     columns: ColumnType,
-    onPagingChange: () => void,
+    onPagingChange: (pageable: PagingSettings<keyof ColumnType>) => void,
     onColumnsChange: (columns: ColumnType) => void,
     page?: Page<T>,
     emptyGraphicPath?: string,
@@ -105,8 +105,7 @@ export const ContentTable = <T extends unknown>({page, paging, columns, onPaging
     const updatePaging = (settings: PagingSettings<keyof typeof columns>) => {
         setPagingSettings(settings);
         paging.updateSettings(settings);
-
-        onPagingChange();
+        onPagingChange(settings);
     }
 
     const toggleColumnSettings = () => setShowColumnSettings(!showColumnSettings);
