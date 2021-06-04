@@ -69,6 +69,6 @@ export class PagingImpl implements Paging {
                 }
             }
         }
-        return `${prefix || '?'}${query}`;
+        return `${prefix ? (prefix + '&') : '?'}${query}`;
     }
 }
