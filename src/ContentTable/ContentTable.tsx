@@ -196,7 +196,7 @@ export const ContentTable = <T extends unknown>({page, paging, columns, onPaging
                         component="div"
                         count={page.totalElements}
                         rowsPerPage={pagingSettings.pageSize}
-                        page={page.number}
+                        page={page.number || 0}
                         onChangePage={handlePageChange}
                         onChangeRowsPerPage={handleRowsPerPageChange}
                     />
