@@ -26,7 +26,7 @@ export interface PagingSettings<K> extends Pageable<K> {
 export interface Paging {
     updateSettings: <K> (settings: PagingSettings<K>) => void;
     getSettings: <K> () => PagingSettings<K>;
-    toQueryString: () => void;
+    toQueryString: (prefix?: string) => void;
 }
 
 export class PagingImpl implements Paging {
