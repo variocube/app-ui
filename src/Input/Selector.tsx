@@ -1,4 +1,4 @@
-import React, {PropsWithChildren} from "react";
+import React, {PropsWithChildren, useState} from "react";
 import {MenuItem, TextField} from "@material-ui/core";
 
 type SelectorProps = {
@@ -15,7 +15,10 @@ type SelectorProps = {
 }
 
 export const Selector = ({label, value, onChange, options, disabled, name, error, helperText, className, size}: PropsWithChildren<SelectorProps>) => {
+    const [input, setInput] = useState(value || '');
+
     const handleChange = (e: any) => {
+        setInput(e.target.value);
         if (onChange) onChange(e.target.value);
     }
 
@@ -24,7 +27,7 @@ export const Selector = ({label, value, onChange, options, disabled, name, error
                    label={label}
                    onChange={handleChange}
                    disabled={disabled}
-                   name={name} value={value}
+                   name={name} value={input}
                    error={error}
                    helperText={helperText}
                    className={className}
