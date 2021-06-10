@@ -1,12 +1,13 @@
 import * as React from "react"
 import * as ReactDOM from "react-dom";
-import {Chip, CssBaseline, LinearProgress, Paper, TableCell, TableRow} from "@material-ui/core";
+import {Box, Chip, CssBaseline, LinearProgress, Paper, TableCell, TableRow} from "@material-ui/core";
 import {AppNavbar} from "./AppNavbar";
 import {VCLogo} from "./VCLogo";
 import {AppContainer} from "./AppContainer";
 import {Page, Paging, PagingImpl} from "./Paging";
 import {ContentTable} from "./ContentTable/ContentTable";
 import {useState} from "react";
+import {Selector} from "./Input";
 
 const baseColumns = {
     'foo': { show: true, name: 'Foo'},
@@ -34,6 +35,7 @@ export const DevApp = () => {
     const [paging, setPaging] = useState<Paging>(new PagingImpl('dev_paging'));
     const [columns, setColumns] = useState(baseColumns);
     const [inProgress, setInProgress] = useState<boolean>(false);
+    const [selectInput, setSelectInput] = useState('A');
 
     const handlePagingChange = () => {
         setInProgress(true);
@@ -73,6 +75,16 @@ export const DevApp = () => {
                             </TableRow>
                         ))}
                     </ContentTable>
+                </Paper>
+
+                <Box my={3}/>
+
+                <Paper>
+                    <Box p={2}>
+                        <Selector label={'Custom Selector'} value={selectInput}
+                                  onChange={v => setSelectInput(v)} options={[{label: 'A', value: 'A'}, {label: 'B', value: 'B'}]}
+                        />
+                    </Box>
                 </Paper>
             </AppContainer>
         </div>
