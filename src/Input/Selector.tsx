@@ -33,7 +33,7 @@ export const Selector = ({label, value, onChange, options, disabled, name, error
                    className={className}
         >
             {options.map((o, i) => (
-                <MenuItem key={'select-item-' + o.value + '-' + i}>{o.label}</MenuItem>
+                <MenuItem key={'select-item-' + o.value + '-' + i} value={o.value}>{o.label}</MenuItem>
             ))}
         </TextField>
     )
