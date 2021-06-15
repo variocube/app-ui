@@ -1,5 +1,4 @@
-import React, {Fragment, PropsWithChildren, ReactComponentElement, useState} from "react";
-import {Page, Paging, PagingSettings} from "../Paging";
+import React, {Fragment, ReactComponentElement, useState} from "react";
 import {
     Box,
     Button, Checkbox,
@@ -21,11 +20,11 @@ import {
     TablePagination,
     TableRow,
     TableSortLabel,
-    Theme,
-    Typography
+    Theme
 } from "@material-ui/core";
-import {default as emptyGraphic} from "./undraw_empty_xct9.svg";
+import {Page, Paging, PagingSettings} from "../Paging";
 import {FilterListIcon, TuningIcon} from "../icons";
+import {default as emptyGraphic} from "./undraw_empty_xct9.svg";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     tableHead: {
@@ -52,7 +51,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
     }
 }));
 
-export type ColumnType = { [sortKey: string]: { show: boolean, name: string } }
+export type ColumnType = { [sortKey: string]: { show: boolean, name: string, align?: 'left'|'right'|'center', unsortable?: boolean } }
 
 type ContentTableProps<T> = {
     paging: Paging,
@@ -60,16 +59,14 @@ type ContentTableProps<T> = {
     onPagingChange: (pageable: PagingSettings<keyof ColumnType>) => void,
     onColumnsChange: (columns: ColumnType) => void,
     page?: Page<T>,
-    emptyGraphicPath?: string,
-    emptyMessage?: string,
-    emptyActionText?: string,
-    emptyActionOnClick?: () => void,
     inProgress?: boolean,
     onFilterClick?: () => void,
-    renderFilterOptions?: ReactComponentElement<any>;
+    renderEmptyContent?: ReactComponentElement<any>,
+    renderTableBody?: ReactComponentElement<any>,
+    renderFilterOptions?: ReactComponentElement<any>
 }
 
-export const ContentTable = <T extends unknown>({page, paging, columns, onPagingChange, onColumnsChange, emptyMessage, emptyGraphicPath, emptyActionText, emptyActionOnClick, inProgress, onFilterClick, renderFilterOptions, children}: PropsWithChildren<ContentTableProps<T>>) => {
+export const ContentTable = <T extends unknown>({page, paging, columns, onPagingChange, onColumnsChange, inProgress, onFilterClick, renderEmptyContent, renderTableBody, renderFilterOptions}: ContentTableProps<T>) => {
     const [pagingSettings, setPagingSettings] = useState<PagingSettings<keyof typeof columns>>(paging.getSettings());
     const [showColumnSettings, setShowColumnSettings] = useState(false);
 
@@ -153,41 +150,34 @@ export const ContentTable = <T extends unknown>({page, paging, columns, onPaging
                             <TableHead className={classes.tableHead}>
                                 <TableRow>
                                     {Object.keys(columns).filter(k => columns[k].show).map((k) => (
-                                        <TableCell key={'data-table-' + k}>
-                                            <TableSortLabel
-                                                active={pagingSettings.sort === k}
-                                                direction={pagingSettings.sort === k ? pagingSettings.direction : 'asc'}
-                                                onClick={() => handleSortColumn(k)}
-                                            >
-                                                {columns[k].name}
-                                            </TableSortLabel>
+                                        <TableCell key={'data-table-' + k} align={columns[k].align}>
+                                            {!columns[k].unsortable && (
+                                                <TableSortLabel
+                                                    active={pagingSettings.sort === k}
+                                                    direction={pagingSettings.sort === k ? pagingSettings.direction : 'asc'}
+                                                    onClick={() => handleSortColumn(k)}
+                                                >
+                                                    {columns[k].name}
+                                                </TableSortLabel>
+                                            )}
+                                            {columns[k].unsortable && (columns[k].name)}
                                         </TableCell>
                                     ))}
                                 </TableRow>
                             </TableHead>
                             <TableBody className={classes.tableBody}>
                                 {page.content.length === 0 && (
-                                    <TableRow className={'empty'}>
-                                        <TableCell colSpan={Object.keys(columns).length}>
-                                            <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" p={3}>
-                                                <img src={emptyGraphicPath || emptyGraphic} alt="Empty" className={classes.graphic} />
-                                                {emptyMessage && (
-                                                    <Fragment>
-                                                        <Box my={2}/>
-                                                        <Typography color="textSecondary">{emptyMessage}</Typography>
-                                                    </Fragment>
-                                                )}
-                                                {emptyActionText && (
-                                                    <Fragment>
-                                                        <Box my={2} />
-                                                        <Button variant="contained" color="primary" onClick={emptyActionOnClick}>{emptyActionText}</Button>
-                                                    </Fragment>
-                                                )}
-                                            </Box>
-                                        </TableCell>
-                                    </TableRow>
+                                    renderEmptyContent ? ({renderEmptyContent}) : (
+                                        <TableRow className={'empty'}>
+                                            <TableCell colSpan={Object.keys(columns).length}>
+                                                <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" p={3}>
+                                                    <img src={emptyGraphic} alt="Empty" className={classes.graphic} />
+                                                </Box>
+                                            </TableCell>
+                                        </TableRow>
+                                    )
                                 )}
-                                {children}
+                                {renderTableBody}
                             </TableBody>
                         </Table>
                     </TableContainer>
