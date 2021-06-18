@@ -167,15 +167,17 @@ export const ContentTable = <T extends unknown>({page, paging, columns, onPaging
                             </TableHead>
                             <TableBody className={classes.tableBody}>
                                 {page.content.length === 0 && (
-                                    renderEmptyContent ? ({renderEmptyContent}) : (
-                                        <TableRow className={'empty'}>
-                                            <TableCell colSpan={Object.keys(columns).length}>
-                                                <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" p={3}>
-                                                    <img src={emptyGraphic} alt="Empty" className={classes.graphic} />
-                                                </Box>
-                                            </TableCell>
-                                        </TableRow>
-                                    )
+                                    renderEmptyContent ?
+                                        (<Fragment>{renderEmptyContent}</Fragment>) :
+                                        (
+                                            <TableRow className={'empty'}>
+                                                <TableCell colSpan={Object.keys(columns).length}>
+                                                    <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" p={3}>
+                                                        <img src={emptyGraphic} alt="Empty" className={classes.graphic} />
+                                                    </Box>
+                                                </TableCell>
+                                            </TableRow>
+                                        )
                                 )}
                                 {renderTableBody}
                             </TableBody>
