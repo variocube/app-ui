@@ -1,4 +1,4 @@
-import React, {PropsWithChildren, useState} from "react";
+import React, {PropsWithChildren, useEffect, useState} from "react";
 import {MenuItem, TextField} from "@material-ui/core";
 
 type SelectorProps = {
@@ -21,6 +21,10 @@ export const Selector = ({label, value, onChange, options, disabled, name, error
         setInput(e.target.value);
         if (onChange) onChange(e.target.value);
     }
+
+    useEffect(() => {
+        if (value !== input) setInput(value || '');
+    }, [value]);
 
     return (
         <TextField select fullWidth variant="outlined" size={size}
