@@ -9,7 +9,7 @@ const useStyles = makeStyles({
     },
     childContainer: {
         paddingTop: 100,
-        paddingBottom: 50,
+        paddingBottom: 100,
         minHeight: 'calc(100vh)',
         overflowX: 'auto'
     }
