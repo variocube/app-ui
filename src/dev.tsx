@@ -1,13 +1,13 @@
 import * as React from "react"
 import * as ReactDOM from "react-dom";
-import {Box, Chip, CssBaseline, LinearProgress, Paper, TableCell, TableRow} from "@material-ui/core";
+import {Box, Chip, CssBaseline, Paper, TableCell, TableRow} from "@material-ui/core";
 import {AppNavbar} from "./AppNavbar";
 import {VCLogo} from "./VCLogo";
 import {AppContainer} from "./AppContainer";
 import {Page, Paging, PagingImpl} from "./Paging";
-import {ContentTable} from "./ContentTable/ContentTable";
-import {useState} from "react";
+import {Fragment, useEffect, useState} from "react";
 import {Selector} from "./Input";
+import {ContentTable} from "./ContentTable";
 
 const baseColumns = {
     'foo': { show: true, name: 'Foo'},
@@ -35,7 +35,13 @@ export const DevApp = () => {
     const [paging, setPaging] = useState<Paging>(new PagingImpl('dev_paging'));
     const [columns, setColumns] = useState(baseColumns);
     const [inProgress, setInProgress] = useState<boolean>(false);
-    const [selectInput, setSelectInput] = useState('A');
+    const [selectInput, setSelectInput] = useState<string>();
+
+    useEffect(() => {
+        setTimeout(() => {
+            setSelectInput('B');
+        }, 5000);
+    }, [])
 
     const handlePagingChange = () => {
         setInProgress(true);
@@ -67,14 +73,17 @@ export const DevApp = () => {
                                   onColumnsChange={c => setColumns(c as any)}
                                   onFilterClick={() => {}}
                                   renderFilterOptions={<Chip label="Foo" onDelete={() => {}}/>}
-                    >
-                        {page.content.map((item, index) => (
-                            <TableRow key={'item-' + index}>
-                                {showCell('foo') && <TableCell>{item.foo}</TableCell>}
-                                {showCell('bar') && <TableCell>{item.bar}</TableCell>}
-                            </TableRow>
-                        ))}
-                    </ContentTable>
+                                  renderTableBody={(
+                                      <Fragment>
+                                          {page.content.map((item, index) => (
+                                              <TableRow key={'item-' + index}>
+                                                  {showCell('foo') && <TableCell>{item.foo}</TableCell>}
+                                                  {showCell('bar') && <TableCell>{item.bar}</TableCell>}
+                                              </TableRow>
+                                          ))}
+                                      </Fragment>
+                                  )}
+                    />
                 </Paper>
 
                 <Box my={3}/>
