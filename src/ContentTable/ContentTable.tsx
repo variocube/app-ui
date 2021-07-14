@@ -189,7 +189,7 @@ export const ContentTable = <T extends unknown>({page, paging, columns, onPaging
                         count={page.totalElements}
                         rowsPerPage={pagingSettings.pageSize}
                         page={page.number || 0}
-                        onChangePage={handlePageChange}
+                        onPageChange={handlePageChange}
                         onChangeRowsPerPage={handleRowsPerPageChange}
                     />
                     {inProgress && (
