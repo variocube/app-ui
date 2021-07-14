@@ -4,7 +4,7 @@ import {TextField} from "@material-ui/core";
 type TextInputProps = {
     label: string,
     value: any,
-    onChange: (value: any, name?: string) => void,
+    onChange?: (value: any, name?: string) => void,
     disabled?: boolean,
     name?: string,
     error?: boolean,
