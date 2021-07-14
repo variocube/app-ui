@@ -7,4 +7,3 @@ jobs:
       - uses: actions/delete-package-versions@v1.0.3
         with:
           package-name: 'app-ui'
-          num-old-versions-to-delete: 3
