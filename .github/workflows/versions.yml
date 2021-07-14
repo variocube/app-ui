@@ -1,0 +1,6 @@
+- name: Delete Package Versions
+  on: [push, pull_request]
+  uses: actions/delete-package-versions@v1.0.3
+  with:
+    package-name: 'app-ui'
+    num-old-versions-to-delete: 3
