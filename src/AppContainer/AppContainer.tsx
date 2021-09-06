@@ -4,9 +4,7 @@ import {Container, makeStyles} from "@material-ui/core";
 const useStyles = makeStyles({
     appContainer: {
         display: 'flex',
-        height: 'calc(100vh - 100px)',
-        minHeight: '100%',
-        overflow: 'hidden',
+        minHeight: 'calc(100vh - 100px)'
     },
     childContainer: {
         paddingTop: 100,
