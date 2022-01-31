@@ -1,4 +1,4 @@
-import React, {Fragment, ReactComponentElement, useState} from "react";
+import React, {Fragment, ReactComponentElement, useMemo, useState} from "react";
 import {
     Box,
     Button, Checkbox,
@@ -117,15 +117,17 @@ export const ContentTable = <T extends unknown>({page, paging, columns, onPaging
         })
     }
 
+    const currentPage = useMemo(() => page, [page]);
+
     const classes = useStyles();
     return (
         <Fragment>
-            {!page && (
+            {!currentPage && (
                 <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" p={3}>
                     <CircularProgress />
                 </Box>
             )}
-            {page && (
+            {currentPage && (
                 <Fragment>
                     <Box p={1}>
                         <Grid container>
@@ -166,7 +168,7 @@ export const ContentTable = <T extends unknown>({page, paging, columns, onPaging
                                 </TableRow>
                             </TableHead>
                             <TableBody className={classes.tableBody}>
-                                {page.content.length === 0 && (
+                                {currentPage.content.length === 0 && (
                                     renderEmptyContent ?
                                         (<Fragment>{renderEmptyContent}</Fragment>) :
                                         (
@@ -186,7 +188,7 @@ export const ContentTable = <T extends unknown>({page, paging, columns, onPaging
                     <TablePagination
                         rowsPerPageOptions={[10, 25, 50]}
                         component="div"
-                        count={page.totalElements}
+                        count={currentPage.totalElements}
                         rowsPerPage={pagingSettings.pageSize}
                         page={pagingSettings.pageNumber}
                         onPageChange={handlePageChange}
