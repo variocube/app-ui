@@ -1,4 +1,4 @@
-import React, {Fragment, ReactComponentElement, useMemo, useState} from "react";
+import React, {Fragment, ReactComponentElement, useEffect, useMemo, useState} from "react";
 import {
     Box,
     Button, Checkbox,
@@ -67,8 +67,13 @@ type ContentTableProps<T> = {
 }
 
 export const ContentTable = <T extends unknown>({page, paging, columns, onPagingChange, onColumnsChange, inProgress, onFilterClick, renderEmptyContent, renderTableBody, renderFilterOptions}: ContentTableProps<T>) => {
+    const currentPage = useMemo(() => page, [page]);
     const [pagingSettings, setPagingSettings] = useState<PagingSettings<keyof typeof columns>>(paging.getSettings());
     const [showColumnSettings, setShowColumnSettings] = useState(false);
+
+    useEffect(() => {
+        updatePaging(paging.getSettings());
+    }, [paging]);
 
     const handleSortColumn = (key: keyof typeof columns) => {
         const {sort, direction} = pagingSettings;
@@ -116,8 +121,6 @@ export const ContentTable = <T extends unknown>({page, paging, columns, onPaging
             }
         })
     }
-
-    const currentPage = useMemo(() => page, [page]);
 
     const classes = useStyles();
     return (
