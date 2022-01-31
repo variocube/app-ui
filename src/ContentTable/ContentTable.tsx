@@ -54,9 +54,9 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
 export type ColumnType = { [sortKey: string]: { show: boolean, name: string, align?: 'left'|'right'|'center', unsortable?: boolean } }
 
 type ContentTableProps<T> = {
-    paging: Paging,
+    pageable: PagingSettings<keyof ColumnType>,
     columns: ColumnType,
-    onPagingChange: (pageable: PagingSettings<keyof ColumnType>) => void,
+    onPageableChange: (pageable: PagingSettings<keyof ColumnType>) => void,
     onColumnsChange: (columns: ColumnType) => void,
     page?: Page<T>,
     inProgress?: boolean,
@@ -66,48 +66,42 @@ type ContentTableProps<T> = {
     renderFilterOptions?: ReactComponentElement<any>
 }
 
-export const ContentTable = <T extends unknown>({page, paging, columns, onPagingChange, onColumnsChange, inProgress, onFilterClick, renderEmptyContent, renderTableBody, renderFilterOptions}: ContentTableProps<T>) => {
+export const ContentTable = <T extends unknown>({page, pageable, columns, onPageableChange, onColumnsChange, inProgress, onFilterClick, renderEmptyContent, renderTableBody, renderFilterOptions}: ContentTableProps<T>) => {
     const currentPage = useMemo(() => page, [page]);
-    const [pagingSettings, setPagingSettings] = useState<PagingSettings<keyof typeof columns>>(paging.getSettings());
+    const currentPageable = useMemo(() => pageable, [pageable]);
     const [showColumnSettings, setShowColumnSettings] = useState(false);
 
-    useEffect(() => {
-        updatePaging(paging.getSettings());
-    }, [paging]);
-
     const handleSortColumn = (key: keyof typeof columns) => {
-        const {sort, direction} = pagingSettings;
+        const {sort, direction} = currentPageable;
         let oD: 'desc'|'asc';
         if (sort == key) {
             oD = direction === 'desc' ? 'asc' : 'desc';
         } else {
             oD = 'desc';
         }
-        updatePaging({
-            ...pagingSettings,
+        updatePageable({
+            ...currentPageable,
             sort: key,
             direction: oD
         });
     };
 
     const handlePageChange = (e: any, pageNumber: number) => {
-        updatePaging({
-            ...pagingSettings,
+        updatePageable({
+            ...currentPageable,
             pageNumber: pageNumber
         });
     };
 
     const handleRowsPerPageChange = (e: any) => {
-        updatePaging({
-            ...pagingSettings,
+        updatePageable({
+            ...currentPageable,
             pageSize: e.target.value as number
         });
     };
 
-    const updatePaging = (settings: PagingSettings<keyof typeof columns>) => {
-        setPagingSettings(settings);
-        paging.updateSettings(settings);
-        onPagingChange(settings);
+    const updatePageable = (settings: PagingSettings<keyof typeof columns>) => {
+        onPageableChange(settings);
     }
 
     const toggleColumnSettings = () => setShowColumnSettings(!showColumnSettings);
@@ -158,8 +152,8 @@ export const ContentTable = <T extends unknown>({page, paging, columns, onPaging
                                         <TableCell key={'data-table-' + k} align={columns[k].align}>
                                             {!columns[k].unsortable && (
                                                 <TableSortLabel
-                                                    active={pagingSettings.sort === k}
-                                                    direction={pagingSettings.sort === k ? pagingSettings.direction : 'asc'}
+                                                    active={currentPageable.sort === k}
+                                                    direction={currentPageable.sort === k ? currentPageable.direction : 'asc'}
                                                     onClick={() => handleSortColumn(k)}
                                                 >
                                                     {columns[k].name}
@@ -192,8 +186,8 @@ export const ContentTable = <T extends unknown>({page, paging, columns, onPaging
                         rowsPerPageOptions={[10, 25, 50]}
                         component="div"
                         count={currentPage.totalElements}
-                        rowsPerPage={pagingSettings.pageSize}
-                        page={pagingSettings.pageNumber}
+                        rowsPerPage={currentPageable.pageSize}
+                        page={currentPageable.pageNumber}
                         onPageChange={handlePageChange}
                         onRowsPerPageChange={handleRowsPerPageChange}
                     />

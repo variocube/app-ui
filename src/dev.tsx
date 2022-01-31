@@ -66,10 +66,10 @@ export const DevApp = () => {
             />
             <AppContainer>
                 <Paper>
-                    <ContentTable page={page} paging={paging}
+                    <ContentTable page={page} pageable={paging.getSettings()}
                                   inProgress={inProgress}
                                   columns={columns}
-                                  onPagingChange={handlePagingChange}
+                                  onPageableChange={handlePagingChange}
                                   onColumnsChange={c => setColumns(c as any)}
                                   onFilterClick={() => {}}
                                   renderFilterOptions={<Chip label="Foo" onDelete={() => {}}/>}
