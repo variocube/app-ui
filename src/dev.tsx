@@ -1,12 +1,12 @@
 import * as React from "react"
 import * as ReactDOM from "react-dom";
-import {Box, Chip, createTheme, CssBaseline, Paper, TableCell, TableRow, ThemeProvider} from "@mui/material";
+import {Box, Chip, createTheme, CssBaseline, Grid, Paper, TableCell, TableRow, ThemeProvider} from "@mui/material";
 import {AppNavbar} from "./AppNavbar";
 import {VCLogo} from "./VCLogo";
 import {AppContainer} from "./AppContainer";
 import {Page, Paging, PagingImpl} from "./Paging";
 import {Fragment, useEffect, useState} from "react";
-import {Selector} from "./Input";
+import {DateTimePicker, Selector} from "./Input";
 import {ContentTable} from "./ContentTable";
 
 const baseColumns = {
@@ -98,9 +98,21 @@ export const DevApp = () => {
 
                 <Paper>
                     <Box p={2}>
-                        <Selector label={'Custom Selector'} value={selectInput}
-                                  onChange={v => setSelectInput(v)} options={[{label: 'A', value: 'A'}, {label: 'B', value: 'B'}]}
-                        />
+                        <Grid container spacing={3}>
+                            <Grid item xs={6}>
+                                <Selector label={'Custom Selector'} value={selectInput}
+                                          onChange={v => setSelectInput(v)} options={[{label: 'A', value: 'A'}, {label: 'B', value: 'B'}]}
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <DateTimePicker label="Date & Time"
+                                                format="MMMM dd HH:mm"
+                                                value={new Date()}
+                                                onChange={v => console.log(v)} />
+                            </Grid>
+                        </Grid>
+
+
                     </Box>
                 </Paper>
             </AppContainer>
