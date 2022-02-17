@@ -1,3 +1,3 @@
-export {default as MenuIcon} from "@material-ui/icons/Menu";
-export {default as FilterListIcon} from "@material-ui/icons/FilterList";
-export {default as TuningIcon} from "@material-ui/icons/Tune";
+export {default as MenuIcon} from "@mui/icons-material/Menu";
+export {default as FilterListIcon} from "@mui/icons-material/FilterList";
+export {default as TuningIcon} from "@mui/icons-material/Tune";

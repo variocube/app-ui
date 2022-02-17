@@ -1,5 +1,5 @@
 import React, {PropsWithChildren, useEffect, useState} from "react";
-import {MenuItem, TextField} from "@material-ui/core";
+import {MenuItem, TextField} from "@mui/material";
 
 type SelectorProps = {
     label: string,

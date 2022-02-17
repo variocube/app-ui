@@ -1,5 +1,5 @@
 import React from "react";
-import {TextField} from "@material-ui/core";
+import {TextField} from "@mui/material";
 
 type TextInputProps = {
     label: string,
@@ -23,7 +23,7 @@ export const TextInput = ({label, onChange, disabled, name, value, error, helper
 
     return (
         <TextField fullWidth variant="outlined" size={size}
-                   multiline={multiline} rows={rows} rowsMax={maxRow}
+                   multiline={multiline} rows={rows} maxRows={maxRow}
                    label={label}
                    onChange={handleChange}
                    disabled={disabled}

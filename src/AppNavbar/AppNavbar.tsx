@@ -1,20 +1,23 @@
 import React, {Fragment, useMemo, useState} from "react";
 import {
     AppBar,
-    Box, createStyles,
+    Box,
     Drawer,
-    IconButton,
+    IconButton, Link,
     List,
     ListItem,
-    makeStyles, Theme,
+    Theme,
     Toolbar, Typography,
-} from "@material-ui/core";
+} from "@mui/material";
+import {createStyles, makeStyles} from "@mui/styles";
 import {MenuIcon} from "../icons";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     appBar: {
         zIndex: 1000,
-        backgroundColor: '#ffffff'
+    },
+    appToolbar: {
+        backgroundColor: '#fff'
     },
     drawerPaper: {
         width: 280
@@ -32,10 +35,16 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
         flexDirection: 'row'
     },
     navMenuItem: {
+        width: '100%',
         fontSize: "1rem",
         fontWeight: "bold",
         textTransform: "uppercase",
-        color: '#777'
+        color: '#777 !important',
+        cursor: 'pointer',
+        textDecoration: 'none !important',
+        '&:hover': {
+            color: '#333 !important'
+        }
     },
     navMenuActive: {
         color: theme.palette.primary.main
@@ -69,7 +78,7 @@ export const AppNavbar = ({navItems, appName, logoPath}: AppNavbarProps) => {
     return (
         <Fragment>
             <AppBar position="fixed" className={classes.appBar}>
-                <Toolbar>
+                <Toolbar className={classes.appToolbar}>
                     <Box display="flex" flexGrow={1} alignItems="center">
                         <IconButton
                             edge="start"
@@ -147,8 +156,8 @@ const AppNavItem = ({isActive, title, onClick}: AppNavItemProps) => {
     }, [isActive]);
 
     return (
-        <ListItem button className={className} onClick={onClick}>
-            {title}
+        <ListItem>
+            <Link className={className} onClick={onClick}>{title}</Link>
         </ListItem>
     )
 }

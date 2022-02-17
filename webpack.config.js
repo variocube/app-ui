@@ -1,4 +1,5 @@
 const path = require('path')
+const HtmlWebPackPlugin = require('html-webpack-plugin');
 
 module.exports = {
 
@@ -7,8 +8,8 @@ module.exports = {
     },
 
     output: {
-        filename: "[name].js",
-        path: __dirname + "/dev",
+        filename: "[name].[fullhash].js",
+        path: __dirname + "/build",
         publicPath: '/'
     },
 
@@ -52,28 +53,28 @@ module.exports = {
         maxAssetSize: 512000
     },
 
-    // When importing a module whose path matches one of the following, just
-    // assume a corresponding global variable exists and use that instead.
-    // This is important because it allows us to avoid bundling all of our
-    // dependencies, which allows browsers to cache those libraries between builds.
-    /* externals: {
-        "react": "React",
-        "react-dom": "ReactDOM"
-    },*/
-
     devServer: {
-        contentBase: [ './src', './node_modules' ],
-        publicPath: '/',
-        compress: true,
         port: 3000,
         historyApiFallback: {
             index: '/',
             disableDotRule: true
-        },
-        watchOptions: {
-            ignored: [
-                    path.resolve(__dirname, 'node_modules')
-                ]
         }
-      }
+    },
+
+    watchOptions: {
+        ignored: [
+            path.resolve(__dirname, 'node_modules')
+        ]
+    },
+
+    plugins: [
+        new HtmlWebPackPlugin({
+            filename: "./index.html",
+            title: `VARIOCUBE App UI`,
+            template: './src/index.ejs',
+            meta: {
+                viewport: 'width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, shrink-to-fit=no',
+            }
+        }),
+    ]
 };

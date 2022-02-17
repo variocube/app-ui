@@ -1,6 +1,6 @@
 import * as React from "react"
 import * as ReactDOM from "react-dom";
-import {Box, Chip, CssBaseline, Paper, TableCell, TableRow} from "@material-ui/core";
+import {Box, Chip, createTheme, CssBaseline, Paper, TableCell, TableRow, ThemeProvider} from "@mui/material";
 import {AppNavbar} from "./AppNavbar";
 import {VCLogo} from "./VCLogo";
 import {AppContainer} from "./AppContainer";
@@ -13,6 +13,14 @@ const baseColumns = {
     'foo': { show: true, name: 'Foo'},
     'bar': { show: true, name: 'Bar'}
 }
+
+const theme = createTheme({
+    palette: {
+        primary: {
+            main: '#04154F'
+        }
+    }
+})
 
 export const DevApp = () => {
     const [page, setPage] = useState<Page<{foo: string, bar: string}>>({
@@ -53,7 +61,7 @@ export const DevApp = () => {
     const showCell = (column: keyof typeof columns) => columns[column] && columns[column].show;
 
     return (
-        <div>
+        <ThemeProvider theme={theme}>
             <CssBaseline/>
             <AppNavbar navItems={[
                             { title: 'Home' },
@@ -96,7 +104,7 @@ export const DevApp = () => {
                     </Box>
                 </Paper>
             </AppContainer>
-        </div>
+        </ThemeProvider>
     )
 }
 

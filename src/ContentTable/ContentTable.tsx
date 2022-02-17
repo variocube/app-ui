@@ -1,9 +1,8 @@
-import React, {Fragment, ReactComponentElement, useEffect, useMemo, useState} from "react";
+import React, {Fragment, ReactComponentElement, useMemo, useState} from "react";
 import {
     Box,
     Button, Checkbox,
     CircularProgress,
-    createStyles,
     Dialog,
     DialogActions,
     DialogContent,
@@ -11,7 +10,6 @@ import {
     Grid,
     IconButton,
     LinearProgress,
-    makeStyles,
     Table,
     TableBody,
     TableCell,
@@ -21,9 +19,10 @@ import {
     TableRow,
     TableSortLabel,
     Theme
-} from "@material-ui/core";
-import {Page, Paging, PagingSettings} from "../Paging";
+} from "@mui/material";
+import {createStyles, makeStyles} from "@mui/styles";
 import {FilterListIcon, TuningIcon} from "../icons";
+import {Page, PagingSettings} from "../Paging";
 import {default as emptyGraphic} from "./undraw_empty_xct9.svg";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
