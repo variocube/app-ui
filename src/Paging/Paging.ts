@@ -33,7 +33,7 @@ export class PagingImpl implements Paging {
 
     private readonly baseSettings = { pageNumber: 0, pageSize: 25 };
 
-    constructor(private _storageKey: string) {
+    constructor(private _storageKey: string, private _unpaged: boolean = false) {
         const stored = localStorage.getItem(_storageKey);
         if (!stored) {
             localStorage.setItem(_storageKey, JSON.stringify(this.baseSettings));
@@ -56,7 +56,7 @@ export class PagingImpl implements Paging {
 
     toQueryString(prefix?: string) {
         const {pageNumber, pageSize, sort, direction, filters} = this.getSettings();
-        let query = `page=${pageNumber}&size=${pageSize}`;
+        let query = this._unpaged ? '&unpaged=true' : `page=${pageNumber}&size=${pageSize}`;
         if (sort) {
             query += `&sort=${sort},${direction || 'desc'}`
         }
@@ -69,6 +69,7 @@ export class PagingImpl implements Paging {
                 }
             }
         }
+
         return `${prefix ? (prefix + '&') : '?'}${query}`;
     }
 }
