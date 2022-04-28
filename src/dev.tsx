@@ -6,8 +6,10 @@ import {VCLogo} from "./VCLogo";
 import {AppContainer} from "./AppContainer";
 import {Page, Paging, PagingImpl} from "./Paging";
 import {Fragment, useEffect, useState} from "react";
-import {DateTimePicker, Selector} from "./Input";
+import {DatePicker, DateTimePicker, Selector, TextInput} from "./Input";
 import {ContentTable} from "./ContentTable";
+import {AppSidebar, AppSidebarItem} from "./AppSidebar";
+import {CategoryIcon} from "./icons";
 
 const baseColumns = {
     'foo': { show: true, name: 'Foo'},
@@ -71,51 +73,66 @@ export const DevApp = () => {
                         ]}
                        logoPath={VCLogo}
                        appName="Test App"
+                       disableDrawer
             />
-            <AppContainer>
-                <Paper>
-                    <ContentTable page={page} pageable={paging.getSettings()}
-                                  inProgress={inProgress}
-                                  columns={columns}
-                                  onPageableChange={handlePagingChange}
-                                  onColumnsChange={c => setColumns(c as any)}
-                                  onFilterClick={() => {}}
-                                  renderFilterOptions={<Chip label="Foo" onDelete={() => {}}/>}
-                                  renderTableBody={(
-                                      <Fragment>
-                                          {page.content.map((item, index) => (
-                                              <TableRow key={'item-' + index}>
-                                                  {showCell('foo') && <TableCell>{item.foo}</TableCell>}
-                                                  {showCell('bar') && <TableCell>{item.bar}</TableCell>}
-                                              </TableRow>
-                                          ))}
-                                      </Fragment>
-                                  )}
-                    />
-                </Paper>
+            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                <AppSidebar>
+                    <AppSidebarItem label="Nav Item 1" icon={<CategoryIcon />} />
+                    <AppSidebarItem label="Nav Item 2" icon={<CategoryIcon />} active />
+                    <AppSidebarItem label="Nav Item 3" icon={<CategoryIcon />} />
+                </AppSidebar>
+                <AppContainer>
+                    <Paper>
+                        <ContentTable page={page} pageable={paging.getSettings()}
+                                      inProgress={inProgress}
+                                      columns={columns}
+                                      onPageableChange={handlePagingChange}
+                                      onColumnsChange={c => setColumns(c as any)}
+                                      onFilterClick={() => {}}
+                                      renderFilterOptions={<Chip label="Foo" onDelete={() => {}}/>}
+                                      renderTableBody={(
+                                          <Fragment>
+                                              {page.content.map((item, index) => (
+                                                  <TableRow key={'item-' + index}>
+                                                      {showCell('foo') && <TableCell>{item.foo}</TableCell>}
+                                                      {showCell('bar') && <TableCell>{item.bar}</TableCell>}
+                                                  </TableRow>
+                                              ))}
+                                          </Fragment>
+                                      )}
+                        />
+                    </Paper>
 
-                <Box my={3}/>
+                    <Box my={3}/>
 
-                <Paper>
-                    <Box p={2}>
-                        <Grid container spacing={3}>
-                            <Grid item xs={6}>
-                                <Selector label={'Custom Selector'} value={selectInput}
-                                          onChange={v => setSelectInput(v)} options={[{label: 'A', value: 'A'}, {label: 'B', value: 'B'}]}
-                                />
-                            </Grid>
-                            <Grid item xs={6}>
-                                <DateTimePicker label="Date & Time"
-                                                format="MMMM dd HH:mm"
+                    <Paper>
+                        <Box p={2}>
+                            <Grid container spacing={3}>
+                                <Grid item xs={6}>
+                                    <Selector label={'Custom Selector'} value={selectInput}
+                                              onChange={v => setSelectInput(v)} options={[{label: 'A', value: 'A'}, {label: 'B', value: 'B'}]}
+                                    />
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <DateTimePicker label="Date & Time"
+                                                    format="MMMM dd HH:mm"
+                                                    value={new Date()}
+                                                    onChange={v => console.log(v)} />
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <DatePicker label='Day picker'
+                                                format={"d/MM/yyyy"}
                                                 value={new Date()}
-                                                onChange={v => console.log(v)} />
+                                                onChange={v => {}}
+                                    />
+                                </Grid>
                             </Grid>
-                        </Grid>
 
 
-                    </Box>
-                </Paper>
-            </AppContainer>
+                        </Box>
+                    </Paper>
+                </AppContainer>
+            </Box>
         </ThemeProvider>
     )
 }

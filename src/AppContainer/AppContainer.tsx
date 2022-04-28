@@ -5,6 +5,7 @@ import {makeStyles} from "@mui/styles";
 const useStyles = makeStyles({
     appContainer: {
         display: 'flex',
+        flexGrow: 1,
         minHeight: 'calc(100vh - 100px)'
     },
     childContainer: {

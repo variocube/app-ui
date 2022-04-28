@@ -1,5 +1,6 @@
 import React, {Fragment, useMemo, useState} from "react";
 import {
+    alpha,
     AppBar,
     Box,
     Drawer,
@@ -14,7 +15,8 @@ import {MenuIcon} from "../icons";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
     appBar: {
-        zIndex: 1000,
+        zIndex: '99999 !important',
+        boxShadow: `0 2px 8px ${alpha('#000', 0.15)} !important`
     },
     appToolbar: {
         backgroundColor: '#fff'
@@ -56,10 +58,11 @@ export type NavItem = { title: string, active?: boolean, prioritised?: boolean, 
 type AppNavbarProps = {
     navItems: NavItem[],
     appName?: string,
-    logoPath?: string
+    logoPath?: string,
+    disableDrawer?: boolean,
 }
 
-export const AppNavbar = ({navItems, appName, logoPath}: AppNavbarProps) => {
+export const AppNavbar = ({navItems, appName, logoPath, disableDrawer}: AppNavbarProps) => {
     const [drawerOpen, setDrawerOpen] = useState(false);
 
     const toggleDrawer = () => {
@@ -80,12 +83,14 @@ export const AppNavbar = ({navItems, appName, logoPath}: AppNavbarProps) => {
             <AppBar position="fixed" className={classes.appBar}>
                 <Toolbar className={classes.appToolbar}>
                     <Box display="flex" flexGrow={1} alignItems="center">
-                        <IconButton
-                            edge="start"
-                            onClick={toggleDrawer}
-                        >
-                            <MenuIcon />
-                        </IconButton>
+                        {!disableDrawer && (
+                            <IconButton
+                                edge="start"
+                                onClick={toggleDrawer}
+                            >
+                                <MenuIcon />
+                            </IconButton>
+                        )}
                         {logoPath && (
                             <a href="/" className={classes.navLogo}>
                                 <img src={logoPath} alt="App" />
@@ -109,34 +114,36 @@ export const AppNavbar = ({navItems, appName, logoPath}: AppNavbarProps) => {
                     </Box>
                 </Toolbar>
             </AppBar>
-            <Drawer
-                container={container}
-                variant="temporary"
-                anchor="left"
-                open={drawerOpen}
-                onClose={toggleDrawer}
-                classes={{
-                    paper: classes.drawerPaper,
-                }}
-                ModalProps={{
-                    keepMounted: true
-                }}
-            >
-                {logoPath && (
-                    <Box p={1} my={1} className={classes.navLogo}>
-                        <img src={logoPath} alt="App" />
-                    </Box>
-                )}
-                <List>
-                    {navItems.map((item, index) => (
-                        <AppNavItem key={'drawer-nav-item-' + index}
-                                 isActive={item.active === true}
-                                 title={item.title}
-                                 onClick={() => handleDrawerMenuClick(item)}
-                        />
-                    ))}
-                </List>
-            </Drawer>
+            {!disableDrawer && (
+                <Drawer
+                    container={container}
+                    variant="temporary"
+                    anchor="left"
+                    open={drawerOpen}
+                    onClose={toggleDrawer}
+                    classes={{
+                        paper: classes.drawerPaper,
+                    }}
+                    ModalProps={{
+                        keepMounted: true
+                    }}
+                >
+                    {logoPath && (
+                        <Box p={1} my={1} className={classes.navLogo}>
+                            <img src={logoPath} alt="App" />
+                        </Box>
+                    )}
+                    <List>
+                        {navItems.map((item, index) => (
+                            <AppNavItem key={'drawer-nav-item-' + index}
+                                        isActive={item.active === true}
+                                        title={item.title}
+                                        onClick={() => handleDrawerMenuClick(item)}
+                            />
+                        ))}
+                    </List>
+                </Drawer>
+            )}
         </Fragment>
     )
 }
