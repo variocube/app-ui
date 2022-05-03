@@ -81,7 +81,7 @@ export const DevApp = () => {
                     <AppSidebarItem label="Nav Item 2" icon={<CategoryIcon />} active />
                     <AppSidebarItem label="Nav Item 3" icon={<CategoryIcon />} />
                 </AppSidebar>
-                <AppContainer>
+                <AppContainer fullWidth>
                     <Paper>
                         <ContentTable page={page} pageable={paging.getSettings()}
                                       inProgress={inProgress}
