@@ -10,8 +10,7 @@ import {DatePicker, DateTimePicker, Selector} from "./Input";
 import {ContentTable} from "./ContentTable";
 import {AppSidebar, AppSidebarItem} from "./AppSidebar";
 import {CategoryIcon} from "./icons";
-import {VCThemeProvider} from "./VCThemeProvider";
-import {ThemeModeSwitcher, useMode} from "./VCThemeProvider/ThemeModeSwitcher";
+import {VCThemeProvider, ThemeModeSwitcher, useMode} from "./VCThemeProvider";
 
 const baseColumns = {
     'foo': { show: true, name: 'Foo'},
