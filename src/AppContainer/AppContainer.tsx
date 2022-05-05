@@ -6,7 +6,9 @@ const useStyles = makeStyles({
     appContainer: {
         display: 'flex',
         flexGrow: 1,
-        minHeight: 'calc(100vh - 100px)'
+        minHeight: 'calc(100vh - 100px)',
+        maxHeight: '100vh',
+        overflow: 'auto'
     },
     childContainer: {
         paddingTop: 100,
