@@ -71,7 +71,7 @@ export const DevApp = () => {
                             { title: 'Menu 2' },
                             { title: 'Menu 3', prioritised: true }
                         ]}
-                       logoPath={VCLogo}
+                       logo={<VCLogo />}
                        appName="Test App"
                        disableDrawer
             />
