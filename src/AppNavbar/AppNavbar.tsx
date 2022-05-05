@@ -1,4 +1,4 @@
-import React, {Fragment, useMemo, useState} from "react";
+import React, {Fragment, ReactElement, useMemo, useState} from "react";
 import {
     alpha,
     AppBar,
@@ -58,11 +58,11 @@ export type NavItem = { title: string, active?: boolean, prioritised?: boolean, 
 type AppNavbarProps = {
     navItems: NavItem[],
     appName?: string,
-    logoPath?: string,
+    logo?: ReactElement,
     disableDrawer?: boolean,
 }
 
-export const AppNavbar = ({navItems, appName, logoPath, disableDrawer}: AppNavbarProps) => {
+export const AppNavbar = ({navItems, appName, logo, disableDrawer}: AppNavbarProps) => {
     const [drawerOpen, setDrawerOpen] = useState(false);
 
     const toggleDrawer = () => {
@@ -91,15 +91,9 @@ export const AppNavbar = ({navItems, appName, logoPath, disableDrawer}: AppNavba
                                 <MenuIcon />
                             </IconButton>
                         )}
-                        {logoPath && (
-                            <a href="/" className={classes.navLogo}>
-                                <img src={logoPath} alt="App" />
-                            </a>
-                        )}
+                        {logo && <a href="/" className={classes.navLogo}>{logo}</a>}
                         <Box mx={1}/>
-                        {appName && (
-                            <Typography variant="h6" color="textPrimary"><strong>{appName}</strong></Typography>
-                        )}
+                        {appName && <Typography variant="h6" color="textPrimary"><strong>{appName}</strong></Typography>}
                     </Box>
                     <Box display="flex">
                         <List className={classes.navMenu}>
@@ -128,11 +122,7 @@ export const AppNavbar = ({navItems, appName, logoPath, disableDrawer}: AppNavba
                         keepMounted: true
                     }}
                 >
-                    {logoPath && (
-                        <Box p={1} my={1} className={classes.navLogo}>
-                            <img src={logoPath} alt="App" />
-                        </Box>
-                    )}
+                    {logo && <Box p={1} my={1} className={classes.navLogo}>{logo}</Box>}
                     <List>
                         {navItems.map((item, index) => (
                             <AppNavItem key={'drawer-nav-item-' + index}

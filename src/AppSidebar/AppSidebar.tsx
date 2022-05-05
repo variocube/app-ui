@@ -1,14 +1,20 @@
 import React, {PropsWithChildren} from "react";
-import {Drawer, List} from "@mui/material";
+import {Drawer, List, Theme} from "@mui/material";
 import {makeStyles} from "@mui/styles";
 
-const useStyles = makeStyles({
-    drawer: {
-        width: 250
-    },
-    paper: {
-        position: 'relative !important' as any,
-        paddingTop: 70
+const useStyles = makeStyles((theme: Theme) => {
+    return {
+        drawer: {
+            width: 250,
+            overflow: 'hidden',
+            [theme.breakpoints.down("md")]: {
+                width: 60
+            }
+        },
+        paper: {
+            position: 'relative !important' as any,
+            paddingTop: 70
+        }
     }
 })
 

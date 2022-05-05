@@ -3,6 +3,17 @@ import {ListItemButton, ListItemIcon, ListItemText, Theme} from "@mui/material";
 import {createStyles, makeStyles} from "@mui/styles";
 
 const useStyles = makeStyles((theme: Theme) => createStyles({
+    item: {
+        '& .MuiListItemText-root': {
+            [theme.breakpoints.down("md")]: {
+                display: 'none'
+            }
+        },
+        [theme.breakpoints.down("md")]: {
+            paddingTop: theme.spacing(2) + ' !important',
+            paddingBottom: theme.spacing(2) + ' !important',
+        }
+    },
     text: {
         '&, & *': {
             color: '#777'
@@ -24,10 +35,12 @@ type Props = {
 
 export const AppSidebarItem = ({label, icon, onClick, active}: Props) => {
     const classes = useStyles();
+    const itemClassName = [classes.item];
+    if (active) itemClassName.push(classes.active);
     return (
-        <ListItemButton onClick={onClick}>
-            <ListItemIcon className={active ? classes.active : classes.text}>{icon}</ListItemIcon>
-            <ListItemText className={active ? classes.active : classes.text}><span style={{ fontWeight: 500 }}>{label}</span></ListItemText>
+        <ListItemButton className={itemClassName.join(' ')} onClick={onClick}>
+            <ListItemIcon className={classes.text}>{icon}</ListItemIcon>
+            <ListItemText className={classes.text}><span style={{ fontWeight: 500 }}>{label}</span></ListItemText>
         </ListItemButton>
     )
 }
