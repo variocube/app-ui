@@ -36,7 +36,7 @@ module.exports = {
             },
             {
                 test: /\.svg$/,
-                loader: 'file-loader'
+                loader: 'svg-inline-loader'
             },
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
             {

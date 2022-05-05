@@ -23,7 +23,8 @@ import {
 import {makeStyles} from "@mui/styles";
 import {FilterListIcon, TuningIcon} from "../icons";
 import {Page, PagingSettings} from "../Paging";
-import {default as emptyGraphic} from "./undraw_empty_xct9.svg";
+import {SvgElement} from "../elements";
+import {default as EmptyGraphic} from "./undraw_empty_xct9.svg";
 
 const useStyles = makeStyles((theme: Theme) => ({
     tableHead: {
@@ -171,7 +172,7 @@ export const ContentTable = <T extends unknown>({page, pageable, columns, onPage
                                             <TableRow className={'empty'}>
                                                 <TableCell colSpan={Object.keys(columns).length}>
                                                     <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" p={3}>
-                                                        <img src={emptyGraphic} alt="Empty" className={classes.graphic} />
+                                                        <SvgElement svg={EmptyGraphic} className={classes.graphic} />
                                                     </Box>
                                                 </TableCell>
                                             </TableRow>
