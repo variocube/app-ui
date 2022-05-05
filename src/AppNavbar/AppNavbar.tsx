@@ -15,7 +15,6 @@ import {MenuIcon} from "../icons";
 
 const useStyles = makeStyles((theme: Theme) => ({
     appBar: {
-        zIndex: '99999 !important',
         boxShadow: `0 2px 8px ${alpha('#000', 0.15)} !important`,
         backgroundImage: 'none !important',
         backgroundColor: `${theme.palette.mode === 'light' ? '#fff' : theme.palette.background.paper} !important`
@@ -26,14 +25,21 @@ const useStyles = makeStyles((theme: Theme) => ({
     navLogo: {
         display: 'flex',
         alignItems: 'center',
-        '& > img': {
-            minWidth: 150,
-            maxHeight: '50px !important'
+        '& svg': {
+            height: '25px !important'
         }
+    },
+    navAppTitle: {
+        fontSize: '1rem !important',
+        lineHeight: '1em !important',
+        paddingLeft: 27
     },
     navMenu: {
         display: 'flex',
-        flexDirection: 'row'
+        flexDirection: 'row',
+        [theme.breakpoints.down("sm")]: {
+            display: 'none'
+        }
     },
     navMenuItem: {
         width: '100%',
@@ -90,9 +96,10 @@ export const AppNavbar = ({navItems, appName, logo, disableDrawer}: AppNavbarPro
                                 <MenuIcon />
                             </IconButton>
                         )}
-                        {logo && <a href="/" className={classes.navLogo}>{logo}</a>}
-                        <Box mx={1}/>
-                        {appName && <Typography variant="h6" color="textPrimary"><strong>{appName}</strong></Typography>}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', px: 2, py: 1.5 }}>
+                            {logo && <a href="/" className={classes.navLogo}>{logo}</a>}
+                            {appName && <Typography className={classes.navAppTitle} component="h4" color="textPrimary"><strong>{appName}</strong></Typography>}
+                        </Box>
                     </Box>
                     <Box display="flex">
                         <List className={classes.navMenu}>
@@ -121,8 +128,8 @@ export const AppNavbar = ({navItems, appName, logo, disableDrawer}: AppNavbarPro
                         keepMounted: true
                     }}
                 >
-                    {logo && <Box p={1} my={1} className={classes.navLogo}>{logo}</Box>}
-                    <List>
+                    {logo && <Box p={2} className={classes.navLogo}>{logo}</Box>}
+                    <List disablePadding>
                         {navItems.map((item, index) => (
                             <AppNavItem key={'drawer-nav-item-' + index}
                                         isActive={item.active === true}

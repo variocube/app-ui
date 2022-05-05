@@ -5,6 +5,7 @@ import {makeStyles} from "@mui/styles";
 const useStyles = makeStyles((theme: Theme) => {
     return {
         drawer: {
+            zIndex: 99,
             width: 250,
             overflow: 'hidden',
             [theme.breakpoints.down("md")]: {
