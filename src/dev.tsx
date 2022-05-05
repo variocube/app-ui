@@ -1,30 +1,25 @@
 import * as React from "react"
 import * as ReactDOM from "react-dom";
-import {Box, Chip, createTheme, CssBaseline, Grid, Paper, TableCell, TableRow, ThemeProvider} from "@mui/material";
+import {Box, Button, Chip, Grid, Paper, TableCell, TableRow} from "@mui/material";
 import {AppNavbar} from "./AppNavbar";
-import {VCLogo} from "./VCLogo";
+import {VCLogo, VCLogoWhite} from "./VCLogo";
 import {AppContainer} from "./AppContainer";
 import {Page, Paging, PagingImpl} from "./Paging";
 import {Fragment, useEffect, useState} from "react";
-import {DatePicker, DateTimePicker, Selector, TextInput} from "./Input";
+import {DatePicker, DateTimePicker, Selector} from "./Input";
 import {ContentTable} from "./ContentTable";
 import {AppSidebar, AppSidebarItem} from "./AppSidebar";
 import {CategoryIcon} from "./icons";
+import {VCThemeProvider} from "./VCThemeProvider";
+import {ThemeModeSwitcher, useMode} from "./VCThemeProvider/ThemeModeSwitcher";
 
 const baseColumns = {
     'foo': { show: true, name: 'Foo'},
     'bar': { show: true, name: 'Bar'}
 }
 
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#04154F'
-        }
-    }
-})
-
 export const DevApp = () => {
+    const {mode} = useMode();
     const [page, setPage] = useState<Page<{foo: string, bar: string}>>({
         content: [
             {foo: 'Foo 1', bar: 'Bar 1'},
@@ -63,17 +58,15 @@ export const DevApp = () => {
     const showCell = (column: keyof typeof columns) => columns[column] && columns[column].show;
 
     return (
-        <ThemeProvider theme={theme}>
-            <CssBaseline/>
+        <VCThemeProvider mode={mode}>
             <AppNavbar navItems={[
-                            { title: 'Home' },
-                            { title: 'Menu 1', active: true, prioritised: true },
-                            { title: 'Menu 2' },
-                            { title: 'Menu 3', prioritised: true }
-                        ]}
-                       logo={<VCLogo />}
+                { title: 'Home' },
+                { title: 'Menu 1', active: true, prioritised: true },
+                { title: 'Menu 2' },
+                { title: 'Menu 3', prioritised: true }
+            ]}
+                       logo={mode === 'light' ? <VCLogo /> : <VCLogoWhite />}
                        appName="Test App"
-                       disableDrawer
             />
             <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                 <AppSidebar>
@@ -131,9 +124,23 @@ export const DevApp = () => {
 
                         </Box>
                     </Paper>
+
+                    <Box my={3}/>
+
+                    <Paper sx={{ p: 2, display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                        <Button variant="contained" color="primary">Primary Btn</Button>
+                        <Box mx={1} />
+                        <Button variant="contained" color="secondary">Secondary Btn</Button>
+                        <Box mx={1} />
+                        <Button variant="outlined" color="primary">Primary Btn</Button>
+                        <Box mx={1} />
+                        <Button variant="outlined" color="secondary">Secondary Btn</Button>
+                        <Box mx={1} />
+                        <ThemeModeSwitcher />
+                    </Paper>
                 </AppContainer>
             </Box>
-        </ThemeProvider>
+        </VCThemeProvider>
     )
 }
 

@@ -10,16 +10,15 @@ import {
     Theme,
     Toolbar, Typography,
 } from "@mui/material";
-import {createStyles, makeStyles} from "@mui/styles";
+import {makeStyles} from "@mui/styles";
 import {MenuIcon} from "../icons";
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
+const useStyles = makeStyles((theme: Theme) => ({
     appBar: {
         zIndex: '99999 !important',
-        boxShadow: `0 2px 8px ${alpha('#000', 0.15)} !important`
-    },
-    appToolbar: {
-        backgroundColor: '#fff'
+        boxShadow: `0 2px 8px ${alpha('#000', 0.15)} !important`,
+        backgroundImage: 'none !important',
+        backgroundColor: `${theme.palette.mode === 'light' ? '#fff' : theme.palette.background.paper} !important`
     },
     drawerPaper: {
         width: 280
@@ -45,7 +44,7 @@ const useStyles = makeStyles((theme: Theme) => createStyles({
         cursor: 'pointer',
         textDecoration: 'none !important',
         '&:hover': {
-            color: '#333 !important'
+            color: theme.palette.primary.main + ' !important'
         }
     },
     navMenuActive: {
@@ -81,7 +80,7 @@ export const AppNavbar = ({navItems, appName, logo, disableDrawer}: AppNavbarPro
     return (
         <Fragment>
             <AppBar position="fixed" className={classes.appBar}>
-                <Toolbar className={classes.appToolbar}>
+                <Toolbar>
                     <Box display="flex" flexGrow={1} alignItems="center">
                         {!disableDrawer && (
                             <IconButton

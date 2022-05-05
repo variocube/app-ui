@@ -20,20 +20,20 @@ import {
     TableSortLabel,
     Theme
 } from "@mui/material";
-import {createStyles, makeStyles} from "@mui/styles";
+import {makeStyles} from "@mui/styles";
 import {FilterListIcon, TuningIcon} from "../icons";
 import {Page, PagingSettings} from "../Paging";
 import {default as emptyGraphic} from "./undraw_empty_xct9.svg";
 
-const useStyles = makeStyles((theme: Theme) => createStyles({
+const useStyles = makeStyles((theme: Theme) => ({
     tableHead: {
-        background: theme.palette.grey['200']
+        background: theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[600]
     },
     tableBody: {
         '& > tr:not(.empty)': {
             cursor: 'pointer',
             '&:hover': {
-                background: `${theme.palette.grey['50']} !important`
+                background: `${theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[800]} !important`
             }
         }
     },
