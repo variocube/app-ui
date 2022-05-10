@@ -23,7 +23,7 @@ import {
 import {makeStyles} from "@mui/styles";
 import {FilterListIcon, TuningIcon} from "../icons";
 import {Page, PagingSettings} from "../Paging";
-import UndrawEmpty from "./UndrawEmpty";
+import {UndrawEmpty} from "./UndrawEmpty";
 
 const useStyles = makeStyles((theme: Theme) => ({
     tableHead: {

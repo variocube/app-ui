@@ -1,14 +1,8 @@
 import * as React from "react";
 import { SVGProps } from "react";
 
-const SvgUndrawEmptyXct9 = (props: SVGProps<SVGSVGElement>) => (
-  <svg
-    data-name="Layer 1"
-    xmlns="http://www.w3.org/2000/svg"
-    width={1009.54}
-    height={789.93}
-    {...props}
-  >
+export const UndrawEmpty = (props: SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" {...props}>
     <defs>
       <linearGradient
         id="undraw_empty_xct9_svg__a"
@@ -289,5 +283,3 @@ const SvgUndrawEmptyXct9 = (props: SVGProps<SVGSVGElement>) => (
     />
   </svg>
 );
-
-export default SvgUndrawEmptyXct9;
