@@ -26,7 +26,7 @@ type AppContainerProps = {
 export const AppContainer = ({fullWidth, maxWidth, children}: PropsWithChildren<AppContainerProps>) => {
     const classes = useStyles();
     return (
-        <div className={classes.appContainer}>
+        <div id="appContainer" className={classes.appContainer}>
             <Container
                 maxWidth={!fullWidth && maxWidth}
                 className={classes.childContainer}

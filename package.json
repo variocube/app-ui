@@ -1,6 +1,6 @@
 {
   "name": "@variocube/app-ui",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Common UI components for Variocube applications.",
   "module": "esm/index.js",
   "types": "esm/index.d.ts",
