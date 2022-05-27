@@ -1,0 +1,33 @@
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import {BrowserRouter, Link, Routes, Route} from "react-router-dom";
+import {DevApp} from "./DevApp";
+import {Localization} from "./localization";
+
+function Demo() {
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/">
+                    <Route index element={<Start/>}/>
+                    <Route path="localization" element={<Localization/>}/>
+                    <Route path="devapp" element={<DevApp/>}/>
+                </Route>
+            </Routes>
+        </BrowserRouter>
+    )
+}
+
+function Start() {
+    return (
+        <ul>
+            <li><Link to="/localization">Localization</Link></li>
+            <li><Link to="/devapp">Dev App</Link></li>
+        </ul>
+    )
+}
+
+ReactDOM.render(
+    <Demo/>,
+    document.getElementById("content")
+);

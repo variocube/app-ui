@@ -14,30 +14,28 @@
     "src/**/*"
   ],
   "peerDependencies": {
-    "@date-io/luxon": "^2.13.1",
-    "@emotion/react": "^11.7.1",
-    "@emotion/styled": "^11.6.0",
-    "@mui/icons-material": "^5.4.2",
-    "@mui/lab": "^5.0.0-alpha.69",
-    "@mui/material": "^5.4.2",
-    "@mui/styles": "^5.4.2",
-    "luxon": "^2.3.0"
+    "@date-io/luxon": "2.x",
+    "@emotion/react": "11.x",
+    "@emotion/styled": "11.x",
+    "@mui/icons-material": "5.x",
+    "@mui/lab": "5.x",
+    "@mui/material": "5.x",
+    "@mui/styles": "5.x",
+    "luxon": "2.x",
+    "react": "17.x | 18.x",
+    "mustache": "4.x"
   },
-  "dependencies": {
-    "@date-io/luxon": "^2.13.1",
-    "@emotion/react": "^11.7.1",
-    "@emotion/styled": "^11.6.0",
-    "@mui/icons-material": "^5.4.2",
-    "@mui/lab": "^5.0.0-alpha.69",
-    "@mui/material": "^5.4.2",
-    "@mui/styles": "^5.4.2",
-    "luxon": "^2.3.0",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@emotion/react": "^11.7.1",
+    "@emotion/styled": "^11.6.0",
+    "@mui/icons-material": "^5.4.2",
+    "@mui/lab": "^5.0.0-alpha.69",
+    "@mui/material": "^5.4.2",
+    "@mui/styles": "^5.4.2",
     "@types/luxon": "^2.0.9",
     "@types/react-dom": "^17.0.11",
+    "@types/mustache": "^4.1.2",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.5.0",
     "rimraf": "^3.0.2",
@@ -47,6 +45,12 @@
     "typescript": "^4.5.5",
     "webpack": "^5.69.0",
     "webpack-cli": "^4.9.2",
-    "webpack-dev-server": "^4.7.4"
+    "webpack-dev-server": "^4.7.4",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-router": "^6.3.0",
+    "react-router-dom": "^6.3.0",
+    "luxon": "^2.3.0",
+    "@date-io/luxon": "^2.13.1"
   }
 }

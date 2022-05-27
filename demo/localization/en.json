@@ -1,0 +1,14 @@
+{
+  "greeting": "Hello {{name}}!",
+  "nested": {
+    "foo": "bar",
+    "deep": {
+      "foo": "bar"
+    }
+  },
+  "state": {
+    "pending": "pending",
+    "succeeded": "succeeded",
+    "failed": "failed"
+  }
+}

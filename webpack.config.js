@@ -1,10 +1,14 @@
+/*
+ * Webpack configuration for running the demo.
+ */
+
 const path = require('path')
 const HtmlWebPackPlugin = require('html-webpack-plugin');
 
 module.exports = {
 
     entry: {
-        'main': './src/dev.tsx'
+        'main': './demo/index.tsx'
     },
 
     output: {
@@ -67,7 +71,7 @@ module.exports = {
         new HtmlWebPackPlugin({
             filename: "./index.html",
             title: `VARIOCUBE App UI`,
-            template: './src/index.ejs',
+            template: './demo/index.ejs',
             meta: {
                 viewport: 'width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, shrink-to-fit=no',
             }

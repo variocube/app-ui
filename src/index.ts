@@ -6,3 +6,5 @@ export * from "./Paging";
 export * from "./Input";
 export * from "./VCLogo";
 export * from "./VCThemeProvider";
+export * from "./icons";
+export * from "./localization";
