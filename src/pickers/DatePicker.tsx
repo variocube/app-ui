@@ -1,8 +1,7 @@
-import DateAdapter from "@mui/lab/AdapterLuxon";
-import {DatePicker as DP} from "@mui/lab";
+import {AdapterLuxon} from "@mui/x-date-pickers/AdapterLuxon";
+import {DatePicker as DP, LocalizationProvider} from "@mui/x-date-pickers";
 import {TextField} from "@mui/material";
-import LocalizationProvider from "@mui/lab/LocalizationProvider";
-import React from "react";
+import * as React from "react";
 
 type DatePickerProps<T> = {
     label?: string,
@@ -16,7 +15,7 @@ type DatePickerProps<T> = {
 export const DatePicker = <T extends object>({label, value, format, minDate, maxDate, onChange}: DatePickerProps<T>) => {
 
     return (
-        <LocalizationProvider dateAdapter={DateAdapter}>
+        <LocalizationProvider dateAdapter={AdapterLuxon}>
             <DP label={label}
                  value={value}
                  inputFormat={format}

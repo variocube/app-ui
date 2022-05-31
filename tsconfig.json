@@ -3,13 +3,13 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "module": "esnext",
-    "target": "es2015",
+    "target": "ES2021",
     "outDir": "./esm",
     "declaration": true,
-    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "strict": true,
-    "jsx": "react"
+    "jsx": "react",
+    "allowSyntheticDefaultImports": true
   },
   "exclude": [
     "node_modules",

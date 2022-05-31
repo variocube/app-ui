@@ -8,3 +8,5 @@ export * from "./VCLogo";
 export * from "./VCThemeProvider";
 export * from "./icons";
 export * from "./localization";
+export * from "./temporal";
+export * from "./pickers";
