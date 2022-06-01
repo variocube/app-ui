@@ -1,4 +1,5 @@
 import {DateTimeFormat, PlainDate} from "../temporal";
+import {getFormatString} from "./getFormatString";
 
 export function parsePlainDate(value: string, format: DateTimeFormat) {
     // throw an error on unsupported numbering systems
@@ -6,15 +7,9 @@ export function parsePlainDate(value: string, format: DateTimeFormat) {
         throw new Error("Parsing numbering systems other than `latn` is not supported");
     }
 
-    // derive a format string from a fictional date
-    const formatString = format.format(new PlainDate(9999, 11, 22))
-        .replace(/9+/, "y")
-        .replace(/1+/, "m")
-        .replace(/2+/, "d");
-
-    const parsed = parseFormat(formatString, ["y", "m", "d"], value);
-
-    return PlainDate.from({year: parsed.y, month: parsed.m, day: parsed.d}, {overflow: "reject"});
+    const formatString = getFormatString(format, {year: "y", month: "m", day: "d"})
+    const {y, m, d} = parseFormat(formatString, ["y", "m", "d"], value);
+    return PlainDate.from({year: y, month: m, day: d}, {overflow: "reject"});
 }
 
 

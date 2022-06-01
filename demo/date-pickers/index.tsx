@@ -1,7 +1,7 @@
 import {Card, CardContent, CardHeader, Container, Stack, Typography} from "@mui/material";
 import * as React from "react";
-import {useCallback, useState} from "react";
-import {Now, PlainDate, PlainDatePicker} from "../../src";
+import {useState} from "react";
+import {PlainDate, PlainDatePicker} from "../../src";
 
 export function Pickers() {
     return (
@@ -14,17 +14,18 @@ export function Pickers() {
 }
 
 export function DatePicker() {
-    const [value, setValue] = useState<PlainDate | null>(Now.plainDate("gregory"));
-    const handleChange = useCallback((value: PlainDate | null) => {
-        console.log("handleChange", value);
-        setValue(value);
-    }, []);
+    const [value, setValue] = useState<PlainDate | null>(null);
     return (
         <Card>
             <CardHeader title="Date picker"/>
             <CardContent>
                 <Stack spacing={2}>
-                    <PlainDatePicker label="Date picker" value={value} onChange={handleChange}/>
+                    <PlainDatePicker
+                        label="Date picker"
+
+                        value={value}
+                        onChange={setValue}
+                    />
                 </Stack>
             </CardContent>
         </Card>

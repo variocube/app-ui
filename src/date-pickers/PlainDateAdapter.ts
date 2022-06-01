@@ -2,6 +2,7 @@ import {MuiPickersAdapter} from "@mui/x-date-pickers/internals";
 import {DateTimeFormat, Now, PlainDate} from "../temporal";
 import {parsePlainDate} from "./parse";
 import {DateIOFormats, Unit} from "@date-io/core/IUtils";
+import {getFormatString} from "./getFormatString";
 
 export class PlainDateAdapter implements MuiPickersAdapter<PlainDate> {
     lib = "PlainDateAdapter";
@@ -67,7 +68,7 @@ export class PlainDateAdapter implements MuiPickersAdapter<PlainDate> {
     }
 
     getFormatHelperText(format: string | DateTimeFormat): string {
-        return "TODO: format helper text";
+        return getFormatString(format as DateTimeFormat, {year: "YYYY", month: "MM", day: "DD"});
     }
 
     isNull(value: PlainDate | null): boolean {
@@ -80,8 +81,8 @@ export class PlainDateAdapter implements MuiPickersAdapter<PlainDate> {
 
     isEqual(value: any, comparing: any): boolean {
         const first = this.date(value);
-        const second = this.date(value);
-        if (first == second) {
+        const second = this.date(comparing);
+        if (first === second) {
             return true;
         }
         if (!first || !second) {
