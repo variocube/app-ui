@@ -2,6 +2,7 @@ import * as React from "react";
 import {createContext, PropsWithChildren, useCallback, useContext, useEffect, useState} from "react";
 import Mustache from "mustache";
 import {useStorage} from "./storage";
+import {getNavigatorLanguages} from "./getNavigatorLanguages";
 
 /**
  * Type for a message object (content of a translation file).
@@ -224,17 +225,6 @@ function processLanguageList(languages: (string | null)[]) {
 function defaultMissing(key: string) {
     console.warn("Missing translation key", key);
     return "";
-}
-
-/**
- * Returns the users preferred languages selected in the browser, or an empty array if not called in a browser context.
- * @see navigator.languages
- */
-export function getNavigatorLanguages() {
-    if (typeof navigator != "undefined") {
-        return navigator.languages || [navigator.language || (navigator as any).userLanguage];
-    }
-    return [];
 }
 
 /*

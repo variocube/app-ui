@@ -1,13 +1,13 @@
-import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
-import * as React from "react";
-import {PlainDate} from "../temporal";
-import {PlainDateAdapter} from "./PlainDateAdapter";
-import {useRenderInput} from "./useRenderInput";
+import {PlainDateTime} from "../temporal";
 import {useLocale} from "./useLocale";
+import {useRenderInput} from "./useRenderInput";
+import {DateTimePicker, LocalizationProvider} from "@mui/x-date-pickers";
+import * as React from "react";
+import {PlainDateTimeAdapter} from "./PlainDateTimeAdapter";
 
-interface PlainDatePickerProps {
-    value: PlainDate | null;
-    onChange: (value: PlainDate | null) => any;
+interface PlainDateTimePickerProps {
+    value: PlainDateTime | null;
+    onChange: (value: PlainDateTime | null) => any;
     label?: string;
     fullWidth?: boolean;
 
@@ -16,17 +16,15 @@ interface PlainDatePickerProps {
      */
     locale?: string;
 }
-
-export function PlainDatePicker(props: PlainDatePickerProps) {
-
+export function PlainDateTimePicker(props: PlainDateTimePickerProps) {
     const {value, onChange, label, fullWidth, locale: suppliedLocale} = props;
 
     const locale = useLocale(suppliedLocale);
     const renderInput = useRenderInput(fullWidth);
 
     return (
-        <LocalizationProvider dateAdapter={PlainDateAdapter} adapterLocale={locale}>
-            <DatePicker
+        <LocalizationProvider dateAdapter={PlainDateTimeAdapter} adapterLocale={locale}>
+            <DateTimePicker
                 label={label}
                 value={value}
                 disableMaskedInput
@@ -36,4 +34,3 @@ export function PlainDatePicker(props: PlainDatePickerProps) {
         </LocalizationProvider>
     );
 }
-

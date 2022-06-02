@@ -16,7 +16,12 @@ export const {
     Duration,
 } = Temporal;
 
+export type Instant = Temporal.Instant;
+export type ZonedDateTime = Temporal.ZonedDateTime;
+export type PlainDateTime = Temporal.PlainDateTime;
 export type PlainDate = Temporal.PlainDate;
+export type PlainTime = Temporal.PlainTime;
+export type Duration = Temporal.Duration;
 
 export const {
     DateTimeFormat

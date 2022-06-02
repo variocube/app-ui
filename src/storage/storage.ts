@@ -16,15 +16,8 @@ function isSupported(storage?: Storage) {
 }
 
 function findSupportedStorage() {
-    if (isSupported(window.localStorage)) {
-        return window.localStorage;
-    }
-    else if (isSupported(window.sessionStorage)) {
-        return window.sessionStorage;
-    }
-    else {
-        return new MemoryStorage();
-    }
+    return [globalThis.localStorage, globalThis.sessionStorage].find(isSupported)
+        || new MemoryStorage();
 }
 
 type StorageChangeListener = (oldValue?: string, newValue?: string) => void;
@@ -35,7 +28,7 @@ class StorageWrapper {
     private readonly storageArea = findSupportedStorage();
 
     constructor() {
-        window.addEventListener("storage", event => {
+        globalThis.addEventListener("storage", event => {
             const {storageArea, key, oldValue, newValue} = event;
             if (storageArea == this.storageArea && key && oldValue != newValue) {
                 this.notifyChangeListener(key, oldValue || undefined, newValue || undefined);
