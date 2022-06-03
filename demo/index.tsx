@@ -1,15 +1,17 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {BrowserRouter, Link, Routes, Route} from "react-router-dom";
+import {BrowserRouter, Link, Routes, Route, Outlet} from "react-router-dom";
 import {DevApp} from "./DevApp";
 import {Localization} from "./localization";
 import {Pickers} from "./date-pickers";
+import {VCThemeProvider} from "../src";
+import {AppBar} from "@mui/material";
 
 function Demo() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/">
+                <Route path="/" element={<App/>}>
                     <Route index element={<Start/>}/>
                     <Route path="localization" element={<Localization/>}/>
                     <Route path="date-pickers" element={<Pickers/>}/>
@@ -17,6 +19,17 @@ function Demo() {
                 </Route>
             </Routes>
         </BrowserRouter>
+    )
+}
+
+function App() {
+    return (
+        <VCThemeProvider primaryColor="orange">
+            <AppBar>
+
+            </AppBar>
+            <Outlet/>
+        </VCThemeProvider>
     )
 }
 

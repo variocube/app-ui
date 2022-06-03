@@ -1,6 +1,5 @@
 import * as React from "react";
 import {Fragment, useEffect, useState} from "react";
-import * as ReactDOM from "react-dom";
 import {Box, Button, Chip, Grid, Paper, TableCell, TableRow} from "@mui/material";
 import {
     AppContainer,
@@ -16,7 +15,7 @@ import {
     PagingImpl,
     Selector,
     ThemeModeSwitcher,
-    useMode,
+    usePaletteMode,
     VCLogo,
     VCLogoWhite,
     VCThemeProvider
@@ -28,7 +27,6 @@ const baseColumns = {
 };
 
 export const DevApp = () => {
-    const {mode} = useMode();
     const [page, setPage] = useState<Page<{ foo: string, bar: string }>>({
         content: [
             {foo: "Foo 1", bar: "Bar 1"},
@@ -66,8 +64,10 @@ export const DevApp = () => {
 
     const showCell = (column: keyof typeof columns) => columns[column] && columns[column].show;
 
+    const {mode} = usePaletteMode();
+
     return (
-        <VCThemeProvider mode={mode}>
+        <VCThemeProvider>
             <AppNavbar navItems={[
                 {title: "Home"},
                 {title: "Menu 1", active: true, prioritised: true},
@@ -162,8 +162,3 @@ export const DevApp = () => {
         </VCThemeProvider>
     );
 };
-
-ReactDOM.render(
-    <DevApp/>,
-    document.getElementById("content")
-);
