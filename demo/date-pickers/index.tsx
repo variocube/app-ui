@@ -1,4 +1,4 @@
-import {Card, CardContent, CardHeader, Container, Stack, Typography} from "@mui/material";
+import {Card, CardContent, CardHeader, Container, Link, Stack, Typography} from "@mui/material";
 import * as React from "react";
 import {useState} from "react";
 import {PlainDate, PlainDatePicker, PlainDateTime, PlainDateTimePicker} from "../../src";
@@ -6,7 +6,21 @@ import {PlainDate, PlainDatePicker, PlainDateTime, PlainDateTimePicker} from "..
 export function Pickers() {
     return (
         <Container>
-            <Typography variant="h1" gutterBottom>Date & time pickers</Typography>
+            <Typography variant="h1" gutterBottom>
+                Date & time pickers
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+                The date and time pickers in this library are based on the {" "}
+                <Link href="https://tc39.es/proposal-temporal/docs/index.html" target="_blank">Temporal proposal</Link>,
+                which will be part of ES and be built into browsers. In the meantime we use a polyfill implementation.
+            </Typography>
+            <Typography variant="h2" gutterBottom>
+                Date picker
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+                A date picker lets the user enter a date either by selecting it on a calender or by entering
+                the date with the keyboard in the format determined by the user's locale.
+            </Typography>
             <Stack spacing={2}>
                 <DatePicker/>
                 <DateTimePicker/>

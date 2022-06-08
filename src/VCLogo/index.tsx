@@ -1,6 +1,42 @@
 import React, {SVGProps} from "react";
+import {Box, BoxProps, useTheme} from "@mui/material";
 
-export const VCLogo = (props: SVGProps<SVGSVGElement>) => (
+interface VCAppLogoProps extends BoxProps {
+    appName?: string;
+}
+
+export function VCAppLogo({appName, ...props}: VCAppLogoProps) {
+    return (
+        <Box {...props}>
+            <Box sx={{display: "flex", flexFlow: "row nowrap", alignItems: "center"}}>
+                <VCLogoIcon width="auto" height="32" display="block"/>
+                {appName && (
+                    <Box sx={{
+                        lineHeight: 1,
+                        fontSize: "20px",
+                        fontWeight: 900,
+                        textTransform: "uppercase",
+                        marginLeft: "8px"
+                    }}>
+                        {appName}
+                    </Box>
+                )}
+            </Box>
+        </Box>
+    )
+}
+
+export function VCLogo(props: SVGProps<SVGSVGElement>) {
+    const theme = useTheme();
+    if (theme.palette.mode == "light") {
+        return <VCLogoBlueOrange {...props}/>;
+    }
+    else {
+        return <VCLogoWhite {...props}/>;
+    }
+}
+
+export const VCLogoBlueOrange = (props: SVGProps<SVGSVGElement>) => (
     <svg preserveAspectRatio="xMinYMin meet" viewBox="0 0 260 52"  xmlns="http://www.w3.org/2000/svg" xmlSpace="preserve"
         style={{
             fillRule: "evenodd",
@@ -8,6 +44,8 @@ export const VCLogo = (props: SVGProps<SVGSVGElement>) => (
             strokeLinejoin: "round",
             strokeMiterlimit: 2,
         }}
+        width={260}
+        height={52}
         {...props}
     >
         <path style={{ fill: "#05164d", }} d="M130 12.75h6.71v25.51H130z" />
@@ -28,6 +66,8 @@ export const VCLogoWhite = (props: SVGProps<SVGSVGElement>) => (
             strokeLinejoin: "round",
             strokeMiterlimit: 2,
         }}
+        width={260}
+        height={52}
         {...props}
     >
         <path style={{ fill: "#fff", }} d="M130 12.75h6.71v25.51H130z" />
@@ -40,7 +80,17 @@ export const VCLogoWhite = (props: SVGProps<SVGSVGElement>) => (
     </svg>
 )
 
-export const VCLogoIcon = (props: SVGProps<SVGSVGElement>) => (
+export function VCLogoIcon(props: SVGProps<SVGSVGElement>) {
+    const theme = useTheme();
+    if (theme.palette.mode == "light") {
+        return <VCLogoIconOrangeBlue {...props}/>;
+    }
+    else {
+        return <VCLogoIconWhite {...props}/>;
+    }
+}
+
+export const VCLogoIconOrangeBlue = (props: SVGProps<SVGSVGElement>) => (
     <svg viewBox="0 0 74 86" xmlns="http://www.w3.org/2000/svg" xmlSpace="preserve"
         style={{
             fillRule: "evenodd",

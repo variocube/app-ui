@@ -1,11 +1,15 @@
 import * as React from "react";
+import {ReactElement} from "react";
 import * as ReactDOM from "react-dom";
-import {BrowserRouter, Link, Routes, Route, Outlet} from "react-router-dom";
+import {BrowserRouter, Link, Outlet, Route, Routes} from "react-router-dom";
 import {DevApp} from "./DevApp";
 import {Localization} from "./localization";
 import {Pickers} from "./date-pickers";
 import {VCThemeProvider} from "../src";
-import {AppBar} from "@mui/material";
+import {AppLayout} from "../src/AppLayout";
+import {Container, List, ListItemButton, ListItemIcon, ListItemText, Typography} from "@mui/material";
+import {useLocation} from "react-router";
+import {CalendarMonth, Language, Photo} from "@mui/icons-material";
 
 function Demo() {
     return (
@@ -25,21 +29,47 @@ function Demo() {
 function App() {
     return (
         <VCThemeProvider primaryColor="orange">
-            <AppBar>
-
-            </AppBar>
-            <Outlet/>
+            <AppLayout appName={"UI docs"} sideNav={<SideNav/>} sideNavWidth={240}>
+                <Outlet/>
+            </AppLayout>
         </VCThemeProvider>
+    )
+}
+
+function SideNav() {
+    return (
+        <List>
+            <SideNavListItem icon={<Language/>} to="/localization" text="Localization"/>
+            <SideNavListItem icon={<CalendarMonth/>} to="/date-pickers" text="Date & time pickers"/>
+            <SideNavListItem icon={<Photo/>} to="/devapp" text="Dev-App"/>
+        </List>
+    )
+}
+
+interface SideNavListItemProps {
+    to: string;
+    text: string;
+    icon: ReactElement;
+}
+
+function SideNavListItem({icon, text, to}: SideNavListItemProps) {
+    const location = useLocation();
+    const selected = location.pathname.startsWith(to);
+    return (
+        <ListItemButton component={Link} to={to} selected={selected}>
+            <ListItemIcon>
+                {icon}
+            </ListItemIcon>
+            <ListItemText primary={text}/>
+        </ListItemButton>
     )
 }
 
 function Start() {
     return (
-        <ul>
-            <li><Link to="/localization">Localization</Link></li>
-            <li><Link to="/date-pickers">Date & time pickers</Link></li>
-            <li><Link to="/devapp">Dev App</Link></li>
-        </ul>
+        <Container>
+            <Typography variant="h1">Welcome</Typography>
+        </Container>
     )
 }
 
