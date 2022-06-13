@@ -2,14 +2,17 @@ import React, {createContext, PropsWithChildren, useCallback, useContext, useMem
 import {createTheme, CssBaseline, PaletteMode, ThemeProvider, useMediaQuery} from "@mui/material";
 import {useStorage} from "../storage";
 
-export type PrimaryColor = "orange" | "blue";
-
+/**
+ * Theme colors.
+ */
 export enum Colors {
     white = "#ffffff",
-    orange = "#EF881D",
-    blue = "#05164d",
+    orange = "#ff6a00",
+    blue = "#009dd8",
     success = "#4caf50",
     error = "#aa0000",
+    warning = "#da9500",
+    info = "#05164d",
 }
 
 interface PaletteModeContextValue {
@@ -23,10 +26,9 @@ const PaletteModeContext = createContext<PaletteModeContextValue>({
 });
 
 interface VCThemeProviderProps {
-    primaryColor?: PrimaryColor;
 }
 
-export function VCThemeProvider({children, primaryColor = "orange"}: PropsWithChildren<VCThemeProviderProps>) {
+export function VCThemeProvider({children}: PropsWithChildren<VCThemeProviderProps>) {
     // Determine default mode based on user preference
     const userPrefersDark = useMediaQuery("(prefers-color-scheme: dark)");
     const defaultMode = useMemo(() => userPrefersDark ? "dark" : "light", [userPrefersDark]);
@@ -46,24 +48,35 @@ export function VCThemeProvider({children, primaryColor = "orange"}: PropsWithCh
         palette: {
             mode,
             primary: {
-                main: Colors[primaryColor],
+                main: Colors.orange,
                 contrastText: Colors.white,
             },
             secondary: {
-                main: Colors[primaryColor == "orange" ? "blue" : "orange"],
+                main: Colors.blue,
                 contrastText: Colors.white,
             },
             success: {
                 main: Colors.success,
                 contrastText: Colors.white,
             },
+            warning: {
+                main: Colors.warning,
+                contrastText: Colors.white,
+            },
             error: {
                 main: Colors.error,
                 contrastText: Colors.white,
             },
+            info: {
+                main: Colors.info,
+                contrastText: Colors.white,
+            },
+            text: {
+                primary: mode == "dark" ? "#fdfaf7" : "#282b33",
+            },
             background: {
-                default: mode == "dark" ? "#222" : "#f6f6f6",
-                paper: mode == "dark" ? "#2b2b2b" : "#fff"
+                default: mode == "dark" ? "#15161a" : "#fffaf7",
+                paper: mode == "dark" ? "#282b33" : "#fff"
             }
         },
         typography: {
@@ -102,7 +115,7 @@ export function VCThemeProvider({children, primaryColor = "orange"}: PropsWithCh
                 }
             }
         }
-    }), [primaryColor, mode]);
+    }), [mode]);
 
     return (
         <ThemeProvider theme={theme}>

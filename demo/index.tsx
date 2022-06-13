@@ -2,14 +2,16 @@ import * as React from "react";
 import {ReactElement} from "react";
 import * as ReactDOM from "react-dom";
 import {BrowserRouter, Link, Outlet, Route, Routes} from "react-router-dom";
-import {DevApp} from "./DevApp";
+import {ContentTableDemo} from "./content-table";
 import {Localization} from "./localization";
 import {Pickers} from "./date-pickers";
 import {VCThemeProvider} from "../src";
 import {AppLayout} from "../src/AppLayout";
 import {Container, List, ListItemButton, ListItemIcon, ListItemText, Typography} from "@mui/material";
 import {useLocation} from "react-router";
-import {CalendarMonth, Language, Photo} from "@mui/icons-material";
+import {CalendarMonth, Edit, Language, Palette, ViewList} from "@mui/icons-material";
+import {Inputs} from "./inputs";
+import {Theme} from "./theme";
 
 function Demo() {
     return (
@@ -17,9 +19,11 @@ function Demo() {
             <Routes>
                 <Route path="/" element={<App/>}>
                     <Route index element={<Start/>}/>
+                    <Route path="theme" element={<Theme/>}/>
                     <Route path="localization" element={<Localization/>}/>
                     <Route path="date-pickers" element={<Pickers/>}/>
-                    <Route path="devapp" element={<DevApp/>}/>
+                    <Route path="content-table" element={<ContentTableDemo/>}/>
+                    <Route path="inputs" element={<Inputs/>}/>
                 </Route>
             </Routes>
         </BrowserRouter>
@@ -28,7 +32,7 @@ function Demo() {
 
 function App() {
     return (
-        <VCThemeProvider primaryColor="orange">
+        <VCThemeProvider>
             <AppLayout appName={"UI docs"} sideNav={<SideNav/>} sideNavWidth={240}>
                 <Outlet/>
             </AppLayout>
@@ -39,9 +43,11 @@ function App() {
 function SideNav() {
     return (
         <List>
+            <SideNavListItem icon={<Palette/>} to="/theme" text="Theme"/>
             <SideNavListItem icon={<Language/>} to="/localization" text="Localization"/>
             <SideNavListItem icon={<CalendarMonth/>} to="/date-pickers" text="Date & time pickers"/>
-            <SideNavListItem icon={<Photo/>} to="/devapp" text="Dev-App"/>
+            <SideNavListItem icon={<ViewList/>} to="/content-table" text="Content table"/>
+            <SideNavListItem icon={<Edit/>} to="/inputs" text="Inputs"/>
         </List>
     )
 }

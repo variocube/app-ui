@@ -1,3 +1,3 @@
-export {TextInput} from "./TextInput";
+export {TextField} from "./TextField";
 export {Selector} from "./Selector";
 export {Checkbox} from "./Checkbox";

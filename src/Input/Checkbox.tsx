@@ -1,27 +1,28 @@
-import React from "react";
-import {FormControlLabel, Checkbox as CB} from "@mui/material";
+import React, {useCallback} from "react";
+import {FormControlLabel, Checkbox as MuiCheckbox, CheckboxProps as MuiCheckboxProps} from "@mui/material";
 
-type CheckboxProps = {
-    label: string,
-    value: boolean,
-    onChange?: (checked: boolean, name?: string) => void,
-    disabled?: boolean,
-    name?: string,
-    className?: string,
-    color?: 'primary'|'secondary'
+export type CheckboxProps = Omit<MuiCheckboxProps, "onChange" | "value"> & {
+    label: string;
+    value?: boolean;
+    onChange?: (checked: boolean) => any;
+    className?: string;
 }
 
-export const Checkbox = ({label, value, onChange, disabled, name, className, color}: CheckboxProps) => {
-    const handleChange = (e: any) => {
-        if (onChange) onChange(e.target.checked, name);
-    }
+export const Checkbox = ({label, value, onChange, disabled, className, color, ...props}: CheckboxProps) => {
+    const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (onChange) {
+            onChange(e.target.checked);
+        }
+    }, [onChange]);
 
     return (
         <FormControlLabel
             control={
-                <CB color={color || 'primary'}
+                <MuiCheckbox
                     checked={value}
                     onChange={handleChange}
+                    disabled={disabled}
+                    {...props}
                 />
             }
             label={label}

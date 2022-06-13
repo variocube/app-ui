@@ -47,7 +47,7 @@ export function AppLayout(props: PropsWithChildren<AppLayoutProps>) {
                     color: "text.primary",
                 }}
             >
-                <Box sx={{display: "flex", flexFlow: "row nowrap", justifyContent: "space-between", px: 2}}>
+                <Box sx={{position: "relative", display: "flex", flexFlow: "row nowrap", justifyContent: "space-between", px: 2}}>
                     {!drawerPermanent && (
                         <IconButton
                             edge="start"
@@ -61,7 +61,17 @@ export function AppLayout(props: PropsWithChildren<AppLayoutProps>) {
                             <MenuIcon/>
                         </IconButton>
                     )}
-                    <VCAppLogo appName={drawerPermanent ? appName : undefined} sx={{py: 1}}/>
+                    <VCAppLogo
+                        appName={drawerPermanent ? appName : undefined}
+                        sx={{
+                            py: 1,
+                            ...(!drawerPermanent && {
+                                position: "absolute",
+                                left: "50%",
+                                transform: "translateX(-50%)"
+                            })
+                        }}
+                    />
                     {topNav}
                     {!topNav && <Box/>}
                 </Box>
@@ -86,10 +96,19 @@ export function AppLayout(props: PropsWithChildren<AppLayoutProps>) {
                         onClick={!drawerPermanent ? clearDrawerOpen : undefined}
                         onClose={clearDrawerOpen}
                     >
+                        {!drawerPermanent && (
+                            <VCAppLogo
+                                appName={appName}
+                                sx={{
+                                    px: 2,
+                                    py: 1,
+                                }}
+                            />
+                        )}
                         {sideNav}
                     </Drawer>
                 )}
-                <Box sx={{py: 4, px: 2}}>
+                <Box sx={{py: 4, flex: 1}}>
                     {children}
                 </Box>
             </Box>
