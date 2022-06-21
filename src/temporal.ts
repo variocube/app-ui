@@ -29,5 +29,6 @@ export const {
 
 export type DateTimeFormat = Intl.DateTimeFormat;
 export type DateTimeFormatOptions = Intl.DateTimeFormatOptions;
+export type Formattable = Intl.Formattable;
 
 export {toTemporalInstant};

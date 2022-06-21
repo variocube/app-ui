@@ -257,7 +257,7 @@ type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
 type MaxDepth = 5;
 
 /**
- * Returns a unions of all paths for a given type T
+ * Returns a union of all paths for a given type T
  */
 type Paths<T, D extends number = MaxDepth> = [D] extends [never]
     ? never

@@ -3,7 +3,7 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "module": "esnext",
-    "target": "ES2021",
+    "target": "ES2022",
     "outDir": "./esm",
     "declaration": true,
     "resolveJsonModule": true,

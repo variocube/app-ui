@@ -94,3 +94,4 @@ src/main/resources/bundled
 
 node_modules
 esm
+/.idea/git_toolbox_prj.xml

@@ -1,12 +1,6 @@
 import {useMemo} from "react";
-import {getNavigatorLanguages} from "../getNavigatorLanguages";
-import {DateTimeFormat} from "../temporal";
+import {getSupportedFormatLocale} from "../getSupportedFormatLocale";
 
 export function useLocale(suppliedLocale: string | undefined) {
-    return useMemo(() => suppliedLocale || findSupportedLocale(), [suppliedLocale]);
-}
-
-export function findSupportedLocale() {
-    return getNavigatorLanguages()
-        .find(locale => locale == new DateTimeFormat(locale).resolvedOptions().locale);
+    return useMemo(() => suppliedLocale || getSupportedFormatLocale("dateTime"), [suppliedLocale]);
 }
