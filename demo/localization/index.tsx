@@ -30,7 +30,7 @@ import {
     RelativeTemporalFormat,
     RelativeTemporalFormatProps,
     TemporalFormat,
-    TemporalFormatProps,
+    TemporalFormatProps, TemporalRangeFormat, TemporalRangeFormatProps,
     ZonedDateTime,
 } from "../../src";
 
@@ -242,6 +242,7 @@ function DateTimeDemo() {
         {value: Instant.from("2022-06-21T14:22:11Z")},
         {value: Instant.from("2022-06-21T14:22:11Z"), dateStyle: "full", timeStyle: "full"}
     ];
+
     const durations: RelativeTemporalFormatProps[] = [
         {value: Now.plainDateISO().subtract({years: 2, days: 45})},
         {value: Now.plainDateISO().subtract({days: -1}), numeric: "auto"},
@@ -251,6 +252,14 @@ function DateTimeDemo() {
         {value: Now.instant().subtract({milliseconds: 493284})},
         {value: Now.instant().add({hours: 17249})},
     ];
+
+    const ranges: TemporalRangeFormatProps[] = [
+        {from: Now.plainDateISO(), until: Now.plainDateISO().add({days: 3})},
+        {from: Now.plainDateTimeISO().subtract({hours: 3}), until: Now.plainDateTimeISO().add({minutes: 22})},
+        {from: ZonedDateTime.from("2022-06-28T22:52:00[MET]"), until: ZonedDateTime.from("2022-06-29T16:52:00[MET]")},
+        {from: Instant.from("2022-06-28T23:00:00Z"), until: Instant.from("2022-06-28T23:00:00Z")},
+    ];
+
     return (
         <Stack spacing={2}>
             <Card>
@@ -298,6 +307,34 @@ function DateTimeDemo() {
                                 <TableCell>{props.style || "(undefined)"}</TableCell>
                                 <TableCell>
                                     <RelativeTemporalFormat {...props} />
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </Card>
+
+            <Card>
+                <CardHeader title="TemporalRangeFormat"/>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>from</TableCell>
+                            <TableCell>until</TableCell>
+                            <TableCell>dateStyle</TableCell>
+                            <TableCell>timeStyle</TableCell>
+                            <TableCell>Result</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {ranges.map((props, index) => (
+                            <TableRow key={index}>
+                                <TableCell>{props.from?.toString()}</TableCell>
+                                <TableCell>{props.until?.toString()}</TableCell>
+                                <TableCell>{props.dateStyle || "(undefined)"}</TableCell>
+                                <TableCell>{props.timeStyle || "(undefined)"}</TableCell>
+                                <TableCell>
+                                    <TemporalRangeFormat {...props} />
                                 </TableCell>
                             </TableRow>
                         ))}

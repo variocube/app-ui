@@ -1,14 +1,19 @@
 import {Formattable} from "../temporal";
 import {useDateTimeFormat} from "./useDateTimeFormat";
-import * as React from "react";
 import {Fragment, useMemo} from "react";
+import * as React from "react";
 import {DateStyle, TimeStyle} from "./types";
 
-export interface TemporalFormatProps {
+export interface TemporalRangeFormatProps {
     /**
-     * The date value to format.
+     * The beginning of the temporal range.
      */
-    value?: Formattable | null | undefined;
+    from: Formattable;
+
+    /**
+     * The end of the temporal range.
+     */
+    until: Formattable;
 
     /**
      * The style of the date format.
@@ -31,9 +36,10 @@ export interface TemporalFormatProps {
     timeZone?: string;
 }
 
-export function TemporalFormat(props: TemporalFormatProps) {
+export function TemporalRangeFormat(props: TemporalRangeFormatProps) {
     const {
-        value,
+        from,
+        until,
         dateStyle,
         timeStyle,
         locale,
@@ -49,8 +55,8 @@ export function TemporalFormat(props: TemporalFormatProps) {
     const dateTimeFormat = useDateTimeFormat(options, locale);
 
     const str = useMemo(() => {
-        return value != null ? dateTimeFormat.format(value) : "";
-    }, [dateTimeFormat, value]);
+        return dateTimeFormat.formatRange(from, until);
+    }, [dateTimeFormat, from, until]);
 
     return <Fragment>{str}</Fragment>;
 }
