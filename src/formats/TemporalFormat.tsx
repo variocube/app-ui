@@ -24,6 +24,11 @@ export interface TemporalFormatProps {
      * Overrides the user's locale. Use for testing only.
      */
     locale?: string;
+
+    /**
+     * Overrides the user's time zone. Use for testing only.
+     */
+    timeZone?: string;
 }
 
 export function TemporalFormat(props: TemporalFormatProps) {
@@ -31,12 +36,14 @@ export function TemporalFormat(props: TemporalFormatProps) {
         value,
         dateStyle,
         timeStyle,
-        locale
+        locale,
+        timeZone,
     } = props;
 
     const options = useMemo(() => ({
         dateStyle,
         timeStyle,
+        timeZone,
     }), [dateStyle, timeStyle]);
 
     const dateTimeFormat = useDateTimeFormat(options, locale);
