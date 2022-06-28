@@ -3,7 +3,17 @@ import * as React from "react";
 import {Instant, PlainDate, PlainDateTime, PlainTime, ZonedDateTime} from "../temporal";
 import {TemporalFormat} from "./TemporalFormat";
 
-describe("DateTimeFormat", () => {
+describe("TemporalFormat", () => {
+
+    // set and restore timezone
+    let oldTimezone: string | undefined;
+    beforeAll(() => {
+        oldTimezone = process.env.TZ;
+        process.env.TZ = "Europe/Vienna";
+    });
+    afterAll(() => {
+        process.env.TZ = oldTimezone;
+    });
 
     test("PlainDate de-AT", () => {
         let element: ReactTestRenderer;
@@ -83,7 +93,7 @@ describe("DateTimeFormat", () => {
             element = create(<TemporalFormat value={Instant.from("2022-06-22T14:22:11Z")} locale="de-AT" />);
         })
         const value = element!.root.children[0];
-        expect(value).toBe("22.6.2022, 14:22:00 GMT+2");
+        expect(value).toBe("22.6.2022, 16:22:11");
     });
 
     test("Instant en-US", () => {
@@ -92,6 +102,7 @@ describe("DateTimeFormat", () => {
             element = create(<TemporalFormat value={Instant.from("2022-06-22T14:22:11Z")} locale="en-US" />);
         })
         const value = element!.root.children[0];
-        expect(value).toBe("6/22/2022, 2:22:00 PM GMT+2");
+        expect(value).toBe("6/22/2022, 4:22:11 PM");
     });
+
 });

@@ -14,6 +14,7 @@ export const {
     PlainTime,
     Now,
     Duration,
+    TimeZone
 } = Temporal;
 
 export type Instant = Temporal.Instant;
@@ -22,6 +23,7 @@ export type PlainDateTime = Temporal.PlainDateTime;
 export type PlainDate = Temporal.PlainDate;
 export type PlainTime = Temporal.PlainTime;
 export type Duration = Temporal.Duration;
+export type TimeZone = Temporal.TimeZone;
 
 export const {
     DateTimeFormat

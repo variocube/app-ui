@@ -21,16 +21,18 @@ import {
     CompactFormat,
     createLocalizationContext,
     CurrencyFormat,
-    TemporalFormat,
-    TemporalFormatProps,
     DecimalFormat,
+    Instant,
+    Now,
     PlainDate,
     PlainDateTime,
     PlainTime,
+    RelativeTemporalFormat,
+    RelativeTemporalFormatProps,
+    TemporalFormat,
+    TemporalFormatProps,
+    ZonedDateTime,
 } from "../../src";
-import {Temporal} from "@js-temporal/polyfill";
-import ZonedDateTime = Temporal.ZonedDateTime;
-import Instant = Temporal.Instant;
 
 const {LocalizationProvider, useLocalization} = createLocalizationContext<typeof import("./en.json")>({
     load: language => import(`./${language}.json`),
@@ -229,7 +231,7 @@ function NumberDemo() {
 
 
 function DateTimeDemo() {
-    const examples: TemporalFormatProps[] = [
+    const temporals: TemporalFormatProps[] = [
         {value: PlainDate.from("2022-06-21")},
         {value: PlainDate.from("2022-06-21"), dateStyle: "full"},
         {value: PlainTime.from({hour: 14, minute: 22})},
@@ -240,31 +242,69 @@ function DateTimeDemo() {
         {value: Instant.from("2022-06-21T14:22:11Z")},
         {value: Instant.from("2022-06-21T14:22:11Z"), dateStyle: "full", timeStyle: "full"}
     ];
+    const durations: RelativeTemporalFormatProps[] = [
+        {value: Now.plainDateISO().subtract({years: 2, days: 45})},
+        {value: Now.plainDateISO().subtract({days: -1}), numeric: "auto"},
+        {value: Now.plainDateTimeISO().add({weeks: 4, minutes: 3}), style: "narrow"},
+        {value: Now.plainDateTimeISO().subtract({seconds: 2}), style: "narrow"},
+        {value: Now.zonedDateTimeISO().subtract({days: 3})},
+        {value: Now.instant().subtract({milliseconds: 493284})},
+        {value: Now.instant().add({hours: 17249})},
+    ];
     return (
-        <Card>
-            <CardHeader title="TemporalFormat"/>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Value</TableCell>
-                        <TableCell>dateStyle</TableCell>
-                        <TableCell>timeStyle</TableCell>
-                        <TableCell>Result</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                {examples.map((props, index) => (
-                    <TableRow key={index}>
-                        <TableCell>{props.value?.toString()}</TableCell>
-                        <TableCell>{props.dateStyle || "(undefined)"}</TableCell>
-                        <TableCell>{props.timeStyle || "(undefined)"}</TableCell>
-                        <TableCell>
-                            <TemporalFormat {...props} />
-                        </TableCell>
-                    </TableRow>
-                ))}
-                </TableBody>
-            </Table>
-        </Card>
+        <Stack spacing={2}>
+            <Card>
+                <CardHeader title="TemporalFormat"/>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Value</TableCell>
+                            <TableCell>dateStyle</TableCell>
+                            <TableCell>timeStyle</TableCell>
+                            <TableCell>Result</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {temporals.map((props, index) => (
+                            <TableRow key={index}>
+                                <TableCell>{props.value?.toString()}</TableCell>
+                                <TableCell>{props.dateStyle || "(undefined)"}</TableCell>
+                                <TableCell>{props.timeStyle || "(undefined)"}</TableCell>
+                                <TableCell>
+                                    <TemporalFormat {...props} />
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </Card>
+
+            <Card>
+                <CardHeader title="RelativeTemporalFormat"/>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Value</TableCell>
+                            <TableCell>numeric</TableCell>
+                            <TableCell>style</TableCell>
+                            <TableCell>Result</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {durations.map((props, index) => (
+                            <TableRow key={index}>
+                                <TableCell>{props.value?.toString()}</TableCell>
+                                <TableCell>{props.numeric || "(undefined)"}</TableCell>
+                                <TableCell>{props.style || "(undefined)"}</TableCell>
+                                <TableCell>
+                                    <RelativeTemporalFormat {...props} />
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </Card>
+        </Stack>
+
     );
 }

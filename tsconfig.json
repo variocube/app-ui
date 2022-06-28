@@ -11,12 +11,10 @@
     "jsx": "react",
     "allowSyntheticDefaultImports": true
   },
-  "exclude": [
-    "node_modules",
-    "src/dev.tsx"
-  ],
   "include": [
     "src/**/*",
-    "src/custom.d.ts"
+  ],
+  "exclude": [
+    "src/**/*.spec.ts",
   ]
 }
