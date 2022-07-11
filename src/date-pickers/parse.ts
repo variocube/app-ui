@@ -1,4 +1,4 @@
-import {DateTimeFormat, PlainDate, PlainDateTime} from "../temporal";
+import {DateTimeFormat, PlainDate, PlainDateTime, PlainTime} from "../temporal";
 import {getFormatString} from "./getFormatString";
 
 const PLACEHOLDER = {
@@ -16,6 +16,10 @@ export function parsePlainDate(value: string, format: DateTimeFormat) {
 
 export function parsePlainDateTime(value: string, format: DateTimeFormat) {
     return PlainDateTime.from(parse(value, format), {overflow: "reject"});
+}
+
+export function parsePlainTime(value: string, format: DateTimeFormat) {
+    return PlainTime.from(parse(value, format), {overflow: "reject"});
 }
 
 function parse(value: string, format: DateTimeFormat) {

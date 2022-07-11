@@ -1,7 +1,7 @@
 import {Card, CardContent, CardHeader, Container, Link, Stack, Typography} from "@mui/material";
 import * as React from "react";
 import {useState} from "react";
-import {PlainDate, PlainDatePicker, PlainDateTime, PlainDateTimePicker} from "../../src";
+import {PlainDate, PlainDatePicker, PlainDateTime, PlainDateTimePicker, PlainTime, PlainTimePicker} from "../../src";
 
 export function Pickers() {
     return (
@@ -24,6 +24,7 @@ export function Pickers() {
             <Stack spacing={2}>
                 <DatePicker/>
                 <DateTimePicker/>
+                <TimePicker/>
             </Stack>
         </Container>
     )
@@ -53,6 +54,22 @@ export function DateTimePicker() {
             <CardContent>
                 <PlainDateTimePicker
                     label="Datetime picker"
+                    value={value}
+                    onChange={setValue}
+                />
+            </CardContent>
+        </Card>
+    )
+}
+
+export function TimePicker() {
+    const [value, setValue] = useState<PlainTime | null>(null);
+    return (
+        <Card>
+            <CardHeader title="Time picker"/>
+            <CardContent>
+                <PlainTimePicker
+                    label="Time picker"
                     value={value}
                     onChange={setValue}
                 />

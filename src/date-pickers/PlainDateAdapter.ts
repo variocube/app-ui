@@ -11,7 +11,7 @@ export class PlainDateAdapter extends PlainAdapterCommon<PlainDate> implements M
             return null;
         }
         if (value === undefined) {
-            return Now.plainDate("gregory");
+            return Now.plainDateISO();
         }
 
         if (value instanceof PlainDate) {
