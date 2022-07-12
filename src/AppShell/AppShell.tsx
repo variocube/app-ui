@@ -4,15 +4,16 @@ import {useFlag} from "../utils";
 import {MenuIcon} from "../icons";
 import {VCAppLogo} from "../VCLogo";
 
-interface AppLayoutProps {
+interface AppShellProps {
     appName: string;
     sideNav?: JSX.Element | null | undefined;
     sideNavWidth?: number;
     sideNavFixed?: Breakpoint;
     topNav?: JSX.Element | null | undefined;
+    footer?: JSX.Element | null | undefined;
 }
 
-export function AppLayout(props: PropsWithChildren<AppLayoutProps>) {
+export function AppShell(props: PropsWithChildren<AppShellProps>) {
 
     const {
         children,
@@ -20,7 +21,8 @@ export function AppLayout(props: PropsWithChildren<AppLayoutProps>) {
         sideNav,
         sideNavWidth = 200,
         topNav,
-        sideNavFixed = "md"
+        sideNavFixed = "md",
+        footer,
     } = props;
 
     const [drawerOpen, setDrawerOpen, clearDrawerOpen, toggleDrawerOpen] = useFlag(false);
@@ -112,6 +114,18 @@ export function AppLayout(props: PropsWithChildren<AppLayoutProps>) {
                     {children}
                 </Box>
             </Box>
+            {footer && (
+                <Box
+                    sx={{
+                        borderTop: 1,
+                        borderColor: "divider",
+                        backgroundColor: "paper.elevation1",
+                        color: "text.primary",
+                    }}
+                >
+                    {footer}
+                </Box>
+            )}
         </Box>
     )
 }

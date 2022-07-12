@@ -1,17 +1,14 @@
 import * as React from "react";
-import {ReactElement} from "react";
 import * as ReactDOM from "react-dom";
 import {BrowserRouter, Link, Outlet, Route, Routes} from "react-router-dom";
 import {ContentTableDemo} from "./content-table";
 import {Localization} from "./localization";
 import {Pickers} from "./date-pickers";
 import {VCThemeProvider} from "../src";
-import {AppLayout} from "../src/AppLayout";
+import {AppShell} from "../src/AppShell";
 import {
     Box,
     Button,
-    Card,
-    CardMedia,
     Container,
     Grid,
     List,
@@ -45,14 +42,25 @@ function Demo() {
 function App() {
     return (
         <VCThemeProvider>
-            <AppLayout appName={"UI docs"} sideNav={<SideNav/>} sideNavWidth={240}>
+            <AppShell
+                appName={"UI docs"}
+                sideNav={<SideNav/>}
+                sideNavWidth={240}
+                footer={<Footer/>}
+            >
                 <Outlet/>
-            </AppLayout>
+            </AppShell>
         </VCThemeProvider>
     )
 }
 
-
+function Footer() {
+    return (
+        <Box sx={{px: 1, py: 0.5}}>
+            © Variocube GmbH
+        </Box>
+    );
+}
 
 function SideNav() {
     return (

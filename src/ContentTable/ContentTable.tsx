@@ -1,7 +1,8 @@
 import React, {Fragment, ReactComponentElement, useMemo, useState} from "react";
 import {
     Box,
-    Button, Checkbox,
+    Button,
+    Checkbox,
     CircularProgress,
     Dialog,
     DialogActions,
@@ -18,37 +19,11 @@ import {
     TablePagination,
     TableRow,
     TableSortLabel,
-    Theme
+    useTheme
 } from "@mui/material";
-import {makeStyles} from "@mui/styles";
 import {FilterListIcon, TuningIcon} from "../icons";
 import {Page, PagingSettings} from "../Paging";
 import {UndrawEmpty} from "./UndrawEmpty";
-
-const useStyles = makeStyles((theme: Theme) => ({
-    tableHead: {
-        background: theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[600]
-    },
-    tableBody: {
-        '& > tr:not(.empty)': {
-            cursor: 'pointer',
-            '&:hover': {
-                background: `${theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[800]} !important`
-            }
-        }
-    },
-    graphic: {
-        height: 300,
-        [theme.breakpoints.down('md')]: {
-            height: 150
-        },
-    },
-    filterColumn: {
-        display: 'flex',
-        flexGrow: 1,
-        alignItems: 'center'
-    }
-}));
 
 export type ColumnType = { [sortKey: string]: { show: boolean, name: string, align?: 'left'|'right'|'center', unsortable?: boolean } }
 
@@ -115,7 +90,8 @@ export const ContentTable = <T extends unknown>({page, pageable, columns, onPage
         })
     }
 
-    const classes = useStyles();
+    const theme = useTheme();
+
     return (
         <Fragment>
             {!currentPage && (
@@ -127,7 +103,7 @@ export const ContentTable = <T extends unknown>({page, pageable, columns, onPage
                 <Fragment>
                     <Box p={1}>
                         <Grid container>
-                            <Grid item className={classes.filterColumn}>
+                            <Grid item display="flex" flexGrow={1} alignItems="center">
                                 {onFilterClick && (
                                     <IconButton onClick={onFilterClick}>
                                         <FilterListIcon />
@@ -145,7 +121,9 @@ export const ContentTable = <T extends unknown>({page, pageable, columns, onPage
                     </Box>
                     <TableContainer>
                         <Table size="small">
-                            <TableHead className={classes.tableHead}>
+                            <TableHead sx={{
+                                background: theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[600]
+                            }}>
                                 <TableRow>
                                     {Object.keys(columns).filter(k => columns[k].show).map((k) => (
                                         <TableCell key={'data-table-' + k} align={columns[k].align}>
@@ -163,7 +141,14 @@ export const ContentTable = <T extends unknown>({page, pageable, columns, onPage
                                     ))}
                                 </TableRow>
                             </TableHead>
-                            <TableBody className={classes.tableBody}>
+                            <TableBody sx={{
+                                '& > tr:not(.empty)': {
+                                    cursor: 'pointer',
+                                    '&:hover': {
+                                        background: `${theme.palette.mode === 'light' ? theme.palette.grey[50] : theme.palette.grey[800]} !important`
+                                    }
+                                }
+                            }}>
                                 {currentPage.content.length === 0 && (
                                     renderEmptyContent ?
                                         (<Fragment>{renderEmptyContent}</Fragment>) :
@@ -171,9 +156,14 @@ export const ContentTable = <T extends unknown>({page, pageable, columns, onPage
                                             <TableRow className={'empty'}>
                                                 <TableCell colSpan={Object.keys(columns).length}>
                                                     <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" p={3}>
-                                                        <div className={classes.graphic}>
+                                                        <Box sx={{
+                                                            height: 300,
+                                                            [theme.breakpoints.down('md')]: {
+                                                                height: 150
+                                                            },
+                                                        }}>
                                                             <UndrawEmpty />
-                                                        </div>
+                                                        </Box>
                                                     </Box>
                                                 </TableCell>
                                             </TableRow>
