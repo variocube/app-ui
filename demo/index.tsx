@@ -7,9 +7,21 @@ import {Localization} from "./localization";
 import {Pickers} from "./date-pickers";
 import {VCThemeProvider} from "../src";
 import {AppLayout} from "../src/AppLayout";
-import {Container, List, ListItemButton, ListItemIcon, ListItemText, Typography} from "@mui/material";
+import {
+    Box,
+    Button,
+    Card,
+    CardMedia,
+    Container,
+    Grid,
+    List,
+    ListItemButton,
+    ListItemIcon,
+    ListItemText,
+    Typography
+} from "@mui/material";
 import {useLocation} from "react-router";
-import {CalendarMonth, Edit, Language, Palette, ViewList} from "@mui/icons-material";
+import {CalendarMonth, Edit, Language, Palette, SvgIconComponent, ViewList} from "@mui/icons-material";
 import {Inputs} from "./inputs";
 import {Theme} from "./theme";
 
@@ -40,31 +52,39 @@ function App() {
     )
 }
 
+
+
 function SideNav() {
     return (
         <List>
-            <SideNavListItem icon={<Palette/>} to="/theme" text="Theme"/>
-            <SideNavListItem icon={<Language/>} to="/localization" text="Localization"/>
-            <SideNavListItem icon={<CalendarMonth/>} to="/date-pickers" text="Date & time pickers"/>
-            <SideNavListItem icon={<ViewList/>} to="/content-table" text="Content table"/>
-            <SideNavListItem icon={<Edit/>} to="/inputs" text="Inputs"/>
+            {MenuItems.map(props => (
+                <SideNavListItem key={props.text} {...props}/>
+            ))}
         </List>
     )
 }
 
-interface SideNavListItemProps {
+interface MenuItemProps {
     to: string;
     text: string;
-    icon: ReactElement;
+    icon: SvgIconComponent;
 }
 
-function SideNavListItem({icon, text, to}: SideNavListItemProps) {
+const MenuItems: MenuItemProps[] = [
+    {text: "Theme", to: "/theme", icon: Palette},
+    {text: "Localization", to: "/localization", icon: Language},
+    {text: "Date & time pickers", to: "/date-pickers", icon: CalendarMonth},
+    {text: "Content table", to: "/content-table", icon: ViewList},
+    {text: "Inputs", to: "/inputs", icon: Edit},
+]
+
+function SideNavListItem({icon: Icon, text, to}: MenuItemProps) {
     const location = useLocation();
     const selected = location.pathname.startsWith(to);
     return (
         <ListItemButton component={Link} to={to} selected={selected}>
             <ListItemIcon>
-                {icon}
+                <Icon/>
             </ListItemIcon>
             <ListItemText primary={text}/>
         </ListItemButton>
@@ -74,8 +94,35 @@ function SideNavListItem({icon, text, to}: SideNavListItemProps) {
 function Start() {
     return (
         <Container>
-            <Typography variant="h1">Welcome</Typography>
+            <Typography variant="h1" gutterBottom>Welcome</Typography>
+            <Typography variant="body1" gutterBottom>
+                This library provides common components for Variocube applications.
+            </Typography>
+            <Box my={2}>
+                <Grid container spacing={2}>
+                    {MenuItems.map(props => <MenuCardItem key={props.text} {...props}/>)}
+                </Grid>
+            </Box>
         </Container>
+    )
+}
+
+function MenuCardItem({icon: Icon, text, to}: MenuItemProps) {
+    return (
+        <Grid item xs={6} md={4} lg={3}>
+            <Button
+                color="secondary"
+                variant="outlined"
+                component={Link}
+                to={to}
+                size="large"
+                fullWidth
+                sx={{flexFlow: "column", textAlign: "center"}}
+            >
+                <Icon fontSize="large" sx={{my: 1}}/>
+                {text}
+            </Button>
+        </Grid>
     )
 }
 
