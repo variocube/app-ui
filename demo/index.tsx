@@ -57,7 +57,7 @@ function App() {
 function Footer() {
     return (
         <Box sx={{px: 1, py: 0.5}}>
-            © Variocube GmbH
+            <Typography variant="overline" color="textSecondary">© Variocube GmbH</Typography>
         </Box>
     );
 }

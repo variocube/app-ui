@@ -119,7 +119,7 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
                     sx={{
                         borderTop: 1,
                         borderColor: "divider",
-                        backgroundColor: "paper.elevation1",
+                        backgroundColor: theme.palette.background.paper,
                         color: "text.primary",
                     }}
                 >
