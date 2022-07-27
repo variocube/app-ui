@@ -9,3 +9,4 @@ export * from "./temporal";
 export * from "./date-pickers";
 export * from "./utils";
 export * from "./formats";
+export * from "./storage";
