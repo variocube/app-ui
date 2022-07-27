@@ -69,8 +69,9 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
                             py: 1,
                             ...(!drawerPermanent && {
                                 position: "absolute",
+                                top: "50%",
                                 left: "50%",
-                                transform: "translateX(-50%)"
+                                transform: "translate(-50%, -50%)"
                             })
                         }}
                     />

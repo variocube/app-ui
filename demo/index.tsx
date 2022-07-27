@@ -10,7 +10,7 @@ import {
     Box,
     Button,
     Container,
-    Grid,
+    Grid, IconButton,
     List,
     ListItemButton,
     ListItemIcon,
@@ -18,7 +18,7 @@ import {
     Typography
 } from "@mui/material";
 import {useLocation} from "react-router";
-import {CalendarMonth, Edit, Language, Palette, SvgIconComponent, ViewList} from "@mui/icons-material";
+import {CalendarMonth, Edit, GitHub, Language, Palette, SvgIconComponent, ViewList} from "@mui/icons-material";
 import {Inputs} from "./inputs";
 import {Theme} from "./theme";
 
@@ -45,12 +45,21 @@ function App() {
             <AppShell
                 appName={"UI docs"}
                 sideNav={<SideNav/>}
+                topNav={<TopNav/>}
                 sideNavWidth={240}
                 footer={<Footer/>}
             >
                 <Outlet/>
             </AppShell>
         </VCThemeProvider>
+    )
+}
+
+function TopNav() {
+    return (
+        <IconButton component="a" href="https://github.com/variocube/app-ui" target="_blank" edge="end">
+            <GitHub/>
+        </IconButton>
     )
 }
 
