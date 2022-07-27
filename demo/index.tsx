@@ -4,8 +4,7 @@ import {BrowserRouter, Link, Outlet, Route, Routes} from "react-router-dom";
 import {ContentTableDemo} from "./content-table";
 import {Localization} from "./localization";
 import {Pickers} from "./date-pickers";
-import {VCThemeProvider} from "../src";
-import {AppShell} from "../src/AppShell";
+import {AppShell, VCThemeProvider} from "../src";
 import {
     Box,
     Button,

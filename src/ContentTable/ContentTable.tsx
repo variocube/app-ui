@@ -10,7 +10,7 @@ import {
     FormControlLabel,
     Grid,
     IconButton,
-    LinearProgress,
+    LinearProgress, Paper,
     Table,
     TableBody,
     TableCell,
@@ -91,9 +91,8 @@ export const ContentTable = <T extends unknown>({page, pageable, columns, onPage
     }
 
     const theme = useTheme();
-
     return (
-        <Fragment>
+        <Paper sx={{ maxWidth: `calc(100vw - ${theme.spacing(4)})` }}>
             {!currentPage && (
                 <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" p={3}>
                     <CircularProgress />
@@ -119,14 +118,14 @@ export const ContentTable = <T extends unknown>({page, pageable, columns, onPage
                             </Grid>
                         </Grid>
                     </Box>
-                    <TableContainer>
+                    <TableContainer >
                         <Table size="small">
                             <TableHead sx={{
                                 background: theme.palette.mode === 'light' ? theme.palette.grey[200] : theme.palette.grey[600]
                             }}>
                                 <TableRow>
                                     {Object.keys(columns).filter(k => columns[k].show).map((k) => (
-                                        <TableCell key={'data-table-' + k} align={columns[k].align}>
+                                        <TableCell key={'data-table-' + k} sx={{ whiteSpace: 'nowrap' }} align={columns[k].align}>
                                             {!columns[k].unsortable && (
                                                 <TableSortLabel
                                                     active={currentPageable.sort === k}
@@ -200,6 +199,6 @@ export const ContentTable = <T extends unknown>({page, pageable, columns, onPage
                     </Dialog>
                 </Fragment>
             )}
-        </Fragment>
+        </Paper>
     )
 }
