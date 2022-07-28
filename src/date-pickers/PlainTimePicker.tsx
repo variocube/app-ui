@@ -1,6 +1,6 @@
 import {PlainTime} from "../temporal";
 import {useLocale} from "./useLocale";
-import {useRenderInput} from "./useRenderInput";
+import {useRenderInput, UseRenderInputProps} from "./useRenderInput";
 import {LocalizationProvider, TimePicker} from "@mui/x-date-pickers";
 import * as React from "react";
 import {PlainTimeAdapter} from "./PlainTimeAdapter";
@@ -9,7 +9,6 @@ interface PlainTimePickerProps {
     value: PlainTime | null;
     onChange: (value: PlainTime | null) => any;
     label?: string;
-    fullWidth?: boolean;
 
     /**
      * Allows overriding the locale. Only use for testing.
@@ -17,12 +16,11 @@ interface PlainTimePickerProps {
     locale?: string;
 }
 
-export function PlainTimePicker(props: PlainTimePickerProps) {
-    const {value, onChange, label, fullWidth, locale: suppliedLocale} = props;
+export function PlainTimePicker(props: PlainTimePickerProps & UseRenderInputProps) {
+    const {value, onChange, label, locale: suppliedLocale, ...renderInputProps} = props;
 
     const locale = useLocale(suppliedLocale);
-    const renderInput = useRenderInput(fullWidth);
-
+    const renderInput = useRenderInput(renderInputProps);
 
     return (
         <LocalizationProvider dateAdapter={PlainTimeAdapter} adapterLocale={locale}>

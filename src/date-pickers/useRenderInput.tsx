@@ -3,8 +3,16 @@ import {useCallback} from "react";
 import {TextFieldProps} from "@mui/material/TextField/TextField";
 import {TextField} from "@mui/material";
 
-export function useRenderInput(fullWidth: boolean | undefined) {
+export type UseRenderInputProps = Pick<TextFieldProps, "fullWidth" | "helperText">;
+
+export function useRenderInput(props: UseRenderInputProps) {
+    const {fullWidth, helperText} = props;
     return useCallback((props: TextFieldProps) => (
-        <TextField variant="outlined" fullWidth={fullWidth} {...props}/>
-    ), [fullWidth]);
+        <TextField
+            variant="outlined"
+            fullWidth={fullWidth}
+            helperText={helperText}
+            {...props}
+        />
+    ), [fullWidth, helperText]);
 }

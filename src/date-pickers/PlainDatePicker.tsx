@@ -2,14 +2,13 @@ import {DatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import * as React from "react";
 import {PlainDate} from "../temporal";
 import {PlainDateAdapter} from "./PlainDateAdapter";
-import {useRenderInput} from "./useRenderInput";
+import {useRenderInput, UseRenderInputProps} from "./useRenderInput";
 import {useLocale} from "./useLocale";
 
 interface PlainDatePickerProps {
     value: PlainDate | null;
     onChange: (value: PlainDate | null) => any;
     label?: string;
-    fullWidth?: boolean;
 
     /**
      * Allows overriding the locale. Only use for testing.
@@ -17,12 +16,13 @@ interface PlainDatePickerProps {
     locale?: string;
 }
 
-export function PlainDatePicker(props: PlainDatePickerProps) {
+export function PlainDatePicker(props: PlainDatePickerProps & UseRenderInputProps) {
 
-    const {value, onChange, label, fullWidth, locale: suppliedLocale} = props;
+    const {value, onChange, label, locale: suppliedLocale, ...renderInputProps} = props;
 
     const locale = useLocale(suppliedLocale);
-    const renderInput = useRenderInput(fullWidth);
+
+    const renderInput = useRenderInput(renderInputProps);
 
     return (
         <LocalizationProvider dateAdapter={PlainDateAdapter} adapterLocale={locale}>
