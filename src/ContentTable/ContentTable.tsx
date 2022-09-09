@@ -161,7 +161,7 @@ export const ContentTable = <T extends unknown>({page, pageable, columns, onPage
                                                                 height: 150
                                                             },
                                                         }}>
-                                                            <UndrawEmpty />
+                                                            <UndrawEmpty height="100%" width="auto" />
                                                         </Box>
                                                     </Box>
                                                 </TableCell>

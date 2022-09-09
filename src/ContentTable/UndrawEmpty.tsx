@@ -2,7 +2,7 @@ import * as React from "react";
 import { SVGProps } from "react";
 
 export const UndrawEmpty = (props: SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" {...props}>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1009.54 789.93" {...props}>
     <defs>
       <linearGradient
         id="undraw_empty_xct9_svg__a"
