@@ -87,7 +87,7 @@ interface LocalizationContextType<T extends MessageObject> {
 /**
  * The key in the browser's storage, where the user-selected language is stored.
  */
-const LANGUAGE_STORAGE_KEY = "variocube-language";
+const LANGUAGE_STORAGE_KEY = "variocube-language-v2";
 
 /**
  * Creates a typed localization context.
