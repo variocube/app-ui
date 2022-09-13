@@ -1,4 +1,4 @@
-export * from "./ContentTable";
+export * from "./content-table";
 export * from "./Paging";
 export * from "./Input";
 export * from "./VCLogo";

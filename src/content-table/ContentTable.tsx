@@ -38,9 +38,18 @@ type ContentTableProps<T> = {
     renderEmptyContent?: ReactComponentElement<any>,
     renderTableBody?: ReactComponentElement<any>,
     renderFilterOptions?: ReactComponentElement<any>
+    renderColumnFilter?: ReactComponentElement<any>,
 }
 
-export const ContentTable = <T extends unknown>({page, pageable, columns, onPageableChange, onColumnsChange, inProgress, onFilterClick, renderEmptyContent, renderTableBody, renderFilterOptions}: ContentTableProps<T>) => {
+export const ContentTable = <T extends unknown>(props: ContentTableProps<T>) => {
+    const {
+        page, pageable, columns,
+        renderEmptyContent, renderTableBody, renderFilterOptions, renderColumnFilter,
+        inProgress,
+        onPageableChange,
+        onColumnsChange,
+        onFilterClick,
+    } = props;
     const currentPage = useMemo(() => page, [page]);
     const currentPageable = useMemo(() => pageable, [pageable]);
     const [showColumnSettings, setShowColumnSettings] = useState(false);
@@ -186,7 +195,8 @@ export const ContentTable = <T extends unknown>({page, pageable, columns, onPage
                     )}
                     <Dialog fullWidth maxWidth="sm" open={showColumnSettings}>
                         <DialogContent>
-                            {Object.keys(columns).map((k, i) => (
+                            {renderColumnFilter && <Fragment>{renderColumnFilter}</Fragment>}
+                            {!renderColumnFilter && Object.keys(columns).map((k, i) => (
                                 <FormControlLabel key={'column-setting-' + i} label={columns[k].name}
                                                   color="primary"
                                                   control={<Checkbox checked={columns[k].show} onChange={e => handleColumnsChange(k, e.target.checked)} />}

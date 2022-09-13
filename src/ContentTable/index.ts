@@ -1,1 +1,0 @@
-export {ColumnType, ContentTable} from "./ContentTable";
