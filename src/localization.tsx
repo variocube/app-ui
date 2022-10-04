@@ -12,6 +12,11 @@ export interface MessageObject {
 }
 
 /**
+ * Function that is called when a key is missing.
+ */
+export type MissingFunc = (key: string) => string;
+
+/**
  * Localization context options
  */
 export interface LocalizationContextOptions<T extends MessageObject> {
@@ -33,7 +38,7 @@ export interface LocalizationContextOptions<T extends MessageObject> {
      * Default: a function that prints a warning to the console and returns an empty string.
      * @param key The key that could not be found.
      */
-    missing?: (key: string) => string;
+    missing?: "fallback" | MissingFunc;
 }
 
 /**
@@ -82,6 +87,7 @@ interface LocalizationContextType<T extends MessageObject> {
     messages: T | undefined;
     language: string;
     setLanguage: SetLanguageFunc;
+    fallbackMessages: T | undefined;
 }
 
 /**
@@ -127,6 +133,7 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
         messages: undefined,
         language: fallback,
         setLanguage: () => void 0,
+        fallbackMessages: undefined,
     });
 
     /**
@@ -142,7 +149,17 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
             messages: undefined,
             language: fallback,
             setLanguage: setUserDefinedLanguage,
+            fallbackMessages: undefined,
         });
+
+        // Loads the fallback messages if required by the missing option
+        useEffect(() => {
+            if (missing == "fallback") {
+                load(fallback)
+                    .then(fallbackMessages => setValue(v => ({...v, fallbackMessages})))
+                    .catch(error => console.error(error));
+            }
+        }, []);
 
         // Loads the best matching language and updates the context value.
         useEffect(() => {
@@ -166,19 +183,26 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
         if (!value) {
             throw new Error("Cannot find localization context. Are you missing a LocalizationProvider in your component tree?");
         }
-        const {messages, language, setLanguage} = value;
+        const {messages, language, setLanguage, fallbackMessages} = value;
+
+        const handleMissing = useCallback((key: Leaves<T>) => {
+            if (missing == "fallback") {
+                return fallbackMessages ? getString(fallbackMessages, key) : undefined;
+            }
+            return missing(key);
+        }, [fallbackMessages]);
 
         const t = useCallback((key: Leaves<T>, context?: Record<string, any>) => {
             if (messages) {
-                const localized = getString(messages, key);
+                const localized = getString(messages, key) ?? handleMissing(key);
                 if (localized) {
                     return Mustache.render(localized, context);
                 }
-                return missing(key);
+                return localized;
             }
-        }, [messages]);
+        }, [messages, handleMissing]);
 
-        const e = useCallback((key: Branches<T>, name: string) => t(key + "." + name as Leaves<T>), [messages]);
+        const e = useCallback((key: Branches<T>, name: string) => t(key + "." + name as Leaves<T>), [t]);
 
         return {
             t,
