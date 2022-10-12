@@ -1,15 +1,15 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import {BrowserRouter, Link, Outlet, Route, Routes} from "react-router-dom";
 import {ContentTableDemo} from "./content-table";
 import {Localization} from "./localization";
 import {Pickers} from "./date-pickers";
-import {AppShell, VCThemeProvider} from "../src";
+import {AppShell, VCThemeProvider, render} from "../src";
 import {
     Box,
     Button,
     Container,
-    Grid, IconButton,
+    Grid,
+    IconButton,
     List,
     ListItemButton,
     ListItemIcon,
@@ -142,7 +142,4 @@ function MenuCardItem({icon: Icon, text, to}: MenuItemProps) {
     )
 }
 
-ReactDOM.render(
-    <Demo/>,
-    document.getElementById("content")
-);
+render(<Demo/>);

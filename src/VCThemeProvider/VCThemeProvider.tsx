@@ -1,6 +1,7 @@
 import React, {createContext, PropsWithChildren, useCallback, useContext, useMemo} from "react";
 import {createTheme, CssBaseline, PaletteMode, ThemeProvider, useMediaQuery} from "@mui/material";
 import {useStorage} from "../storage";
+import {RobotoFont} from "./RobotoFont";
 
 /**
  * Theme colors.
@@ -121,6 +122,7 @@ export function VCThemeProvider({children}: PropsWithChildren<VCThemeProviderPro
         <ThemeProvider theme={theme}>
             <PaletteModeContext.Provider value={{mode, setMode}}>
                 <CssBaseline/>
+                <RobotoFont/>
                 {children}
             </PaletteModeContext.Provider>
         </ThemeProvider>

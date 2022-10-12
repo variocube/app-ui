@@ -1,6 +1,6 @@
 {
   "name": "@variocube/app-ui",
-  "version": "1.0.0-alpha.9",
+  "version": "1.0.0-alpha.10",
   "description": "Common UI components for Variocube applications.",
   "module": "esm/index.js",
   "types": "esm/index.d.ts",
@@ -24,7 +24,8 @@
     "react": "17.x"
   },
   "dependencies": {
-    "@js-temporal/polyfill": "^0.4.1"
+    "@js-temporal/polyfill": "^0.4.1",
+    "roboto-fontface": "^0.10.0"
   },
   "devDependencies": {
     "@emotion/react": "^11.9.0",

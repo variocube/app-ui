@@ -2,19 +2,19 @@
  * Webpack configuration for running the demo.
  */
 
-const path = require('path')
-const HtmlWebPackPlugin = require('html-webpack-plugin');
+const path = require("path")
+const HtmlWebPackPlugin = require("html-webpack-plugin");
 
 module.exports = {
 
     entry: {
-        'main': './demo/index.tsx'
+        "main": "./demo/index.tsx"
     },
 
     output: {
-        filename: "[name].[fullhash].js",
+        filename: "[name].[contenthash].js",
         path: __dirname + "/build",
-        publicPath: '/'
+        publicPath: "/"
     },
 
     mode: "development",
@@ -24,7 +24,7 @@ module.exports = {
 
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
-        extensions: [ ".webpack.js", ".web.js", ".ts", ".tsx", ".js", ".css" ]
+        extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js", ".css"]
     },
 
     module: {
@@ -37,6 +37,10 @@ module.exports = {
                         loader: "ts-loader"
                     }
                 ]
+            },
+            {
+                test: /\.woff(2?)$/,
+                type: "asset/resource"
             },
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
             {
@@ -56,14 +60,14 @@ module.exports = {
     devServer: {
         port: 3000,
         historyApiFallback: {
-            index: '/',
+            index: "/",
             disableDotRule: true
         }
     },
 
     watchOptions: {
         ignored: [
-            path.resolve(__dirname, 'node_modules')
+            path.resolve(__dirname, "node_modules")
         ]
     },
 
@@ -71,9 +75,9 @@ module.exports = {
         new HtmlWebPackPlugin({
             filename: "./index.html",
             title: `VARIOCUBE App UI`,
-            template: './demo/index.ejs',
+            template: "./src/splash/template.html",
             meta: {
-                viewport: 'width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, shrink-to-fit=no',
+                viewport: "width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, shrink-to-fit=no",
             }
         }),
     ]

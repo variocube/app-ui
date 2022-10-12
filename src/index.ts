@@ -11,3 +11,4 @@ export * from "./utils";
 export * from "./formats";
 export * from "./storage";
 export * from "./AppShell";
+export * from "./splash";
