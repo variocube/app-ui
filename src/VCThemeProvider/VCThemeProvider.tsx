@@ -13,7 +13,7 @@ export enum Colors {
     success = "#4caf50",
     error = "#aa0000",
     warning = "#da9500",
-    info = "#05164d",
+    info = "#082480",
 }
 
 interface PaletteModeContextValue {
