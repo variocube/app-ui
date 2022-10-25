@@ -47,9 +47,18 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
                     borderColor: "divider",
                     backgroundColor: "paper.elevation1",
                     color: "text.primary",
+                    displayPrint: "none"
                 }}
             >
-                <Box sx={{position: "relative", display: "flex", flexFlow: "row nowrap", justifyContent: "space-between", px: 2}}>
+                <Box
+                    sx={{
+                        position: "relative",
+                        display: "flex",
+                        flexFlow: "row nowrap",
+                        justifyContent: "space-between",
+                        px: 2
+                    }}
+                >
                     {!drawerPermanent && (
                         <IconButton
                             edge="start"
@@ -79,17 +88,22 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
                     {!topNav && <Box/>}
                 </Box>
             </AppBar>
-            <Box sx={{flex: "1 1 auto", display: "flex", flexFlow: "row nowrap"}}>
+            <Box sx={{
+                flex: "1 1 auto",
+                display: "flex",
+                flexFlow: "row nowrap",
+            }}>
                 {sideNav && (
                     <Drawer
                         variant={!drawerPermanent ? "temporary" : "permanent"}
                         sx={{
+                            displayPrint: "none",
                             [`& .MuiDrawer-paper`]: {
                                 position: "relative",
                                 whiteSpace: "nowrap",
                                 overflowX: "hidden",
                                 width: sideNavWidth,
-                                boxSizing: 'border-box'
+                                boxSizing: "border-box"
                             },
                             ["& .MuiPaper-elevation0"]: {
                                 backgroundColor: "paper.elevation1"
@@ -116,17 +130,16 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
                 </Box>
             </Box>
             {footer && (
-                <Box
-                    sx={{
+                <Box sx={{
                         borderTop: 1,
                         borderColor: "divider",
                         backgroundColor: theme.palette.background.paper,
                         color: "text.primary",
-                    }}
-                >
+                        displayPrint: "none"
+                }}>
                     {footer}
                 </Box>
             )}
         </Box>
-    )
+    );
 }
