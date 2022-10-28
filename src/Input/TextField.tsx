@@ -1,46 +1,50 @@
-import React, {useCallback, useRef, useState} from "react";
+import React, {useRef, useState} from "react";
 import {TextField as MuiTextField, TextFieldProps as MuiTextFieldProps} from "@mui/material";
 
-type TextFieldProps = Omit<MuiTextFieldProps, "onChange"> & {
-    onChange?: (value: string) => any;
+type TextFieldProps = Omit<MuiTextFieldProps, "inputRef" | "onChange"> & {
+    onChange?: (value: string, e: React.ChangeEvent<HTMLInputElement>) => any;
     validate?: (value: string) => string | undefined;
 }
 
 export function TextField({onChange, validate, onBlur, helperText, ...props}: TextFieldProps) {
     const input = useRef<HTMLInputElement | undefined>();
-    const [wasValidated, setWasValidated] = useState(0);
+    const [validationCount, setValidationCount] = useState(0);
 
-    const incWasValidated = useCallback(() => setWasValidated(v => v + 1), []);
+    const incValidationCount = () => setValidationCount(v => v + 1);
+    const wasValidated = validationCount > 0;
 
-    const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const error = (validationCount > 0) && input.current != null && !input.current.validity.valid;
+
+    function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         const {value} = e.currentTarget;
-        onChange && onChange(value);
-
-        if (wasValidated > 0 && input.current && validate) {
-            input.current.setCustomValidity(validate(value) || "");
-            incWasValidated();
+        if (onChange) {
+            onChange(value, e);
         }
-    }, [onChange, wasValidated]);
+        if (wasValidated) {
+            if (input.current && validate) {
+                input.current.setCustomValidity(validate(value) || "");
+            }
+            incValidationCount();
+        }
+    }
 
-    const handleBlur = useCallback(e => {
+    function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
         const {value} = e.currentTarget;
         if (input.current && validate) {
             input.current.setCustomValidity(validate(value) || "");
-            incWasValidated();
+            incValidationCount();
         }
-        else if (wasValidated > 0) {
-            incWasValidated();
+        else if (validationCount > 0) {
+            incValidationCount();
         }
         onBlur && onBlur(e);
-    }, [onBlur, validate, wasValidated]);
-
-    const error = (wasValidated > 0) && input.current != null && !input.current.validity.valid;
+    }
 
     return (
         <MuiTextField
             {...props}
             onChange={handleChange}
-            onInvalid={incWasValidated}
+            onInvalid={incValidationCount}
             inputRef={input}
             onBlur={handleBlur}
             error={error}

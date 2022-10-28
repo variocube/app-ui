@@ -11,7 +11,12 @@ export function Inputs() {
             <Box sx={{mb: 4}}>
                 <Typography variant="h2" gutterBottom>Text field</Typography>
                 <Typography variant="body1" gutterBottom>
-                    Wraps a Mui <code>TextField</code>
+                    Wraps a Mui <code>TextField</code> that provides the current value as the first argument
+                    to the <code>onChange</code> handler. The event is provided as the second argument.
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                    It also displays errors from HTML5 form validation and allows for a
+                    custom <code>validate</code> function.
                 </Typography>
                 <TextFieldDemo/>
             </Box>
