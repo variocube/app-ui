@@ -1,4 +1,4 @@
-import {Box, Card, CardContent, Container, Typography} from "@mui/material";
+import {Box, Button, Card, CardActions, CardContent, Container, Stack, Typography} from "@mui/material";
 import React, {useState} from "react";
 import {TextField, Checkbox, Selector} from "../../src";
 
@@ -37,12 +37,57 @@ export function Inputs() {
 }
 
 function TextFieldDemo() {
-    const [value, setValue] = useState("");
+    const [text, setText] = useState("");
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => e.preventDefault();
     return (
         <Card>
-            <CardContent>
-                <TextField label="Text field" value={value} onChange={setValue}/>
-            </CardContent>
+            <form onSubmit={handleSubmit}>
+                <CardContent>
+                    <Stack spacing={2}>
+                        <TextField
+                            label="Text field"
+                            value={text}
+                            onChange={setText}
+                        />
+                        <TextField
+                            label="E-mail field"
+                            type="email"
+                        />
+                        <TextField
+                            label="Required field"
+                            required
+                        />
+                        <TextField
+                            label="Pattern field"
+                            required
+                            inputProps={{
+                                pattern: "[a-z][0-9]+"
+                            }}
+                            helperText={"Enter one lowercase letter followed by one or more digits"}
+                        />
+                        <TextField
+                            label="Min/max length field"
+                            required
+                            inputProps={{
+                                minLength: 3,
+                                maxLength: 7
+                            }}
+                            helperText={"Enter from 3 to 7 chars."}
+                        />
+                        <TextField
+                            label="Custom validation"
+                            required
+                            helperText="Please enter the value `foo`."
+                            validate={value => value != "foo" ? "You have to enter `foo`." : undefined}
+                        />
+                    </Stack>
+                </CardContent>
+                <CardActions>
+                    <Button color="primary" type="submit">
+                        Submit
+                    </Button>
+                </CardActions>
+            </form>
         </Card>
     );
 }
