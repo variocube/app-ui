@@ -1,4 +1,4 @@
-import {Box, Button, Card, CardActions, CardContent, Container, Stack, Typography} from "@mui/material";
+import {Box, Button, Card, CardActions, CardContent, Container, MenuItem, Stack, Typography} from "@mui/material";
 import React, {useState} from "react";
 import {TextField, Checkbox, Selector} from "../../src";
 
@@ -85,6 +85,17 @@ function TextFieldDemo() {
                             helperText="Please enter the value `foo`."
                             validate={value => value != "foo" ? "You have to enter `foo`." : undefined}
                         />
+                        <TextField
+                            label="Select"
+                            select
+                            required
+                            helperText="Please choose an option"
+                            validate={value => value != "option2" ? "You have to select `Option 2`." : undefined}
+                        >
+                            <MenuItem value="option1">Option 1</MenuItem>
+                            <MenuItem value="option2">Option 2</MenuItem>
+                            <MenuItem value="option3">Option 3</MenuItem>
+                        </TextField>
                     </Stack>
                 </CardContent>
                 <CardActions>
@@ -112,13 +123,46 @@ function SelectorDemo() {
     const [value, setValue] = useState("");
     return (
         <Card>
-            <CardContent>
-                <Selector label="Selector" value={value} onChange={setValue} options={[
-                    {label: "Green", value: "green"},
-                    {label: "Red", value: "red"},
-                    {label: "Blue", value: "blue"}
-                ]}/>
-            </CardContent>
+            <form onSubmit={e => e.preventDefault()}>
+                <CardContent>
+                    <Stack spacing={2}>
+                        <Selector
+                            label="Color"
+                            value={value}
+                            onChange={setValue}
+                            options={[
+                                {label: "Green", value: "green"},
+                                {label: "Red", value: "red"},
+                                {label: "Blue", value: "blue"}
+                            ]}
+                        />
+                        <Selector
+                            label="Required color"
+                            required
+                            options={[
+                                {label: "Green", value: "green"},
+                                {label: "Red", value: "red"},
+                                {label: "Blue", value: "blue"}
+                            ]}
+                        />
+                        <Selector
+                            label="Validated color"
+                            required
+                            validate={value => value != "red" ? "You have to select `red`." : undefined}
+                            options={[
+                                {label: "Green", value: "green"},
+                                {label: "Red", value: "red"},
+                                {label: "Blue", value: "blue"}
+                            ]}
+                        />
+                    </Stack>
+                </CardContent>
+                <CardActions>
+                    <Button type="submit" color="primary">
+                        Submit
+                    </Button>
+                </CardActions>
+            </form>
         </Card>
     );
 }
