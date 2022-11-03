@@ -12,3 +12,4 @@ export * from "./formats";
 export * from "./storage";
 export * from "./AppShell";
 export * from "./splash";
+export * from "./breadcrumbs";

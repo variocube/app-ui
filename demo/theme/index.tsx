@@ -13,7 +13,7 @@ import {
     Typography
 } from "@mui/material";
 import React from "react";
-import {ThemeModeSwitcher} from "../../src";
+import {Breadcrumbs, BreadcrumbItem, BreadcrumbLink, ThemeModeSwitcher} from "../../src";
 
 
 export function Theme() {
@@ -26,7 +26,7 @@ export function Theme() {
                 The mode is automatically selected, but can be overridden with <code>ThemeModeSwitcher</code>.
             </Typography>
 
-            <Stack spacing={2}>
+            <Stack spacing={2} sx={{marginBottom: 2}}>
                 <Card>
                     <CardContent>
                         <Stack direction="row" spacing={2}>
@@ -62,6 +62,28 @@ export function Theme() {
                 </Alert>
             </Stack>
 
+            <Typography variant="h2" gutterBottom>
+                Breadcrumbs
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+                For consistent styling of breadcrumbs use the following components from @variocube/app-ui.
+                <ul>
+                    <li>Use <code>Breadcrumbs</code> as container.</li>
+                    <li>Use <code>BreadcrumbLink</code> for breadcrumbs that are a link.</li>
+                    <li>Use <code>BreadcrumbItem</code> for the current location.</li>
+                </ul>
+            </Typography>
+            <Card>
+                <CardContent>
+                    <Breadcrumbs>
+                        <BreadcrumbLink href="/shows">Shows</BreadcrumbLink>
+                        <BreadcrumbLink href="/shows/rick-and-morty">Rick and Morty</BreadcrumbLink>
+                        <BreadcrumbLink href="/shows/rick-and-morty/seasons">Seasons</BreadcrumbLink>
+                        <BreadcrumbLink href="/shows/rick-and-morty/seasons/S01">S01</BreadcrumbLink>
+                        <BreadcrumbItem>Episodes</BreadcrumbItem>
+                    </Breadcrumbs>
+                </CardContent>
+            </Card>
 
         </Container>
     );
