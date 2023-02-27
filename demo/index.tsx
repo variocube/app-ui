@@ -17,9 +17,10 @@ import {
     Typography
 } from "@mui/material";
 import {useLocation} from "react-router";
-import {CalendarMonth, Edit, GitHub, Language, Palette, SvgIconComponent, ViewList} from "@mui/icons-material";
+import {CalendarMonth, Edit, GitHub, Language, Palette, SvgIconComponent, ViewList, Error} from "@mui/icons-material";
 import {Inputs} from "./inputs";
 import {Theme} from "./theme";
+import {DemoError} from "./error";
 
 function Demo() {
     return (
@@ -32,6 +33,7 @@ function Demo() {
                     <Route path="date-pickers" element={<Pickers/>}/>
                     <Route path="content-table" element={<ContentTableDemo/>}/>
                     <Route path="inputs" element={<Inputs/>}/>
+                    <Route path="error" element={<DemoError/>}/>
                 </Route>
             </Routes>
         </BrowserRouter>
@@ -92,6 +94,7 @@ const MenuItems: MenuItemProps[] = [
     {text: "Date & time pickers", to: "/date-pickers", icon: CalendarMonth},
     {text: "Content table", to: "/content-table", icon: ViewList},
     {text: "Inputs", to: "/inputs", icon: Edit},
+    {text: "Error", to: "/error", icon: Error},
 ]
 
 function SideNavListItem({icon: Icon, text, to}: MenuItemProps) {

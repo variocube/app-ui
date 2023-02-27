@@ -1,6 +1,6 @@
 {
   "name": "@variocube/app-ui",
-  "version": "1.0.0-alpha.15",
+  "version": "1.0.0-alpha.16",
   "description": "Common UI components for Variocube applications.",
   "module": "esm/index.js",
   "types": "esm/index.d.ts",
@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@js-temporal/polyfill": "^0.4.1",
+    "error-stack-parser": "^2.1.4",
     "roboto-fontface": "^0.10.0"
   },
   "devDependencies": {
