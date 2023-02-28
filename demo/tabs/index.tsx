@@ -39,7 +39,7 @@ export function TabsDemo() {
                 <Box mb={2}>
                     <Alert severity="warning">
                         <AlertTitle>Using vertical tabs is discouraged.</AlertTitle>
-                        White vertical tabs are supported by Mui and work with `app-ui`, their use
+                        While vertical tabs are supported by Mui and work with `app-ui`, their use
                         is discouraged, because the tabs are center aligned, which does not look very
                         clean.
                     </Alert>
