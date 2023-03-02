@@ -19,19 +19,23 @@ type StackTrace = {
 }
 
 type BugsnagConfig = {
+    /**
+     * API Key provided by Bugsnag
+     */
     apiKey: string,
-    notifierName: string,
-}
 
-type Props = {
     /**
      * Method to retrieve user data such as Id, Name or Email
      */
     getUser: () => { id?: string, name?: string, email?: string },
+}
+
+type Props = {
     /**
      * List of storage key patterns which values should be anonymized
      */
     anonymizeStorageKeyPatterns?: string[],
+
     /**
      * Bugsnag configuration
      */
@@ -94,7 +98,7 @@ export class ErrorBoundary extends Component<Props, States> {
             console.warn('Error context not specified. Cannot report to bugsnag.');
             return;
         }
-        const {bugsnagConfig: {apiKey, notifierName}, getUser} = this.props;
+        const {bugsnagConfig: {apiKey, getUser}} = this.props;
         const {error, url, referrer, userAgent} = ErrorBoundary.errorContext;
         const stackTraces: StackTrace[] = ErrorStackParser.parse(error)
             .map(({fileName: file, lineNumber, columnNumber, functionName: method}) => ({
@@ -107,7 +111,7 @@ export class ErrorBoundary extends Component<Props, States> {
             apiKey,
             payloadVersion: '5',
             notifier: {
-                name: notifierName,
+                name: "variocube app-ui",
                 version: '1.0.11',
                 url: 'https://github.com'
             },
