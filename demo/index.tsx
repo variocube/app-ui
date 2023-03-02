@@ -3,13 +3,12 @@ import {BrowserRouter, Link, Outlet, Route, Routes} from "react-router-dom";
 import {ContentTableDemo} from "./content-table";
 import {Localization} from "./localization";
 import {Pickers} from "./date-pickers";
-import {AppShell, VCThemeProvider, render} from "../src";
+import {AppShell, VCThemeProvider, render, UserNav} from "../src";
 import {
     Box,
     Button,
     Container,
     Grid,
-    IconButton,
     List,
     ListItemButton,
     ListItemIcon,
@@ -58,9 +57,15 @@ function App() {
 
 function TopNav() {
     return (
-        <IconButton component="a" href="https://github.com/variocube/app-ui" target="_blank" edge="end">
-            <GitHub/>
-        </IconButton>
+        <UserNav
+            onSettingClick={() => {}}
+            onChangePasswordClick={() => {}}
+            onLogoutClick={() => {}}
+            showDarkModeSwitch
+            i18n={{
+                settings: 'Einstellungen'
+            }}
+        />
     )
 }
 
