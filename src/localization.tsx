@@ -3,6 +3,7 @@ import {createContext, PropsWithChildren, useCallback, useContext, useEffect, us
 import Mustache from "mustache";
 import {useStorage} from "./storage";
 import {getNavigatorLanguages} from "./getNavigatorLanguages";
+import deepmerge from "deepmerge";
 
 /**
  * Type for a message object (content of a translation file).
@@ -90,6 +91,12 @@ interface LocalizationContextType<T extends MessageObject> {
     fallbackMessages: T | undefined;
 }
 
+interface LocalizationProviderProps<T extends MessageObject> {
+    language: string | null;
+    onChangeLanguage: SetLanguageFunc;
+    overrides?: Record<string, Partial<T>>;
+}
+
 /**
  * The key in the browser's storage, where the user-selected language is stored.
  */
@@ -139,16 +146,17 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
     /**
      * Localization provider component.
      */
-    const LocalizationProvider = ({children}: PropsWithChildren<{}>) => {
+    const LocalizationProvider = (props: PropsWithChildren<LocalizationProviderProps<T>>) => {
 
-        // The user defined language, or null if user did not manually select a language
-        const [userDefinedLanguage, setUserDefinedLanguage] = useStorage<string | null>(LANGUAGE_STORAGE_KEY, null);
+        const {children, language, onChangeLanguage, overrides} = props;
+
+        const [loaded, setLoaded] = useState<{messages: T, language: string}>();
 
         // The context value
         const [value, setValue] = useState<LocalizationContextType<T>>({
             messages: undefined,
             language: fallback,
-            setLanguage: setUserDefinedLanguage,
+            setLanguage: onChangeLanguage,
             fallbackMessages: undefined,
         });
 
@@ -161,12 +169,26 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
             }
         }, []);
 
-        // Loads the best matching language and updates the context value.
+        // Loads the best matching language and stores the result in `loaded`.
         useEffect(() => {
-            loadBestMatch([userDefinedLanguage, ...getNavigatorLanguages(), fallback])
-                .then(loaded => setValue(v => ({...v, ...loaded})))
+            loadBestMatch([language, ...getNavigatorLanguages(), fallback])
+                .then(setLoaded)
                 .catch(error => console.error(error));
-        }, [userDefinedLanguage]);
+        }, [language]);
+
+        // Update context value when `loaded` or `overrides` change.
+        useEffect(() => {
+            if (loaded) {
+                const {language, messages} = loaded;
+
+                setValue(v => ({
+                    ...v,
+                    language,
+                    messages: deepmerge(messages, (overrides && overrides[language]) ?? {})
+                }));
+            }
+        }, [overrides, loaded]);
+
 
         return (
             <LocalizationContext.Provider value={value}>
@@ -174,6 +196,26 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
             </LocalizationContext.Provider>
         );
     }
+
+    /**
+     * Localization provider that stores the current language in the local storage.
+     */
+    const StorageLocalizationProvider = ({children, overrides}: PropsWithChildren<Pick<LocalizationProviderProps<T>, "overrides">>) => {
+        // The user defined language, or null if user did not manually select a language
+        const [userDefinedLanguage, setUserDefinedLanguage] = useStorage<string | null>(LANGUAGE_STORAGE_KEY, null);
+
+        return (
+          <LocalizationProvider
+            language={userDefinedLanguage}
+            onChangeLanguage={setUserDefinedLanguage}
+            overrides={overrides}
+          >
+              {children}
+          </LocalizationProvider>
+        )
+    }
+
+
 
     /**
      * Returns accessors to the currently used language.
@@ -214,6 +256,7 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
 
     return {
         LocalizationProvider,
+        StorageLocalizationProvider,
         useLocalization,
     }
 }
@@ -315,4 +358,3 @@ function getKey<T extends MessageObject>(obj: T, key: string) {
     return key.split('.')
         .reduce((obj, key) => obj && obj[key] as any, obj) as any as (string | MessageObject | undefined);
 }
-

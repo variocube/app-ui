@@ -34,44 +34,53 @@ import {
     ZonedDateTime,
 } from "../../src";
 
-const {LocalizationProvider, useLocalization} = createLocalizationContext<typeof import("./en.json")>({
+const {StorageLocalizationProvider, useLocalization} = createLocalizationContext<typeof import("./en.json")>({
     load: language => import(`./${language}.json`),
     fallback: "en"
 });
 
-export const Localization = () => (
-    <Container>
-        <Typography variant="h1" gutterBottom>Localization</Typography>
+export function Localization() {
 
-        <Box my={4}>
-            <Typography variant="h2" gutterBottom>Translations</Typography>
+    const overrides = {
+        de: {
+            overriddenInDe: "Ich bin der Kunde und ich will es anders."
+        }
+    }
 
-            <LocalizationProvider>
-                <TranslationDemo/>
-            </LocalizationProvider>
-        </Box>
+    return (
+        <Container>
+            <Typography variant="h1" gutterBottom>Localization</Typography>
 
-        <Box my={4}>
-            <Typography variant="h2" gutterBottom>Number formats</Typography>
-            <Typography variant="body1" gutterBottom>
-                Display numbers according to the user's locale settings.
-            </Typography>
+            <Box my={4}>
+                <Typography variant="h2" gutterBottom>Translations</Typography>
 
-            <NumberDemo/>
+                <StorageLocalizationProvider overrides={overrides}>
+                    <TranslationDemo/>
+                </StorageLocalizationProvider>
+            </Box>
 
-        </Box>
+            <Box my={4}>
+                <Typography variant="h2" gutterBottom>Number formats</Typography>
+                <Typography variant="body1" gutterBottom>
+                    Display numbers according to the user's locale settings.
+                </Typography>
 
-        <Box my={4}>
-            <Typography variant="h2" gutterBottom>Date & time formats</Typography>
-            <Typography variant="body1" gutterBottom>
-                Display dates & times according to the user's locale settings.
-            </Typography>
+                <NumberDemo/>
 
-            <DateTimeDemo/>
-        </Box>
+            </Box>
 
-    </Container>
-);
+            <Box my={4}>
+                <Typography variant="h2" gutterBottom>Date & time formats</Typography>
+                <Typography variant="body1" gutterBottom>
+                    Display dates & times according to the user's locale settings.
+                </Typography>
+
+                <DateTimeDemo/>
+            </Box>
+
+        </Container>
+    );
+}
 
 export function TranslationDemo() {
     const {t, e, language, setLanguage} = useLocalization();
@@ -106,6 +115,10 @@ export function TranslationDemo() {
                     <TableRow>
                         <TableCell><code>e("state", "pending")</code></TableCell>
                         <TableCell>{e("state", "pending")}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell><code>t("overriddenInDe")</code></TableCell>
+                        <TableCell>{t("overriddenInDe")}</TableCell>
                     </TableRow>
                 </TableBody>
             </Table>

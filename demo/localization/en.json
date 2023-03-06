@@ -10,5 +10,6 @@
     "pending": "pending",
     "succeeded": "succeeded",
     "failed": "failed"
-  }
+  },
+  "overriddenInDe": "This is a default text."
 }
