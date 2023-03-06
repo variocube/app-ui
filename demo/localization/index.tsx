@@ -34,7 +34,7 @@ import {
     ZonedDateTime,
 } from "../../src";
 
-const {LocalizationProvider, useLocalization} = createLocalizationContext<typeof import("./en.json")>({
+const {StorageLocalizationProvider, useLocalization} = createLocalizationContext<typeof import("./en.json")>({
     load: language => import(`./${language}.json`),
     fallback: "en"
 });
@@ -46,9 +46,9 @@ export const Localization = () => (
         <Box my={4}>
             <Typography variant="h2" gutterBottom>Translations</Typography>
 
-            <LocalizationProvider>
+            <StorageLocalizationProvider>
                 <TranslationDemo/>
-            </LocalizationProvider>
+            </StorageLocalizationProvider>
         </Box>
 
         <Box my={4}>

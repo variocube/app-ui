@@ -90,6 +90,12 @@ interface LocalizationContextType<T extends MessageObject> {
     fallbackMessages: T | undefined;
 }
 
+interface LocalizationProviderProps<T extends MessageObject> {
+    language: string | null;
+    onChangeLanguage: SetLanguageFunc;
+    overrides?: Record<string, T>;
+}
+
 /**
  * The key in the browser's storage, where the user-selected language is stored.
  */
@@ -139,16 +145,17 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
     /**
      * Localization provider component.
      */
-    const LocalizationProvider = ({children}: PropsWithChildren<{}>) => {
+    const LocalizationProvider = (props: PropsWithChildren<LocalizationProviderProps<T>>) => {
 
-        // The user defined language, or null if user did not manually select a language
-        const [userDefinedLanguage, setUserDefinedLanguage] = useStorage<string | null>(LANGUAGE_STORAGE_KEY, null);
+        const {children, language, onChangeLanguage, overrides} = props;
+
+        const [loaded, setLoaded] = useState<{messages: T, language: string}>();
 
         // The context value
         const [value, setValue] = useState<LocalizationContextType<T>>({
             messages: undefined,
             language: fallback,
-            setLanguage: setUserDefinedLanguage,
+            setLanguage: onChangeLanguage,
             fallbackMessages: undefined,
         });
 
@@ -161,12 +168,25 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
             }
         }, []);
 
-        // Loads the best matching language and updates the context value.
+        // Loads the best matching language and stores the result in `loaded`.
         useEffect(() => {
-            loadBestMatch([userDefinedLanguage, ...getNavigatorLanguages(), fallback])
-                .then(loaded => setValue(v => ({...v, ...loaded})))
+            loadBestMatch([language, ...getNavigatorLanguages(), fallback])
+                .then(setLoaded)
                 .catch(error => console.error(error));
-        }, [userDefinedLanguage]);
+        }, [language]);
+
+        // Update context value when `loaded` or `overrides` change.
+        useEffect(() => {
+            if (loaded) {
+                const {language, messages} = loaded;
+                setValue(v => ({
+                    ...v,
+                    language,
+                    messages: mergeDeep(messages, overrides && overrides[language])
+                }));
+            }
+        }, [overrides, loaded]);
+
 
         return (
             <LocalizationContext.Provider value={value}>
@@ -174,6 +194,25 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
             </LocalizationContext.Provider>
         );
     }
+
+    /**
+     * Localization provider that stores the current language in the local storage.
+     */
+    const StorageLocalizationProvider = ({children}: PropsWithChildren<{}>) => {
+        // The user defined language, or null if user did not manually select a language
+        const [userDefinedLanguage, setUserDefinedLanguage] = useStorage<string | null>(LANGUAGE_STORAGE_KEY, null);
+
+        return (
+          <LocalizationProvider
+            language={userDefinedLanguage}
+            onChangeLanguage={setUserDefinedLanguage}
+          >
+              {children}
+          </LocalizationProvider>
+        )
+    }
+
+
 
     /**
      * Returns accessors to the currently used language.
@@ -214,6 +253,7 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
 
     return {
         LocalizationProvider,
+        StorageLocalizationProvider,
         useLocalization,
     }
 }
@@ -316,3 +356,24 @@ function getKey<T extends MessageObject>(obj: T, key: string) {
         .reduce((obj, key) => obj && obj[key] as any, obj) as any as (string | MessageObject | undefined);
 }
 
+function mergeDeep(target: any, ...sources: any): any {
+    if (!sources.length) return target;
+    const source = sources.shift();
+
+    if (isObject(target) && isObject(source)) {
+        for (const key in source) {
+            if (isObject(source[key])) {
+                if (!target[key]) Object.assign(target, { [key]: {} });
+                mergeDeep(target[key], source[key]);
+            } else {
+                Object.assign(target, { [key]: source[key] });
+            }
+        }
+    }
+
+    return mergeDeep(target, ...sources);
+}
+
+function isObject(item: any): boolean {
+    return (item && typeof item === 'object' && !Array.isArray(item));
+}
