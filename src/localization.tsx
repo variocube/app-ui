@@ -3,6 +3,7 @@ import {createContext, PropsWithChildren, useCallback, useContext, useEffect, us
 import Mustache from "mustache";
 import {useStorage} from "./storage";
 import {getNavigatorLanguages} from "./getNavigatorLanguages";
+import deepmerge from "deepmerge";
 
 /**
  * Type for a message object (content of a translation file).
@@ -93,7 +94,7 @@ interface LocalizationContextType<T extends MessageObject> {
 interface LocalizationProviderProps<T extends MessageObject> {
     language: string | null;
     onChangeLanguage: SetLanguageFunc;
-    overrides?: Record<string, T>;
+    overrides?: Record<string, Partial<T>>;
 }
 
 /**
@@ -179,10 +180,11 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
         useEffect(() => {
             if (loaded) {
                 const {language, messages} = loaded;
+
                 setValue(v => ({
                     ...v,
                     language,
-                    messages: mergeDeep(messages, overrides && overrides[language])
+                    messages: deepmerge(messages, (overrides && overrides[language]) ?? {})
                 }));
             }
         }, [overrides, loaded]);
@@ -198,7 +200,7 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
     /**
      * Localization provider that stores the current language in the local storage.
      */
-    const StorageLocalizationProvider = ({children}: PropsWithChildren<{}>) => {
+    const StorageLocalizationProvider = ({children, overrides}: PropsWithChildren<Pick<LocalizationProviderProps<T>, "overrides">>) => {
         // The user defined language, or null if user did not manually select a language
         const [userDefinedLanguage, setUserDefinedLanguage] = useStorage<string | null>(LANGUAGE_STORAGE_KEY, null);
 
@@ -206,6 +208,7 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
           <LocalizationProvider
             language={userDefinedLanguage}
             onChangeLanguage={setUserDefinedLanguage}
+            overrides={overrides}
           >
               {children}
           </LocalizationProvider>
@@ -354,26 +357,4 @@ function getString<T extends MessageObject>(obj: T, key: Leaves<T>) {
 function getKey<T extends MessageObject>(obj: T, key: string) {
     return key.split('.')
         .reduce((obj, key) => obj && obj[key] as any, obj) as any as (string | MessageObject | undefined);
-}
-
-function mergeDeep(target: any, ...sources: any): any {
-    if (!sources.length) return target;
-    const source = sources.shift();
-
-    if (isObject(target) && isObject(source)) {
-        for (const key in source) {
-            if (isObject(source[key])) {
-                if (!target[key]) Object.assign(target, { [key]: {} });
-                mergeDeep(target[key], source[key]);
-            } else {
-                Object.assign(target, { [key]: source[key] });
-            }
-        }
-    }
-
-    return mergeDeep(target, ...sources);
-}
-
-function isObject(item: any): boolean {
-    return (item && typeof item === 'object' && !Array.isArray(item));
 }

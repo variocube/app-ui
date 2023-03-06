@@ -25,7 +25,8 @@
   },
   "dependencies": {
     "@js-temporal/polyfill": "^0.4.1",
-    "roboto-fontface": "^0.10.0"
+    "roboto-fontface": "^0.10.0",
+    "deepmerge": "^4.3.0"
   },
   "devDependencies": {
     "@emotion/react": "^11.9.0",

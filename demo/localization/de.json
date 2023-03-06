@@ -10,5 +10,6 @@
     "pending": "in Verarbeitung",
     "succeeded": "erfolgreich",
     "failed": "fehlgeschlagen"
-  }
+  },
+  "overriddenInDe": "Das ist ein Standardtext."
 }
