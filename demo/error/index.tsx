@@ -14,12 +14,11 @@ export function DemoError() {
     return (
         <Container maxWidth="md">
             <ErrorBoundary
-                getUser={getUser}
-                // logistics api key in bugsnag
-                // bugsnagConfig={{
-                //     apiKey: '085401950bf014c07f680aea32aa2ede',
-                //     notifierName: 'logistics error boundary'
-                // }}
+                bugsnagConfig={{
+                    // logistics api key in bugsnag
+                    apiKey: '085401950bf014c07f680aea32aa2ede',
+                    getUser
+                }}
                 anonymizeStorageKeyPatterns={['auth', 'credentials']}
             >
                 <ErrorContent />

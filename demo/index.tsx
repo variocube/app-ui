@@ -12,7 +12,7 @@ import {
     List,
     ListItemButton,
     ListItemIcon,
-    ListItemText,
+    ListItemText, Paper,
     Typography
 } from "@mui/material";
 import {useLocation} from "react-router";
@@ -21,6 +21,9 @@ import {Inputs} from "./inputs";
 import {Theme} from "./theme";
 import {TabsDemo} from "./tabs";
 import {DemoError} from "./error";
+import {ContainerSettingsContextProvider} from "../src/container/ContainerSettingsContext";
+import {ContainerWidthControl} from "../src/container/ContainerWidthControl";
+import {ContainerLayout} from "../src/container/ContainerLayout";
 
 function Demo() {
     return (
@@ -35,6 +38,7 @@ function Demo() {
                     <Route path="inputs" element={<Inputs/>}/>
                     <Route path="error" element={<DemoError/>}/>
                     <Route path="tabs" element={<TabsDemo/>}/>
+                    <Route path="container" element={<ContainerDemo/>}/>
                 </Route>
             </Routes>
         </BrowserRouter>
@@ -150,6 +154,25 @@ function MenuCardItem({icon: Icon, text, to}: MenuItemProps) {
                 {text}
             </Button>
         </Grid>
+    )
+}
+
+function ContainerDemo() {
+    return (
+        <ContainerSettingsContextProvider>
+            <ContainerLayout>
+                <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                        <Paper>
+                            <Typography variant="h1" gutterBottom>Container with a Paper</Typography>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <ContainerWidthControl />
+                    </Grid>
+                </Grid>
+            </ContainerLayout>
+        </ContainerSettingsContextProvider>
     )
 }
 
