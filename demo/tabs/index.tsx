@@ -28,6 +28,7 @@ export function TabsDemo() {
                     <Tab label="First" icon={<TabIcon/>} />
                     <Tab label="Second" icon={<TabIcon/>} />
                     <Tab label="Third" icon={<TabIcon/>} />
+                    <Tab label="Fourth" icon={<TabIcon/>} />
                 </Tabs>
                 <Box sx={{display: "flex", justifyContent: "center", alignItems: "center", background: "rgba(128, 128, 128, 0.25)", height: 160}}>
                     <Box>This is tab #{tab}</Box>
@@ -49,6 +50,7 @@ export function TabsDemo() {
                         <Tab label="First" icon={<TabIcon/>} />
                         <Tab label="Second" icon={<TabIcon/>} />
                         <Tab label="Third" icon={<TabIcon/>} />
+                        <Tab label="Fourth" icon={<TabIcon/>} />
                     </Tabs>
                     <Box sx={{flex: 1, display: "flex", justifyContent: "center", alignItems: "center", background: "rgba(128, 128, 128, 0.25)"}}>
                         <Box>This is tab #{tab}</Box>
