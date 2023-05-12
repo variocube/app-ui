@@ -8,7 +8,6 @@ import {HelpDrawer} from "../help/HelpDrawer";
 interface ContainerLayoutProps extends PropsWithChildren<any> {
 	fixedWidth?: Breakpoint | false;
 	margin?: number;
-	helpKey?: string;
 }
 
 export function ContainerLayout({children, fixedWidth, margin, helpKey}: ContainerLayoutProps) {
@@ -30,7 +29,7 @@ export function ContainerLayout({children, fixedWidth, margin, helpKey}: Contain
 			>
 				{children}
 				{baseUrl &&
-					<HelpDrawer helpKey={helpKey} />
+					<HelpDrawer />
 				}
 			</Box>
 			<Box id="containerLayoutBoxPrint" display="none" displayPrint="block" style={{marginTop: "-32px"}}>

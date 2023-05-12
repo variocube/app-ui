@@ -24,7 +24,7 @@ import {
     SvgIconComponent,
     ViewList,
     Tab,
-    Error
+    Error, Help, AspectRatio
 } from "@mui/icons-material";
 import {Inputs} from "./inputs";
 import {Theme} from "./theme";
@@ -118,7 +118,9 @@ const MenuItems: MenuItemProps[] = [
     {text: "Content table", to: "/content-table", icon: ViewList},
     {text: "Inputs", to: "/inputs", icon: Edit},
     {text: "Error", to: "/error", icon: Error},
-    {text: "Tabs", to: "/tabs", icon: Tab}
+    {text: "Container", to: "/container", icon: Tab},
+    {text: "Tabs", to: "/tabs", icon: AspectRatio},
+    {text: "Help", to: "/help", icon: Help}
 ]
 
 function SideNavListItem({icon: Icon, text, to}: MenuItemProps) {

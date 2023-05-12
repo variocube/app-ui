@@ -5,7 +5,6 @@ import {useCallback, useMemo} from "react";
 import {Close, OpenInNew} from "@mui/icons-material";
 
 interface HelpDrawerProps {
-    helpKey?: string;
 }
 
 export function HelpDrawer(props: HelpDrawerProps) {
