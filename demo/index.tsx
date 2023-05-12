@@ -16,7 +16,16 @@ import {
     Typography
 } from "@mui/material";
 import {useLocation} from "react-router";
-import {CalendarMonth, Edit, GitHub, Language, Palette, SvgIconComponent, ViewList, Tab, Error} from "@mui/icons-material";
+import {
+    CalendarMonth,
+    Edit,
+    Language,
+    Palette,
+    SvgIconComponent,
+    ViewList,
+    Tab,
+    Error
+} from "@mui/icons-material";
 import {Inputs} from "./inputs";
 import {Theme} from "./theme";
 import {TabsDemo} from "./tabs";
@@ -24,6 +33,8 @@ import {DemoError} from "./error";
 import {ContainerSettingsContextProvider} from "../src/container/ContainerSettingsContext";
 import {ContainerWidthControl} from "../src/container/ContainerWidthControl";
 import {ContainerLayout} from "../src/container/ContainerLayout";
+import {HelpSettingsContextProvider} from "../src/help/HelpSettingsContext";
+import {HelpButton} from "../src/help/HelpButton";
 
 function Demo() {
     return (
@@ -39,6 +50,7 @@ function Demo() {
                     <Route path="error" element={<DemoError/>}/>
                     <Route path="tabs" element={<TabsDemo/>}/>
                     <Route path="container" element={<ContainerDemo/>}/>
+                    <Route path="help" element={<HelpDemo/>}/>
                 </Route>
             </Routes>
         </BrowserRouter>
@@ -172,6 +184,37 @@ function ContainerDemo() {
                     </Grid>
                 </Grid>
             </ContainerLayout>
+        </ContainerSettingsContextProvider>
+    )
+}
+
+function HelpDemo() {
+    return (
+        <ContainerSettingsContextProvider>
+        <HelpSettingsContextProvider baseUrl="https://de.wikipedia.org/wiki/">
+            <ContainerLayout>
+                <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                        <Paper>
+                            <Grid container spacing={3}>
+                                <Grid item xs={12}>
+                                    <Typography variant="h1" gutterBottom>Help Demo</Typography>
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <Typography variant="body1">
+                                        This is some test text
+                                        <HelpButton helpKey="Automobil" />
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <ContainerWidthControl />
+                    </Grid>
+                </Grid>
+            </ContainerLayout>
+        </HelpSettingsContextProvider>
         </ContainerSettingsContextProvider>
     )
 }

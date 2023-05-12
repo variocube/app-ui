@@ -1,5 +1,14 @@
 import * as React from "react";
-import {createElement, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState} from "react";
+import {
+    createContext,
+    createElement,
+    PropsWithChildren,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState
+} from "react";
 import {Breakpoint} from "@mui/system";
 
 type ContainerWidth = Breakpoint | 'max';
@@ -29,7 +38,7 @@ const emptyContext: ContainerSettingsContextData = {
     setWidth: (width: ContainerWidth) => console.error(`Empty context should not call setWidth(${width}), you most likely do not have <ContainerSettingsContextProvider/> in your component tree.`)
 };
 
-const ContainerSettingsContext = React.createContext(emptyContext);
+const ContainerSettingsContext = createContext(emptyContext);
 
 export function ContainerSettingsContextProvider({children}: PropsWithChildren<any>) {
     const [width, setWidth] = useState<ContainerWidth | undefined>(undefined);
@@ -41,7 +50,6 @@ export function ContainerSettingsContextProvider({children}: PropsWithChildren<a
     }, []);
 
     const defaultContext = useMemo<ContainerSettingsContextData>(() => {
-        console.log(``)
         return {
             width: width || DEFAULT_WIDTH,
             setWidth: handleSetWidth
