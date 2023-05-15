@@ -15,6 +15,6 @@ export function ContainerWidthControl(props: ContainerWidthControlProps) {
     }, [width]);
 
     return (
-        <Link href="#" underline="hover" onClick={handleChangeContainerWidth} {...props}>{width}</Link>
+        <Link href="#" underline="hover" color="secondary" onClick={handleChangeContainerWidth} {...props}>{width}</Link>
     );
 }
