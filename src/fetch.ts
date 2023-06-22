@@ -10,7 +10,7 @@ export class ApiError extends Error {
  * @param baseUrl The base URL of the API, i.e. https://api.cubeadmin.center
  * @param baseHeaders The base headers of each request, i.e. {Authorization: "Bearer XXXX"}
  */
-export function createApiFetcher(baseUrl: string, baseHeaders: HeadersInit) {
+export function createApiFetcher(baseUrl: string, baseHeaders?: HeadersInit) {
 
     async function fetch(path: string, options?: RequestInit) {
         options = options || {};
