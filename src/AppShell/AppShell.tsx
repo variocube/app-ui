@@ -37,7 +37,7 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
     }, [drawerPermanent]);
 
     return (
-        <Box sx={{display: "flex", flexFlow: "column nowrap", "@media screen": {height: "100vh", overflow: "scroll"}}}>
+        <Box sx={{display: "flex", flexFlow: "column nowrap", "@media screen": {height: "100vh", overflow: "scroll"}, "@media print": { padding:0, margin:0 }}}>
             <AppBar
                 elevation={0}
                 position="static"
