@@ -92,7 +92,6 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
                 flex: "1 1 auto",
                 display: "flex",
                 flexFlow: "row nowrap",
-                displayPrint: "none"
             }}>
                 {sideNav && (
                     <Drawer
