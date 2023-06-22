@@ -15,5 +15,6 @@ export * from "./splash";
 export * from "./breadcrumbs";
 export * from "./tabs";
 export * from "./layout";
+export * from "./fetch";
 export * from "./container";
 export * from "./help";
