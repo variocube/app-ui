@@ -78,7 +78,7 @@ export function createQueryString(...args: Record<string, any>[]) {
     return new URLSearchParams(allArgs).toString();
 }
 
-export function createJsonRequest(method: string, body?: any) {
+export function createJsonRequest(method: string, body?: any): RequestInit {
     return {
         method: method,
         ...getBodyRequestInit(body),
@@ -93,5 +93,10 @@ function getBodyRequestInit(body?: any) {
                 "content-type": "application/json",
             },
         };
+    }
+    else {
+        return {
+            body: null
+        }
     }
 }
