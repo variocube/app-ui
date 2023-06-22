@@ -92,6 +92,7 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
                 flex: "1 1 auto",
                 display: "flex",
                 flexFlow: "row nowrap",
+                displayPrint: "none"
             }}>
                 {sideNav && (
                     <Drawer
@@ -125,7 +126,7 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
                         {sideNav}
                     </Drawer>
                 )}
-                <Box sx={{py: 4, flex: 1}}>
+                <Box sx={{py: 4, flex: 1, "@media print": { padding:0, margin:0 }}}>
                     {children}
                 </Box>
             </Box>
