@@ -1,9 +1,9 @@
-import {Page} from "../Paging";
 import {useEffect, useState} from "react";
 import {DataTablePage} from "./DataTable";
+import {SpringPage} from "../spring";
 
 
-export function useSpringPage<T>(springPage: Page<T> | undefined) {
+export function useSpringPage<T>(springPage: SpringPage<T> | undefined) {
     const [rows, setRows] = useState<T[]>([]);
     const [page, setPage] = useState<DataTablePage>();
 

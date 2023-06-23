@@ -1,10 +1,14 @@
 import {Box, Container, SortDirection, Stack, Typography} from "@mui/material";
 import React, {useMemo, useState} from "react";
-import {DataTable, DataTablePage} from "../../src/data-table/DataTable";
-import {useDataTableStorage} from "../../src/data-table/useDataTableStorage";
-import {useSpringPageable} from "../../src/data-table/useSpringPageable";
-import {useSpringPage} from "../../src/data-table/useSpringPage";
-import {Page, Pageable} from "../../src";
+import {
+    DataTable,
+    DataTablePage,
+    SpringPage,
+    SpringPageable,
+    useDataTableStorage,
+    useSpringPage,
+    useSpringPageable
+} from "../../src";
 import {useAsync} from "react-async-hook";
 
 export function DataTableDemo() {
@@ -22,7 +26,7 @@ export function DataTableDemo() {
                 <EmptyDataTable/>
                 <SortableDataTable/>
                 <PagingDataTable/>
-                <FetchDataTable/>
+                <SpringDataTable/>
             </Stack>
         </Container>
     )
@@ -170,29 +174,23 @@ export function PagingDataTable() {
 }
 
 
-function fakeSpringFetch(pageable: Pageable) {
-    return new Promise<Page<Fruit>>((resolve) => {
+function fakeSpringFetch(pageable: SpringPageable) {
+    return new Promise<SpringPage<Fruit>>((resolve) => {
         setTimeout(() => {
             console.log("pageable", pageable);
+            const {page = 0, size = 10} = pageable;
             resolve({
-                content: fruits.map(fruit => ({...fruit, id: pageable.pageNumber * pageable.pageSize + fruit.id})),
+                content: fruits.map(fruit => ({...fruit, id: page * size + fruit.id})),
                 totalElements: 1000,
-                first: false,
-                last: false,
-                hasContent: true,
-                number: pageable.pageNumber,
-                hasNext: true,
-                hasPrevious: true,
-                numberOfElements: fruits.length,
-                size: pageable.pageSize ?? 10,
-                totalPages: 1000 / pageable.pageSize,
-            } as Page<Fruit>)
+                number: page,
+                size: size,
+            } as SpringPage<Fruit>)
         }, 200);
     });
 }
 
-export function FetchDataTable() {
-    const {onPageChange, onSort, ...storage} = useDataTableStorage("FetchDataTable", {
+export function SpringDataTable() {
+    const {onPageChange, onSort, ...storage} = useDataTableStorage("SpringDataTable", {
         pageSize: 4,
     });
     const pageable = useSpringPageable(storage);
@@ -202,10 +200,11 @@ export function FetchDataTable() {
     return (
         <Box>
             <Typography variant="h2" gutterBottom>
-                Paging data table
+                Spring data table
             </Typography>
             <Typography variant="body1" gutterBottom>
-                This data table emulates fetching from a Spring REST-API.
+                This data table emulates fetching from a Spring REST-API
+                using the <code>Pageable</code> and <code>Page</code> data types.
             </Typography>
             <DataTable
                 columns={[
