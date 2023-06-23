@@ -1,8 +1,12 @@
 import MuiTab, {TabProps} from "@mui/material/Tab";
 import React from "react";
+import {TabTypeMap} from "@mui/material/Tab/Tab";
 
 
-export function Tab(props: TabProps) {
+export function Tab<
+    D extends React.ElementType = TabTypeMap['defaultComponent'],
+    P = {}
+>(props: TabProps<D, P>) {
     const {
         iconPosition = "start",
         sx,

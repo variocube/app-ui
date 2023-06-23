@@ -161,7 +161,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
                                         const Component = component ?? DefaultDataTableCell;
 
                                         return (
-                                            <TableCell align={align}>
+                                            <TableCell key={field} align={align}>
                                                 <Component row={row} field={field}/>
                                             </TableCell>
                                         );

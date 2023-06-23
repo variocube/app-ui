@@ -58,6 +58,23 @@ export function TabsDemo() {
                 </Stack>
             </Box>
 
+            <Box sx={{mb: 4}}>
+                <Typography variant="h2" gutterBottom>Navigation Tabs</Typography>
+                <Box sx={{mb: 4}}>
+                    <Typography variant="body1" gutterBottom>
+                        Tabs can also use the component property to render a link. This can be used in combination
+                        with a router.
+                    </Typography>
+                </Box>
+                <Stack direction="row">
+                    <Tabs>
+                        <Tab label="Variocube" icon={<TabIcon/>} component="a" href="https://variocube.com" />
+                        <Tab label="Onlinegroup" icon={<TabIcon/>} component="a" href="https://onlinegroup.at" />
+                        <Tab label="Clesyclean" icon={<TabIcon/>} component="a" href="https://clesyclean.com" />
+                    </Tabs>
+                </Stack>
+            </Box>
+
         </Container>
     );
 }

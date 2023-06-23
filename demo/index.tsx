@@ -3,7 +3,17 @@ import {BrowserRouter, Link, Outlet, Route, Routes} from "react-router-dom";
 import {ContentTableDemo} from "./content-table";
 import {Localization} from "./localization";
 import {Pickers} from "./date-pickers";
-import {AppShell, VCThemeProvider, render, UserNav} from "../src";
+import {
+    AppShell,
+    ContainerLayout,
+    ContainerSettingsContextProvider,
+    ContainerWidthControl,
+    HelpButton,
+    HelpSettingsContextProvider,
+    render,
+    UserNav,
+    VCThemeProvider
+} from "../src";
 import {
     Box,
     Button,
@@ -12,29 +22,27 @@ import {
     List,
     ListItemButton,
     ListItemIcon,
-    ListItemText, Paper,
+    ListItemText,
+    Paper,
     Typography
 } from "@mui/material";
 import {useLocation} from "react-router";
 import {
+    AspectRatio,
     CalendarMonth,
     Edit,
+    Error,
+    Help,
     Language,
     Palette,
     SvgIconComponent,
-    ViewList,
     Tab,
-    Error, Help, AspectRatio
+    ViewList
 } from "@mui/icons-material";
 import {Inputs} from "./inputs";
 import {Theme} from "./theme";
 import {TabsDemo} from "./tabs";
 import {DemoError} from "./error";
-import {ContainerSettingsContextProvider} from "../src/container/ContainerSettingsContext";
-import {ContainerWidthControl} from "../src/container/ContainerWidthControl";
-import {ContainerLayout} from "../src/container/ContainerLayout";
-import {HelpSettingsContextProvider} from "../src/help/HelpSettingsContext";
-import {HelpButton} from "../src/help/HelpButton";
 import {DataTableDemo} from "./data-table";
 
 function Demo() {
@@ -121,8 +129,8 @@ const MenuItems: MenuItemProps[] = [
     {text: "Data table", to: "/data-table", icon: ViewList},
     {text: "Inputs", to: "/inputs", icon: Edit},
     {text: "Error", to: "/error", icon: Error},
-    {text: "Container", to: "/container", icon: Tab},
-    {text: "Tabs", to: "/tabs", icon: AspectRatio},
+    {text: "Container", to: "/container", icon: AspectRatio},
+    {text: "Tabs", to: "/tabs", icon: Tab},
     {text: "Help", to: "/help", icon: Help}
 ]
 
