@@ -139,7 +139,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
                                 </TableCell>
                             </TableRow>
                         )}
-                        {!error && rows.length == 0 && (
+                        {!error && !loading && rows.length == 0 && (
                             <TableCell colSpan={columns.length}>
                                 <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" p={3}>
                                     <Box sx={{

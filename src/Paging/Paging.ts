@@ -12,7 +12,7 @@ export interface Page<T> {
     hasPrevious: boolean;
 }
 
-export interface Pageable<K> {
+export interface Pageable<K = string> {
     pageNumber: number;
     pageSize: number;
     sort?: K;

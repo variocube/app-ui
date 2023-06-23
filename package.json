@@ -1,6 +1,6 @@
 {
   "name": "@variocube/app-ui",
-  "version": "1.0.0-alpha.31",
+  "version": "1.0.0-alpha.32",
   "description": "Common UI components for Variocube applications.",
   "module": "esm/index.js",
   "types": "esm/index.d.ts",
@@ -43,6 +43,7 @@
     "html-webpack-plugin": "^5.5.0",
     "jest": "^28.1.0",
     "react": "^17.0.2",
+    "react-async-hook": "^4.0.0",
     "react-dom": "^17.0.2",
     "react-router": "^6.3.0",
     "react-router-dom": "^6.3.0",

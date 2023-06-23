@@ -1,6 +1,11 @@
 import {Box, Container, SortDirection, Stack, Typography} from "@mui/material";
 import React, {useMemo, useState} from "react";
 import {DataTable, DataTablePage} from "../../src/data-table/DataTable";
+import {useDataTableStorage} from "../../src/data-table/useDataTableStorage";
+import {useSpringPageable} from "../../src/data-table/useSpringPageable";
+import {useSpringPage} from "../../src/data-table/useSpringPage";
+import {Page, Pageable} from "../../src";
+import {useAsync} from "react-async-hook";
 
 export function DataTableDemo() {
     return (
@@ -17,6 +22,7 @@ export function DataTableDemo() {
                 <EmptyDataTable/>
                 <SortableDataTable/>
                 <PagingDataTable/>
+                <FetchDataTable/>
             </Stack>
         </Container>
     )
@@ -158,6 +164,63 @@ export function PagingDataTable() {
                 }}
                 pageSizes={[1, 2, 3]}
                 onPageChange={handlePageChange}
+            />
+        </Box>
+    )
+}
+
+
+function fakeSpringFetch(pageable: Pageable) {
+    return new Promise<Page<Fruit>>((resolve) => {
+        setTimeout(() => {
+            console.log("pageable", pageable);
+            resolve({
+                content: fruits.map(fruit => ({...fruit, id: pageable.pageNumber * pageable.pageSize + fruit.id})),
+                totalElements: 1000,
+                first: false,
+                last: false,
+                hasContent: true,
+                number: pageable.pageNumber,
+                hasNext: true,
+                hasPrevious: true,
+                numberOfElements: fruits.length,
+                size: pageable.pageSize ?? 10,
+                totalPages: 1000 / pageable.pageSize,
+            } as Page<Fruit>)
+        }, 200);
+    });
+}
+
+export function FetchDataTable() {
+    const {onPageChange, onSort, ...storage} = useDataTableStorage("FetchDataTable", {
+        pageSize: 4,
+    });
+    const pageable = useSpringPageable(storage);
+    const {loading, error, result} = useAsync(() => fakeSpringFetch(pageable), [pageable]);
+    const {rows, page} = useSpringPage(result);
+
+    return (
+        <Box>
+            <Typography variant="h2" gutterBottom>
+                Paging data table
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+                This data table emulates fetching from a Spring REST-API.
+            </Typography>
+            <DataTable
+                columns={[
+                    {label: "ID", field: "id"},
+                    {label: "Name", field: "name"},
+                    {label: "Color", field: "color"},
+                    {label: "Taste", field: "taste"}
+                ]}
+                rows={rows}
+                page={page}
+                loading={loading}
+                error={error}
+                pageSizes={[4]}
+                onSort={onSort}
+                onPageChange={onPageChange}
             />
         </Box>
     )
