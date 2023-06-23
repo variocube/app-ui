@@ -18,3 +18,4 @@ export * from "./layout";
 export * from "./fetch";
 export * from "./container";
 export * from "./help";
+export * from "./data-table";

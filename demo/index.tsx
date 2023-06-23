@@ -35,6 +35,7 @@ import {ContainerWidthControl} from "../src/container/ContainerWidthControl";
 import {ContainerLayout} from "../src/container/ContainerLayout";
 import {HelpSettingsContextProvider} from "../src/help/HelpSettingsContext";
 import {HelpButton} from "../src/help/HelpButton";
+import {DataTableDemo} from "./data-table";
 
 function Demo() {
     return (
@@ -46,6 +47,7 @@ function Demo() {
                     <Route path="localization" element={<Localization/>}/>
                     <Route path="date-pickers" element={<Pickers/>}/>
                     <Route path="content-table" element={<ContentTableDemo/>}/>
+                    <Route path="data-table" element={<DataTableDemo/>}/>
                     <Route path="inputs" element={<Inputs/>}/>
                     <Route path="error" element={<DemoError/>}/>
                     <Route path="tabs" element={<TabsDemo/>}/>
@@ -116,6 +118,7 @@ const MenuItems: MenuItemProps[] = [
     {text: "Localization", to: "/localization", icon: Language},
     {text: "Date & time pickers", to: "/date-pickers", icon: CalendarMonth},
     {text: "Content table", to: "/content-table", icon: ViewList},
+    {text: "Data table", to: "/data-table", icon: ViewList},
     {text: "Inputs", to: "/inputs", icon: Edit},
     {text: "Error", to: "/error", icon: Error},
     {text: "Container", to: "/container", icon: Tab},
