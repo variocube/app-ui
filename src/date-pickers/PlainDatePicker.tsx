@@ -9,6 +9,7 @@ interface PlainDatePickerProps {
     value: PlainDate | null;
     onChange: (value: PlainDate | null) => any;
     label?: string;
+    disabled?: boolean;
 
     /**
      * Allows overriding the locale. Only use for testing.
@@ -18,7 +19,14 @@ interface PlainDatePickerProps {
 
 export function PlainDatePicker(props: PlainDatePickerProps & UseRenderInputProps) {
 
-    const {value, onChange, label, locale: suppliedLocale, ...renderInputProps} = props;
+    const {
+        value,
+        onChange,
+        label,
+        disabled,
+        locale: suppliedLocale,
+        ...renderInputProps
+    } = props;
 
     const locale = useLocale(suppliedLocale);
 
@@ -31,6 +39,7 @@ export function PlainDatePicker(props: PlainDatePickerProps & UseRenderInputProp
                 value={value}
                 disableMaskedInput
                 onChange={onChange}
+                disabled={disabled}
                 renderInput={renderInput}
             />
         </LocalizationProvider>
