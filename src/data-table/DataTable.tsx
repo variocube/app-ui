@@ -13,7 +13,7 @@ import {
     TableSortLabel,
     useTheme
 } from "@mui/material";
-import React, {Component, FC, Fragment, Key, useCallback} from "react";
+import React, {Component, FC, Fragment, Key, ReactElement, useCallback} from "react";
 import {ErrorAlert} from "../ErrorAlert";
 import {UndrawEmpty} from "../content-table/UndrawEmpty";
 
@@ -80,6 +80,9 @@ export interface DataTableProps<T> {
 
     /** The available page sizes. */
     pageSizes?: number[];
+
+    /** An element that is rendered when the table is empty. */
+    empty?: ReactElement;
 }
 
 const defaultPageSizes = [10, 25, 50, 100];
@@ -94,6 +97,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
         loading,
         error,
         rowId = "id",
+        empty = <UndrawEmpty height="100%" width="auto" />,
         page,
         onPageChange,
         pageSizes = defaultPageSizes,
@@ -140,18 +144,20 @@ export function DataTable<T>(props: DataTableProps<T>) {
                             </TableRow>
                         )}
                         {!error && !loading && rows.length == 0 && (
-                            <TableCell colSpan={columns.length}>
-                                <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" p={3}>
-                                    <Box sx={{
-                                        height: 300,
-                                        [theme.breakpoints.down('md')]: {
-                                            height: 150
-                                        },
-                                    }}>
-                                        <UndrawEmpty height="100%" width="auto" />
+                            <TableRow>
+                                <TableCell colSpan={columns.length}>
+                                    <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" p={3}>
+                                        <Box sx={{
+                                            height: 300,
+                                            [theme.breakpoints.down('md')]: {
+                                                height: 150
+                                            },
+                                        }}>
+                                            {empty}
+                                        </Box>
                                     </Box>
-                                </Box>
-                            </TableCell>
+                                </TableCell>
+                            </TableRow>
                         )}
                         {rows.map(row => {
                             const id = row[rowId as keyof T] as any as Key;
