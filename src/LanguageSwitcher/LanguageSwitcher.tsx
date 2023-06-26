@@ -17,7 +17,7 @@ export interface LanguageSwitcherMenuProps {
     >;
     language: string;
     setLanguage: (language: string) => void;
-    languages: Language[];
+    languages: ReadonlyArray<Language>;
 }
 
 export function LanguageSwitcher(props: LanguageSwitcherMenuProps) {
