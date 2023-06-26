@@ -29,7 +29,7 @@ import {
 import {useLocation} from "react-router";
 import {
     AspectRatio,
-    CalendarMonth,
+    CalendarMonth, DynamicForm,
     Edit,
     Error,
     Help,
@@ -44,6 +44,7 @@ import {Theme} from "./theme";
 import {TabsDemo} from "./tabs";
 import {DemoError} from "./error";
 import {DataTableDemo} from "./data-table";
+import {Forms} from "./forms";
 
 function Demo() {
     return (
@@ -57,6 +58,7 @@ function Demo() {
                     <Route path="content-table" element={<ContentTableDemo/>}/>
                     <Route path="data-table" element={<DataTableDemo/>}/>
                     <Route path="inputs" element={<Inputs/>}/>
+                    <Route path="forms" element={<Forms/>}/>
                     <Route path="error" element={<DemoError/>}/>
                     <Route path="tabs" element={<TabsDemo/>}/>
                     <Route path="container" element={<ContainerDemo/>}/>
@@ -127,6 +129,7 @@ const MenuItems: MenuItemProps[] = [
     {text: "Date & time pickers", to: "/date-pickers", icon: CalendarMonth},
     {text: "Content table", to: "/content-table", icon: ViewList},
     {text: "Data table", to: "/data-table", icon: ViewList},
+    {text: "Forms", to: "/forms", icon: DynamicForm},
     {text: "Inputs", to: "/inputs", icon: Edit},
     {text: "Error", to: "/error", icon: Error},
     {text: "Container", to: "/container", icon: AspectRatio},
