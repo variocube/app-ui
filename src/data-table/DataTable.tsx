@@ -13,7 +13,7 @@ import {
     TableSortLabel,
     useTheme
 } from "@mui/material";
-import React, {Component, FC, Fragment, Key, ReactElement, useCallback} from "react";
+import React, {Component, FC, Fragment, Key, ReactElement, useCallback, useEffect, useState} from "react";
 import {ErrorAlert} from "../ErrorAlert";
 import {UndrawEmpty} from "../content-table/UndrawEmpty";
 
@@ -105,6 +105,14 @@ export function DataTable<T>(props: DataTableProps<T>) {
 
     const theme = useTheme();
 
+    // When loading
+    const [displayRows, setDisplayRows] = useState(rows);
+    useEffect(() => {
+        if (!loading || rows.length > 0) {
+            setDisplayRows(rows);
+        }
+    }, [rows, loading]);
+
     function handlePageChange(event: React.MouseEvent<HTMLButtonElement> | null, pageIndex: number) {
         if (page && onPageChange) {
             onPageChange({...page, pageIndex});
@@ -159,7 +167,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
                                 </TableCell>
                             </TableRow>
                         )}
-                        {rows.map(row => {
+                        {displayRows.map(row => {
                             const id = row[rowId as keyof T] as any as Key;
                             return (
                                 <TableRow key={id}>
