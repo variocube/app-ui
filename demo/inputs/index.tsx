@@ -1,6 +1,17 @@
-import {Box, Button, Card, CardActions, CardContent, Container, MenuItem, Stack, Typography} from "@mui/material";
+import {
+    Box,
+    Button,
+    Card,
+    CardActions,
+    CardContent,
+    CardHeader,
+    Container, Grid,
+    MenuItem,
+    Stack,
+    Typography
+} from "@mui/material";
 import React, {useState} from "react";
-import {TextField, Checkbox, Selector} from "../../src";
+import {TextField, Checkbox, Selector, NumberField, IntegerNumberFormat} from "../../src";
 
 
 export function Inputs() {
@@ -35,6 +46,15 @@ export function Inputs() {
                     Special case of Mui <code>TextField</code> that lets the user select from a list of options.
                 </Typography>
                 <SelectorDemo/>
+            </Box>
+
+            <Box sx={{mb: 4}}>
+                <Typography variant="h2" gutterBottom>Number field</Typography>
+                <Typography variant="body1" gutterBottom>
+                    Special case of Mui <code>TextField</code> that lets the user input a number in a certain
+                    <code>Intl.NumberFormat</code>.
+                </Typography>
+                <NumberFieldDemo/>
             </Box>
 
         </Container>
@@ -165,4 +185,54 @@ function SelectorDemo() {
             </form>
         </Card>
     );
+}
+
+const DefaultNumberFormat = new Intl.NumberFormat();
+const EnglishNumberFormat = new Intl.NumberFormat("en-US");
+const GermanNumberFormat = new Intl.NumberFormat("de-DE");
+
+function NumberFieldDemo() {
+    const [value, setValue] = useState<number | null>(1234.99);
+
+    return (
+        <Card>
+            <CardHeader title="Number field"/>
+            <CardContent>
+                <Grid container spacing={2}>
+                    <Grid item>
+                        <NumberField
+                            label="Browser default format"
+                            numberFormat={DefaultNumberFormat}
+                            numberValue={value}
+                            onChangeNumber={setValue}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <NumberField
+                            label="English format"
+                            numberFormat={EnglishNumberFormat}
+                            numberValue={value}
+                            onChangeNumber={setValue}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <NumberField
+                            label="German format"
+                            numberFormat={GermanNumberFormat}
+                            numberValue={value}
+                            onChangeNumber={setValue}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <NumberField
+                            label="Integer format"
+                            numberFormat={IntegerNumberFormat}
+                            numberValue={value}
+                            onChangeNumber={setValue}
+                        />
+                    </Grid>
+                </Grid>
+            </CardContent>
+        </Card>
+    )
 }

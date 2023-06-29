@@ -6,6 +6,7 @@ import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 export const IntegerNumberFormat = new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
+    useGrouping: false,
 });
 
 export type NumberFieldProps = TextFieldProps & {

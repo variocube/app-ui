@@ -1,4 +1,4 @@
-import {Card, CardContent, CardHeader, Container, Link, Stack, Typography} from "@mui/material";
+import {Button, Card, CardActions, CardContent, CardHeader, Container, Link, Stack, Typography} from "@mui/material";
 import * as React from "react";
 import {useState} from "react";
 import {
@@ -89,16 +89,30 @@ export function TimePicker() {
 
 export function TimezoneSelectDemo() {
     const [value, setValue] = useState<string | null>(null);
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => e.preventDefault();
     return (
         <Card>
             <CardHeader title="Timezone select"/>
-            <CardContent>
-                <TimezoneSelect
-                    label="Time zone"
-                    value={value}
-                    onChange={setValue}
-                />
-            </CardContent>
+            <form onSubmit={handleSubmit}>
+                <CardContent>
+                    <TimezoneSelect
+                        label="Time zone"
+                        value={value}
+                        onChange={setValue}
+                    />
+                    <TimezoneSelect
+                        label="Required time zone"
+                        value={value}
+                        onChange={setValue}
+                        required
+                    />
+                </CardContent>
+                <CardActions>
+                    <Button color="primary" type="submit">
+                        Submit
+                    </Button>
+                </CardActions>
+            </form>
         </Card>
     )
 }

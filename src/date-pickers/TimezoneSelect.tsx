@@ -1,13 +1,15 @@
-import {Autocomplete, TextField} from "@mui/material";
+import {Autocomplete} from "@mui/material";
 import React from "react";
+import {TextField} from "../Input";
 
 interface TimezoneSelectProps {
     value: string | null;
     onChange: (value: string | null) => void;
     label: string;
+    required?: boolean;
 }
 
-export function TimezoneSelect({value, onChange, label}: TimezoneSelectProps) {
+export function TimezoneSelect({value, onChange, label, required}: TimezoneSelectProps) {
     return (
         <Autocomplete
             multiple={false}
@@ -21,8 +23,10 @@ export function TimezoneSelect({value, onChange, label}: TimezoneSelectProps) {
                     {...params}
                     variant="outlined"
                     label={label}
+                    required={required}
                     inputProps={{
                         ...params.inputProps,
+                        required: required,
                         autoComplete: "new-password", // disable autocomplete and autofill
                     }}
                 />
