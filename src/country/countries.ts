@@ -8,7 +8,7 @@ export function countryToFlag(isoCode?: string) {
 	}
 }
 
-export function findCountry(code?: string) {
+export function findCountry(code?: string | null) {
 	return countries.filter(country => country.code == code).pop();
 }
 

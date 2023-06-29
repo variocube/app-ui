@@ -1,19 +1,20 @@
 import {Autocomplete, Box, TextField} from "@mui/material";
-import React, {useCallback} from "react";
+import React from "react";
 import {countries, countryToFlag, findCountry} from "./countries";
 
 interface CountrySelectProps {
-	value: string | undefined;
-	onChange: (value?: string) => void;
+	value: string | null;
+	onChange: (value: string | null) => void;
 	label: string;
 }
 
 export function CountrySelect({value, onChange, label}: CountrySelectProps) {
+
 	return (
 		<Autocomplete
 			multiple={false}
 			value={findCountry(value) || null}
-			onChange={useCallback((event, country) => onChange(country?.code), [])}
+			onChange={(e, country) => onChange(country?.code || null)}
 			options={countries}
 			autoHighlight
 			getOptionLabel={(option) => option.label}
