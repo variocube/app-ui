@@ -24,3 +24,4 @@ export * from "./ErrorAlert";
 export * from "./forms";
 export * from "./LanguageSwitcher";
 export * from "./country";
+export * from "./cube";
