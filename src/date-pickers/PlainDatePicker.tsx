@@ -10,6 +10,7 @@ interface PlainDatePickerProps {
     onChange: (value: PlainDate | null) => any;
     label?: string;
     disabled?: boolean;
+    required?: boolean;
 
     /**
      * Allows overriding the locale. Only use for testing.
