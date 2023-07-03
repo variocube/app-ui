@@ -71,7 +71,7 @@ async function tryExtractErrorMessage(response: Response) {
 export function createQueryString(...args: Record<string, any>[]) {
     const allArgs = args.reduce((acc, curr) => {
         const currArgs = Object.entries(curr)
-            .filter(([_, value]) => typeof value != "undefined")
+            .filter(([_, value]) => typeof value != "undefined" && value !== null)
             .map(([key, value]) => [key, `${value}`]);
         return acc.concat(currArgs);
     }, []);
