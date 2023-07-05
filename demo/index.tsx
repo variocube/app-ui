@@ -34,7 +34,7 @@ import {
     Error,
     Help,
     Language,
-    Palette,
+    Palette, Psychology,
     SvgIconComponent,
     Tab,
     ViewList
@@ -45,6 +45,7 @@ import {TabsDemo} from "./tabs";
 import {DemoError} from "./error";
 import {DataTableDemo} from "./data-table";
 import {Forms} from "./forms";
+import {ConfirmDemo} from "./confirm";
 
 function Demo() {
     return (
@@ -63,6 +64,7 @@ function Demo() {
                     <Route path="tabs" element={<TabsDemo/>}/>
                     <Route path="container" element={<ContainerDemo/>}/>
                     <Route path="help" element={<HelpDemo/>}/>
+                    <Route path="confirm" element={<ConfirmDemo/>}/>
                 </Route>
             </Routes>
         </BrowserRouter>
@@ -134,7 +136,8 @@ const MenuItems: MenuItemProps[] = [
     {text: "Error", to: "/error", icon: Error},
     {text: "Container", to: "/container", icon: AspectRatio},
     {text: "Tabs", to: "/tabs", icon: Tab},
-    {text: "Help", to: "/help", icon: Help}
+    {text: "Help", to: "/help", icon: Help},
+    {text: "Confirm", to: "/confirm", icon: Psychology}
 ]
 
 function SideNavListItem({icon: Icon, text, to}: MenuItemProps) {
