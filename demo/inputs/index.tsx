@@ -1,4 +1,5 @@
 import {
+    Alert,
     Box,
     Button,
     Card,
@@ -12,6 +13,7 @@ import {
 } from "@mui/material";
 import React, {useState} from "react";
 import {TextField, Checkbox, Selector, NumberField, IntegerNumberFormat} from "../../src";
+import {EmailSenderField} from "../../src/Input/EmailSenderField";
 
 
 export function Inputs() {
@@ -55,6 +57,14 @@ export function Inputs() {
                     <code>Intl.NumberFormat</code>.
                 </Typography>
                 <NumberFieldDemo/>
+            </Box>
+
+            <Box sx={{mb: 4}}>
+                <Typography variant="h2" gutterBottom>E-Mail fields</Typography>
+                <Typography variant="body1" gutterBottom>
+                    Special case of Mui <code>TextField</code> that validates aspects around e-mail addresses.
+                </Typography>
+                <EmailFieldsDemo/>
             </Box>
 
         </Container>
@@ -235,4 +245,27 @@ function NumberFieldDemo() {
             </CardContent>
         </Card>
     )
+}
+
+function EmailFieldsDemo() {
+    const [email, setEmail] = useState("");
+    const [validSender, setValidSender] = useState(false);
+
+    return (
+        <Card>
+            <CardHeader title="E-Mail fields"/>
+            <CardContent>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} sm={8}>
+                        <EmailSenderField value={email} onChange={setEmail} updateValidity={setValidSender} fullWidth />
+                    </Grid>
+                    {!validSender &&
+                        <Grid item xs={12} sm={4}>
+                            <Alert severity="error">The e-mail address you entered is not a valid sender e-mail address.</Alert>
+                        </Grid>
+                    }
+                </Grid>
+            </CardContent>
+        </Card>
+    );
 }
