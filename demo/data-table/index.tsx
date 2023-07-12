@@ -138,14 +138,31 @@ export function SortableDataTable() {
 export function PagingDataTable() {
     const [pageIndex, setPageIndex] = useState(0);
     const [pageSize, setPageSize] = useState(2);
+    const [sortField, setSortField] = useState<keyof Fruit>("id");
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
     const start = pageIndex * pageSize;
     const end = start + pageSize;
-    const pageFruits = fruits.slice(start, end);
+
+    const sortedFruits = useMemo(() => fruits.sort(
+            (a, b) => compareFruits(a, b, sortField, sortDirection))
+        , [sortField, sortDirection]);
+
+    const pageFruits = sortedFruits.slice(start, end);
 
     function handlePageChange({pageIndex, pageSize}: DataTablePage) {
         setPageIndex(pageIndex);
         setPageSize(pageSize);
+    }
+
+    function handleSort(field: string) {
+        if (sortField == field) {
+            setSortDirection(prev => prev == "asc" ? "desc" : "asc");
+        }
+        else {
+            setSortField(field as keyof Fruit);
+            setSortDirection("asc");
+        }
     }
 
     return (
@@ -155,10 +172,10 @@ export function PagingDataTable() {
             </Typography>
             <DataTable
                 columns={[
-                    {label: "ID", field: "id"},
-                    {label: "Name", field: "name"},
-                    {label: "Color", field: "color"},
-                    {label: "Taste", field: "taste"}
+                    {label: "ID", field: "id", sortable: true},
+                    {label: "Name", field: "name", sortable: true},
+                    {label: "Color", field: "color", sortable: true},
+                    {label: "Taste", field: "taste", sortable: true}
                 ]}
                 rows={pageFruits}
                 page={{
@@ -166,8 +183,11 @@ export function PagingDataTable() {
                     pageSize,
                     totalElements: fruits.length
                 }}
+                sortField={sortField}
+                sortDirection={sortDirection}
                 pageSizes={[1, 2, 3]}
                 onPageChange={handlePageChange}
+                onSort={handleSort}
             />
         </Box>
     )
@@ -178,9 +198,12 @@ function fakeSpringFetch(pageable: SpringPageable) {
     return new Promise<SpringPage<Fruit>>((resolve) => {
         setTimeout(() => {
             console.log("pageable", pageable);
-            const {page = 0, size = 10} = pageable;
+            const {page = 0, size = 10, sort = "id,asc"} = pageable;
+            const [sortField, sortDirection] = sort.split(",");
             resolve({
-                content: fruits.map(fruit => ({...fruit, id: page * size + fruit.id})),
+                content: fruits
+                    .sort((a, b) => compareFruits(a, b, sortField as keyof Fruit, sortDirection as SortDirection))
+                    .map(fruit => ({...fruit, id: page * size + fruit.id})),
                 totalElements: 1000,
                 number: page,
                 size: size,
@@ -208,10 +231,10 @@ export function SpringDataTable() {
             </Typography>
             <DataTable
                 columns={[
-                    {label: "ID", field: "id"},
-                    {label: "Name", field: "name"},
-                    {label: "Color", field: "color"},
-                    {label: "Taste", field: "taste"}
+                    {label: "ID", field: "id", sortable: true},
+                    {label: "Name", field: "name", sortable: true},
+                    {label: "Color", field: "color", sortable: true},
+                    {label: "Taste", field: "taste", sortable: true}
                 ]}
                 rows={rows}
                 page={page}
@@ -220,6 +243,7 @@ export function SpringDataTable() {
                 pageSizes={[4]}
                 onSort={onSort}
                 onPageChange={onPageChange}
+                {...storage}
             />
         </Box>
     )
