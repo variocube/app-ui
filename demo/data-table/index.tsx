@@ -37,13 +37,14 @@ interface Fruit {
     name: string;
     color: string;
     taste: string;
+    description: string;
 }
 
 const fruits: Fruit[] = [
-    {id: 1, name: "Banana", color: "yellow", taste: "sweet"},
-    {id: 2, name: "Apple", color: "green", taste: "sour"},
-    {id: 3, name: "Orange", color: "orange", taste: "fruity"},
-    {id: 4, name: "Cherry", color: "red", taste: "sweet"},
+    {id: 1, name: "Banana", color: "yellow", taste: "sweet", description: "Often used as measurement device"},
+    {id: 2, name: "Apple", color: "green", taste: "sour", description: "One per day keeps the doctor away"},
+    {id: 3, name: "Orange", color: "orange", taste: "fruity", description: "Helpful for Aperol Spriz"},
+    {id: 4, name: "Cherry", color: "red", taste: "sweet", description: "Great for picking"},
 ];
 
 export function SimpleDataTable() {
@@ -123,7 +124,8 @@ export function SortableDataTable() {
                     {label: "ID", field: "id", sortable: true},
                     {label: "Name", field: "name", sortable: true},
                     {label: "Color", field: "color", sortable: true},
-                    {label: "Taste", field: "taste", sortable: true}
+                    {label: "Taste", field: "taste", sortable: true},
+                    {label: "Description", field: "description", sortable: true}
                 ]}
                 rows={sortedFruits}
                 onSort={handleSort}

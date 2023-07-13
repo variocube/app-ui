@@ -37,7 +37,18 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
     }, [drawerPermanent]);
 
     return (
-        <Box sx={{display: "flex", flexFlow: "column nowrap", "@media screen": {height: "100vh", overflow: "scroll"}, "@media print": { padding:0, margin:0 }}}>
+        <Box sx={{
+            display: "flex",
+            flexFlow: "column nowrap",
+            "@media screen": {
+                height: "100vh",
+                overflowY: "scroll"
+            },
+            "@media print": {
+                padding:0,
+                margin:0
+            }
+        }}>
             <AppBar
                 elevation={0}
                 position="static"
@@ -125,7 +136,12 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
                         {sideNav}
                     </Drawer>
                 )}
-                <Box sx={{py: 4, flex: 1, "@media print": { padding:0, margin:0 }}}>
+                <Box sx={{
+                    py: 4,
+                    flex: 1,
+                    maxWidth: "100%",
+                    "@media print": { padding:0, margin:0 }
+                }}>
                     {children}
                 </Box>
             </Box>
