@@ -24,7 +24,7 @@ export function TabsDemo() {
 
             <Box sx={{mb: 4}}>
                 <Typography variant="h2" gutterBottom>Horizontal Tabs</Typography>
-                <Tabs value={tab} onChange={(e, tab) => setTab(tab)}>
+                <Tabs overflow value={tab} onChange={(e, tab) => setTab(tab)}>
                     <Tab label="First" icon={<TabIcon/>} />
                     <Tab label="Second" icon={<TabIcon/>} />
                     <Tab label="Third" icon={<TabIcon/>} />
