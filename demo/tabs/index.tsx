@@ -2,6 +2,7 @@ import {Alert, AlertTitle, Box, Container, Stack, Typography} from "@mui/materia
 import {Tabs, Tab} from "../../src";
 import React, {useState} from "react";
 import {Tab as TabIcon} from "@mui/icons-material";
+import {Link} from "react-router-dom";
 
 
 export function TabsDemo() {
@@ -24,7 +25,7 @@ export function TabsDemo() {
 
             <Box sx={{mb: 4}}>
                 <Typography variant="h2" gutterBottom>Horizontal Tabs</Typography>
-                <Tabs overflow value={tab} onChange={(e, tab) => setTab(tab)}>
+                <Tabs value={tab} onChange={(e, tab) => setTab(tab)}>
                     <Tab label="First" icon={<TabIcon/>} />
                     <Tab label="Second" icon={<TabIcon/>} />
                     <Tab label="Third" icon={<TabIcon/>} />
@@ -68,9 +69,10 @@ export function TabsDemo() {
                 </Box>
                 <Stack direction="row">
                     <Tabs>
-                        <Tab label="Variocube" icon={<TabIcon/>} component="a" href="https://variocube.com" />
-                        <Tab label="Onlinegroup" icon={<TabIcon/>} component="a" href="https://onlinegroup.at" />
-                        <Tab label="Clesyclean" icon={<TabIcon/>} component="a" href="https://clesyclean.com" />
+                        <Tab label="Variocube" icon={<TabIcon/>} component="a" href="https://variocube.com" target="_blank" />
+                        <Tab label="Onlinegroup" icon={<TabIcon/>} component="a" href="https://onlinegroup.at" target="_blank" />
+                        <Tab label="Clesyclean" icon={<TabIcon/>} component="a" href="https://clesyclean.com" target="_blank" />
+                        <Tab label="Internal Link" icon={<TabIcon/>} component={Link} to={'/'} />
                     </Tabs>
                 </Stack>
             </Box>
