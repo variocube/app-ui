@@ -1,9 +1,8 @@
-import {Alert, AlertTitle, Box, Container, Stack, Typography} from "@mui/material";
-import {Tabs, Tab} from "../../src";
+import {Box, Container, Stack, Typography} from "@mui/material";
+import {Tabs} from "../../src";
 import React, {useState} from "react";
 import {Tab as TabIcon} from "@mui/icons-material";
 import {Link} from "react-router-dom";
-
 
 export function TabsDemo() {
     const [tab, setTab] = useState(0);
@@ -25,38 +24,19 @@ export function TabsDemo() {
 
             <Box sx={{mb: 4}}>
                 <Typography variant="h2" gutterBottom>Horizontal Tabs</Typography>
-                <Tabs value={tab} onChange={(e, tab) => setTab(tab)}>
-                    <Tab label="First" icon={<TabIcon/>} />
-                    <Tab label="Second" icon={<TabIcon/>} />
-                    <Tab label="Third" icon={<TabIcon/>} />
-                    <Tab label="Fourth" icon={<TabIcon/>} />
-                </Tabs>
+                <Tabs
+                    value={tab}
+                    onChange={(e, tab) => setTab(tab)}
+                    items={[
+                        { label: 'First', icon: <TabIcon/> },
+                        { label: 'Second', icon: <TabIcon/> },
+                        { label: 'Third', icon: <TabIcon/> },
+                        { label: 'Fourth', icon: <TabIcon/> }
+                    ]}
+                />
                 <Box sx={{display: "flex", justifyContent: "center", alignItems: "center", background: "rgba(128, 128, 128, 0.25)", height: 160}}>
                     <Box>This is tab #{tab}</Box>
                 </Box>
-            </Box>
-
-            <Box sx={{mb: 4}}>
-                <Typography variant="h2" gutterBottom>Vertical Tabs</Typography>
-                <Box mb={2}>
-                    <Alert severity="warning">
-                        <AlertTitle>Using vertical tabs is discouraged.</AlertTitle>
-                        While vertical tabs are supported by Mui and work with `app-ui`, their use
-                        is discouraged, because the tabs are center aligned, which does not look very
-                        clean.
-                    </Alert>
-                </Box>
-                <Stack direction="row">
-                    <Tabs value={tab} onChange={(e, tab) => setTab(tab)} orientation="vertical">
-                        <Tab label="First" icon={<TabIcon/>} />
-                        <Tab label="Second" icon={<TabIcon/>} />
-                        <Tab label="Third" icon={<TabIcon/>} />
-                        <Tab label="Fourth" icon={<TabIcon/>} />
-                    </Tabs>
-                    <Box sx={{flex: 1, display: "flex", justifyContent: "center", alignItems: "center", background: "rgba(128, 128, 128, 0.25)"}}>
-                        <Box>This is tab #{tab}</Box>
-                    </Box>
-                </Stack>
             </Box>
 
             <Box sx={{mb: 4}}>
@@ -67,14 +47,14 @@ export function TabsDemo() {
                         with a router.
                     </Typography>
                 </Box>
-                <Stack direction="row">
-                    <Tabs>
-                        <Tab label="Variocube" icon={<TabIcon/>} component="a" href="https://variocube.com" target="_blank" />
-                        <Tab label="Onlinegroup" icon={<TabIcon/>} component="a" href="https://onlinegroup.at" target="_blank" />
-                        <Tab label="Clesyclean" icon={<TabIcon/>} component="a" href="https://clesyclean.com" target="_blank" />
-                        <Tab label="Internal Link" icon={<TabIcon/>} component={Link} to={'/'} />
-                    </Tabs>
-                </Stack>
+                <Tabs
+                    items={[
+                        { label: 'Variocube', icon: <TabIcon />, component: 'a', href: 'https://variocube.com', target: '_blank' },
+                        { label: 'Onlinegroup', icon: <TabIcon />, component: 'a', href: 'https://onlinegroup.at', target: '_blank' },
+                        { label: 'Clesyclean', icon: <TabIcon />, component: 'a', href: 'https://clesyclean.com', target: '_blank' },
+                        { label: 'Internal', icon: <TabIcon />, component: Link, to: '/' },
+                    ]}
+                />
             </Box>
 
         </Container>
