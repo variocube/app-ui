@@ -105,6 +105,18 @@ export function DataTable<T>(props: DataTableProps<T>) {
 
     const theme = useTheme();
 
+    // reset page index to `0` if it is out of bounds
+    // this can happen when a filter changes and the result set becomes smaller
+    useEffect(() => {
+        if (page && onPageChange) {
+            const {pageIndex, pageSize, totalElements} = page;
+            const totalPages = Math.ceil(totalElements / pageSize);
+            if (pageIndex >= totalPages) {
+                onPageChange({...page, pageIndex: 0});
+            }
+        }
+    }, [page, onPageChange]);
+
     // When loading
     const [displayRows, setDisplayRows] = useState(rows);
     useEffect(() => {
