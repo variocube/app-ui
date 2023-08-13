@@ -1,7 +1,8 @@
 import React, {createContext, PropsWithChildren, useCallback, useContext, useMemo} from "react";
-import {createTheme, CssBaseline, PaletteMode, ThemeProvider, useMediaQuery} from "@mui/material";
+import {createTheme, CssBaseline, PaletteMode, ThemeOptions, ThemeProvider, useMediaQuery} from "@mui/material";
 import {useStorage} from "../storage";
 import {RobotoFont} from "./RobotoFont";
+import deepmerge from "deepmerge";
 
 /**
  * Theme colors.
@@ -27,9 +28,14 @@ const PaletteModeContext = createContext<PaletteModeContextValue>({
 });
 
 interface VCThemeProviderProps {
+    branding?: {
+        colorPrimary?: string;
+        colorSecondary?: string;
+        muiThemeOptions?: ThemeOptions;
+    }
 }
 
-export function VCThemeProvider({children}: PropsWithChildren<VCThemeProviderProps>) {
+export function VCThemeProvider({branding, children}: PropsWithChildren<VCThemeProviderProps>) {
     // Determine default mode based on user preference
     const userPrefersDark = useMediaQuery("(prefers-color-scheme: dark)");
     const defaultMode = useMemo(() => userPrefersDark ? "dark" : "light", [userPrefersDark]);
@@ -45,78 +51,81 @@ export function VCThemeProvider({children}: PropsWithChildren<VCThemeProviderPro
         setModeOverride(newMode != defaultMode ? newMode : null);
     }, [defaultMode]);
 
-    const theme = useMemo(() => createTheme({
-        palette: {
-            mode,
-            primary: {
-                main: Colors.orange,
-                contrastText: Colors.white,
+    const theme = useMemo(() => {
+        const themeOptions: ThemeOptions = {
+            palette: {
+                mode,
+                primary: {
+                    main: branding?.colorPrimary || Colors.orange,
+                    contrastText: Colors.white,
+                },
+                secondary: {
+                    main: branding?.colorSecondary || Colors.blue,
+                    contrastText: Colors.white,
+                },
+                success: {
+                    main: Colors.success,
+                    contrastText: Colors.white,
+                },
+                warning: {
+                    main: Colors.warning,
+                    contrastText: Colors.white,
+                },
+                error: {
+                    main: Colors.error,
+                    contrastText: Colors.white,
+                },
+                info: {
+                    main: Colors.info,
+                    contrastText: Colors.white,
+                },
+                text: {
+                    primary: mode == "dark" ? "#fdfaf7" : "#282b33",
+                },
+                background: {
+                    default: mode == "dark" ? "#15161a" : "#fffaf7",
+                    paper: mode == "dark" ? "#282b33" : "#fff"
+                }
             },
-            secondary: {
-                main: Colors.blue,
-                contrastText: Colors.white,
+            typography: {
+                h1: {
+                    fontSize: 46,
+                    fontWeight: 300,
+                },
+                h2: {
+                    fontSize: 29,
+                    fontWeight: 500,
+                },
+                h3: {
+                    fontSize: 24,
+                    fontWeight: 500,
+                },
+                h4: {
+                    fontSize: 20,
+                    fontWeight: 500,
+                },
+                h5: {
+                    fontSize: 18,
+                    fontWeight: 500,
+                },
+                h6: {
+                    fontSize: 18,
+                    fontWeight: 500,
+                },
+                overline: {
+                    fontWeight: 500,
+                }
             },
-            success: {
-                main: Colors.success,
-                contrastText: Colors.white,
-            },
-            warning: {
-                main: Colors.warning,
-                contrastText: Colors.white,
-            },
-            error: {
-                main: Colors.error,
-                contrastText: Colors.white,
-            },
-            info: {
-                main: Colors.info,
-                contrastText: Colors.white,
-            },
-            text: {
-                primary: mode == "dark" ? "#fdfaf7" : "#282b33",
-            },
-            background: {
-                default: mode == "dark" ? "#15161a" : "#fffaf7",
-                paper: mode == "dark" ? "#282b33" : "#fff"
-            }
-        },
-        typography: {
-            h1: {
-                fontSize: 46,
-                fontWeight: 300,
-            },
-            h2: {
-                fontSize: 29,
-                fontWeight: 500,
-            },
-            h3: {
-                fontSize: 24,
-                fontWeight: 500,
-            },
-            h4: {
-                fontSize: 20,
-                fontWeight: 500,
-            },
-            h5: {
-                fontSize: 18,
-                fontWeight: 500,
-            },
-            h6: {
-                fontSize: 18,
-                fontWeight: 500,
-            },
-            overline: {
-                fontWeight: 500,
-            }
-        },
-        components: {
-            MuiLink: {
-                defaultProps: {
-                    underline: "hover"
+            components: {
+                MuiLink: {
+                    defaultProps: {
+                        underline: "hover"
+                    }
                 }
             }
-        }
-    }), [mode]);
+        };
+        return createTheme(deepmerge(themeOptions, branding?.muiThemeOptions || {}));
+    }, [mode, branding]);
 
     return (
         <ThemeProvider theme={theme}>
