@@ -6,8 +6,9 @@ import {ConfirmDialog} from "./ConfirmDialog";
 
 interface ConfirmButtonProps {
     title: string;
+    confirmTitle?: string;
     cancel: string;
-    onConfirm: (e: React.MouseEvent<HTMLElement>) => Promise<any>;
+    onConfirm: () => Promise<any>;
     fullWidth?: boolean;
     disabled?: boolean;
     icon?: React.ReactNode;
@@ -18,6 +19,7 @@ export function ConfirmMenuItem(props: PropsWithChildren<ConfirmButtonProps>) {
     const {
         fullWidth,
         title,
+        confirmTitle,
         cancel,
         icon,
         children,
@@ -28,9 +30,9 @@ export function ConfirmMenuItem(props: PropsWithChildren<ConfirmButtonProps>) {
     const isMounted = useIsMounted();
     const [dialogOpen, setDialogOpen, clearDialogOpen] = useFlag(false);
 
-    const handleConfirm = useCallback(async (e: React.MouseEvent<HTMLElement>) => {
-        await onConfirm(e);
-        if (!e.isDefaultPrevented() && isMounted) {
+    const handleConfirm = useCallback(async () => {
+        await onConfirm();
+        if (isMounted) {
             clearDialogOpen();
         }
     }, [onConfirm, isMounted]);
@@ -50,6 +52,7 @@ export function ConfirmMenuItem(props: PropsWithChildren<ConfirmButtonProps>) {
                 open={dialogOpen}
                 onClose={clearDialogOpen}
                 title={title}
+                confirmTitle={confirmTitle}
                 cancel={cancel}
                 onConfirm={handleConfirm}
                 color={color}

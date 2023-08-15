@@ -1,7 +1,19 @@
-import {Card, CardContent, Container, List, MenuItem, Stack, Typography} from "@mui/material";
+import {
+    Box,
+    Card,
+    CardContent,
+    CardHeader,
+    Container,
+    Grid,
+    List,
+    MenuItem,
+    Stack,
+    Typography
+} from "@mui/material";
 import * as React from "react";
-import {ConfirmButton, ConfirmMenuItem} from "../../src";
-import {Delete, Warning} from "@mui/icons-material";
+import {ConfirmButton, ConfirmMenuItem, TextField} from "../../src";
+import {Delete, Edit, Warning} from "@mui/icons-material";
+import {Fragment} from "react";
 
 export function ConfirmDemo() {
     return (
@@ -39,20 +51,70 @@ function ConfirmButtonDemo() {
     }
 
     return (
-        <Card>
-            <CardContent>
-                <ConfirmButton
-                    title="Do the dangerous thing"
-                    cancel="Cancel"
-                    onConfirm={theDangerousThing}
-                    icon={<Warning/>}
-                    color="warning"
-                    variant="outlined"
-                >
-                    Are you sure you want to do the dangerous thing?
-                </ConfirmButton>
-            </CardContent>
-        </Card>
+        <Box>
+            <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} md={4}>
+                    <Card>
+                        <CardHeader title="Simple confirm"/>
+                        <CardContent>
+                            <ConfirmButton
+                                title="Do the dangerous thing"
+                                cancel="Cancel"
+                                onConfirm={theDangerousThing}
+                                icon={<Warning/>}
+                                color="warning"
+                                variant="outlined"
+                            >
+                                Are you sure you want to do the dangerous thing?
+                            </ConfirmButton>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                    <Card>
+                        <CardHeader title="Confirm by typing"/>
+                        <CardContent>
+                            <ConfirmButton
+                                title="Delete something"
+                                cancel="Cancel"
+                                onConfirm={theDangerousThing}
+                                icon={<Delete/>}
+                                color="error"
+                                variant="outlined"
+                            >
+                                <TextField
+                                    label={<Fragment>Type <em>delete</em> to confirm.</Fragment>}
+                                    inputProps={{pattern: "delete"}}
+                                    required
+                                />
+                            </ConfirmButton>
+                        </CardContent>
+                    </Card>
+                </Grid>
+
+                <Grid item xs={12} sm={6} md={4}>
+                    <Card>
+                        <CardHeader title="Edit dialog"/>
+                        <CardContent>
+                            <ConfirmButton
+                                title="Edit value"
+                                confirmTitle="Save value"
+                                cancel="Cancel"
+                                onConfirm={theDangerousThing}
+                                icon={<Edit/>}
+                                variant="outlined"
+                            >
+                                <TextField
+                                    label="Value"
+                                    defaultValue="foo"
+                                    required
+                                />
+                            </ConfirmButton>
+                        </CardContent>
+                    </Card>
+                </Grid>
+            </Grid>
+        </Box>
     )
 }
 

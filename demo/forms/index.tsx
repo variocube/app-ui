@@ -1,6 +1,6 @@
-import {Button, Card, CardActions, CardContent, Container, Stack, TextField, Typography} from "@mui/material";
+import {Button, Card, CardActions, CardContent, Container, Stack, Typography} from "@mui/material";
 import * as React from "react";
-import {EditForm} from "../../src/forms/EditForm";
+import {EditForm, TextField} from "../../src";
 import {useAsync} from "react-async-hook";
 import {useEffect, useState} from "react";
 
@@ -74,7 +74,7 @@ export function EditFormDemo() {
                     <TextField
                         label="Data"
                         value={formData}
-                        onChange={e => setFormData(e.currentTarget.value)}
+                        onChange={setFormData}
                     />
                 </CardContent>
             </EditForm>
