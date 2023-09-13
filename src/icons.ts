@@ -6,3 +6,4 @@ export {default as ChevronRightIcon} from "@mui/icons-material/ChevronRight";
 export {default as ErrorIcon} from "@mui/icons-material/Error";
 export {default as SuccessIcon} from "@mui/icons-material/Done";
 export {default as SaveIcon} from "@mui/icons-material/SaveOutlined";
+export {default as CloseIcon} from '@mui/icons-material/Close';

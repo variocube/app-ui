@@ -69,7 +69,7 @@ export function EditFormDemo() {
                 </CardActions>
             </Card>
 
-            <EditForm loading={loading} onSave={handleSave}>
+            <EditForm loading={loading} onSave={handleSave} onCancel={() => alert('Cancel button clicked.')}>
                 <CardContent>
                     <TextField
                         label="Data"

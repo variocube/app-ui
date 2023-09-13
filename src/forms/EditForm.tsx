@@ -1,16 +1,17 @@
-import {Button, Card, CardContent, CircularProgress, Stack} from "@mui/material";
+import {Box, Button, Card, CardContent, CircularProgress, Stack} from "@mui/material";
 import {useFlag} from "../utils";
-import React, {PropsWithChildren, useMemo} from "react";
+import React, {Fragment, PropsWithChildren, useMemo} from "react";
 import {useAsyncCallback} from "react-async-hook";
-import {SaveIcon, SuccessIcon} from "../icons";
+import {CloseIcon, SaveIcon, SuccessIcon} from "../icons";
 import {ErrorAlert} from "../ErrorAlert";
 
 interface EditFormProps {
 	loading: boolean;
 	onSave: () => Promise<any>;
+	onCancel?: () => void;
 }
 
-export function EditForm({children, loading, onSave}: PropsWithChildren<EditFormProps>) {
+export function EditForm({children, loading, onSave, onCancel}: PropsWithChildren<EditFormProps>) {
 	const [saved, setSaved, clearSaved] = useFlag(false);
 
 	const {loading: saving, error, execute: save} = useAsyncCallback(
@@ -54,6 +55,16 @@ export function EditForm({children, loading, onSave}: PropsWithChildren<EditForm
 						>
 							Save
 						</Button>
+						{onCancel && (
+							<Button
+								variant="outlined"
+								disabled={pending}
+								startIcon={<CloseIcon />}
+								onClick={onCancel}
+							>
+								Cancel
+							</Button>
+						)}
 					</Stack>
 				</CardContent>
 			</form>
