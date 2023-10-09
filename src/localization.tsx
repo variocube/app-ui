@@ -251,7 +251,7 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
             if (missing == "fallback") {
                 return fallbackMessages ? getString(fallbackMessages, key) : key;
             }
-            return missing(key);
+            return key;
         }, [fallbackMessages]);
 
         const tShowKeyIfNotExists = useCallback((key: Leaves<T>, context?: Record<string, any>) => {

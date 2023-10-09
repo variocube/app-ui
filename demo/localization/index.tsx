@@ -57,7 +57,19 @@ export function Localization() {
                 <StorageLocalizationProvider overrides={overrides}>
                     <TranslationDemo/>
                 </StorageLocalizationProvider>
+
             </Box>
+
+
+            <Box my={4}>
+                <Typography variant="h2" gutterBottom>Translations if key not exists</Typography>
+
+                <StorageLocalizationProvider overrides={overrides}>
+                <TranslationIfKeyNotExistsDemo/>
+                </StorageLocalizationProvider>
+
+            </Box>
+
 
             <Box my={4}>
                 <Typography variant="h2" gutterBottom>Number formats</Typography>
@@ -119,6 +131,46 @@ export function TranslationDemo() {
                     <TableRow>
                         <TableCell><code>t("overriddenInDe")</code></TableCell>
                         <TableCell>{t("overriddenInDe")}</TableCell>
+                    </TableRow>
+                </TableBody>
+            </Table>
+        </Card>
+    );
+}
+
+export function TranslationIfKeyNotExistsDemo() {
+    const {tShowKeyIfNotExists, language, setLanguage} = useLocalization();
+
+    const handleLanguageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setLanguage(e.currentTarget.value), []);
+
+    return (
+        <Card>
+            <CardHeader title="Example"/>
+            <CardContent>
+                <RadioGroup row value={language} onChange={handleLanguageChange}>
+                    <FormControlLabel value="en" control={<Radio/>} label="English"/>
+                    <FormControlLabel value="de" control={<Radio/>} label="Deutsch"/>
+                </RadioGroup>
+            </CardContent>
+            <Table>
+                <TableHead>
+                    <TableRow>
+                        <TableCell sx={{width: "50%"}}>Code</TableCell>
+                        <TableCell>Output</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    <TableRow>
+                        <TableCell><code>tShowKeyIfNotExists("nested.foo")</code></TableCell>
+                        <TableCell>{tShowKeyIfNotExists("nested.foo")}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell><code>tShowKeyIfNotExists("greeting", {"{"}name: "John"{"}"})</code></TableCell>
+                        <TableCell>{tShowKeyIfNotExists("greeting", {name: "John"})}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell><code>tShowKeyIfNotExists("overriddenInDe")</code></TableCell>
+                        <TableCell>{tShowKeyIfNotExists("mykeydoesnotexist" as any)}</TableCell>
                     </TableRow>
                 </TableBody>
             </Table>
