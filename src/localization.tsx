@@ -68,6 +68,9 @@ export interface Localization<T extends MessageObject> {
      */
     t: TFunc<T>;
 
+    tShowKeyIfNotExists: TFunc<T>;
+
+
     /**
      * Returns the value property `name` of the object associated with `key` in the current language.
      */
@@ -244,10 +247,28 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
             }
         }, [messages, handleMissing]);
 
+        const handleMissingShowKeyIfNotExists = useCallback((key: Leaves<T>) => {
+            if (missing == "fallback") {
+                return fallbackMessages ? getString(fallbackMessages, key) : key;
+            }
+            return missing(key);
+        }, [fallbackMessages]);
+
+        const tShowKeyIfNotExists = useCallback((key: Leaves<T>, context?: Record<string, any>) => {
+            if (messages) {
+                const localized = getString(messages, key) ?? handleMissingShowKeyIfNotExists(key);
+                if (localized) {
+                    return Mustache.render(localized, context);
+                }
+                return localized;
+            }
+        }, [messages, handleMissingShowKeyIfNotExists]);
+
         const e = useCallback((key: Branches<T>, name: string) => t(key + "." + name as Leaves<T>), [t]);
 
         return {
             t,
+            tShowKeyIfNotExists,
             e,
             language,
             setLanguage
