@@ -53,7 +53,7 @@ type SetLanguageFunc = (language: string | null) => any;
  */
 type TFunc<T> = (key: Leaves<T>, context?: Record<string, any>) => string;
 
-type THasKeyFunc<T> = (key: Leaves<T>) => boolean;
+type THasKeyFunc = (key: string) => boolean;
 
 
 /**
@@ -74,7 +74,7 @@ export interface Localization<T extends MessageObject> {
     /**
      * Returns if the current key can be associated with a message.
      */
-    hasKey: THasKeyFunc<T>;
+    hasKey: THasKeyFunc;
 
     /**
      * Returns the value property `name` of the object associated with `key` in the current language.

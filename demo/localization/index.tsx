@@ -166,9 +166,9 @@ export function TranslationHasKeyDemo() {
 					</TableRow>
 					<TableRow>
 						<TableCell>
-							<code>hasKey("nested.doesnotexist") as any ? "Has Key" : "Has not Key"</code>
+							<code>hasKey("nested.doesnotexist") ? "Has Key" : "Has not Key"</code>
 						</TableCell>
-						<TableCell>{hasKey("nested.doesnotexist" as any) ? "Has Key" : "Has not Key"}</TableCell>
+						<TableCell>{hasKey("nested.doesnotexist") ? "Has Key" : "Has not Key"}</TableCell>
 					</TableRow>
 				</TableBody>
 			</Table>
