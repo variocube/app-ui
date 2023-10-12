@@ -53,6 +53,9 @@ type SetLanguageFunc = (language: string | null) => any;
  */
 type TFunc<T> = (key: Leaves<T>, context?: Record<string, any>) => string;
 
+type THasKeyFunc = (key: string) => boolean;
+
+
 /**
  * Returns the value property `name` of the object associated with `key` in the current language.
  */
@@ -67,6 +70,11 @@ export interface Localization<T extends MessageObject> {
      * Resolves placeholders with the values specified in `context`.
      */
     t: TFunc<T>;
+
+    /**
+     * Returns if the current key can be associated with a message.
+     */
+    hasKey: THasKeyFunc;
 
     /**
      * Returns the value property `name` of the object associated with `key` in the current language.
@@ -244,10 +252,15 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
             }
         }, [messages, handleMissing]);
 
+        const hasKey = useCallback((key: Leaves<T>) => {
+            return !!messages && (!!getString(messages, key))
+        }, [messages]);
+
         const e = useCallback((key: Branches<T>, name: string) => t(key + "." + name as Leaves<T>), [t]);
 
         return {
             t,
+            hasKey,
             e,
             language,
             setLanguage
