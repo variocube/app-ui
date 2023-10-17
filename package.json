@@ -1,9 +1,7 @@
 {
   "name": "@variocube/app-ui",
-  "version": "1.0.0-alpha.61",
+  "version": "1.0.0-alpha.60",
   "description": "Common UI components for Variocube applications.",
-  "type": "module",
-  "main": "esm/index.js",
   "module": "esm/index.js",
   "types": "esm/index.d.ts",
   "scripts": {
@@ -29,8 +27,7 @@
     "@js-temporal/polyfill": "^0.4.1",
     "deepmerge": "^4.3.0",
     "error-stack-parser": "^2.1.4",
-    "roboto-fontface": "^0.10.0",
-    "react-async-hook": "^4.0.0"
+    "roboto-fontface": "^0.10.0"
   },
   "devDependencies": {
     "@emotion/react": "^11.9.0",
@@ -46,6 +43,7 @@
     "html-webpack-plugin": "^5.5.0",
     "jest": "^28.1.0",
     "react": "^17.0.2",
+    "react-async-hook": "^4.0.0",
     "react-dom": "^17.0.2",
     "react-router": "^6.3.0",
     "react-router-dom": "^6.3.0",
