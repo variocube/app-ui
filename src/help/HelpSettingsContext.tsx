@@ -47,7 +47,6 @@ export function HelpSettingsContextProvider({baseUrl, children}: PropsWithChildr
     }, []);
 
     const handleSetSelectedHelpAnchor = useCallback((helpAnchor: string) => {
-        console.log("bamchi", helpAnchor);
         setSelectedHelpAnchor(helpAnchor);
     }, []);
 
