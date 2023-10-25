@@ -14,6 +14,7 @@ import {
 import React, {useState} from "react";
 import {TextField, Checkbox, Selector, NumberField, IntegerNumberFormat} from "../../src";
 import {EmailSenderField} from "../../src/Input/EmailSenderField";
+import {ActionMenuItem, ActionsMenu} from "../../src/Input/ActionsMenu";
 
 
 export function Inputs() {
@@ -48,6 +49,14 @@ export function Inputs() {
                     Special case of Mui <code>TextField</code> that lets the user select from a list of options.
                 </Typography>
                 <SelectorDemo/>
+            </Box>
+
+            <Box sx={{mb: 4}}>
+                <Typography variant="h2" gutterBottom>Action Menu</Typography>
+                <Typography variant="body1" gutterBottom>
+                    Special case of Mui <code>Button</code> in combination with Mui <code>Menu</code> that lets the user click on a button or select from a list of options.
+                </Typography>
+                <ActionMenuDemo/>
             </Box>
 
             <Box sx={{mb: 4}}>
@@ -195,6 +204,48 @@ function SelectorDemo() {
             </form>
         </Card>
     );
+}
+
+function ActionMenuDemo(){
+
+  const actions: ActionMenuItem[] = [];
+
+  function computeActions(): ActionMenuItem[]
+  {
+    const printAction: ActionMenuItem = {
+      label: "Print",
+      onClick: () => window.print(),
+    };
+    const checkedOption: ActionMenuItem = {
+      label: "Mark Checked",
+      onClick: () => console.log("Mark Checked"),
+    };
+    const triggerNextStateOption: ActionMenuItem = {
+      label: "Trigger Next State",
+      onClick: () => console.log("Trigger Next State"),
+    };
+    const deleteOption: ActionMenuItem = {
+      label: "Delete",
+      onClick: () => console.log("Delete"),
+    };
+    const manualHandoverOption: ActionMenuItem = {
+      label: "Manual Handover",
+      onClick: () => console.log("Manual Handover"),
+    };
+
+    actions.push(printAction, checkedOption, triggerNextStateOption, deleteOption, manualHandoverOption);
+
+    return actions;
+  }
+
+
+    return(
+    <Card>
+      <CardContent>
+        <ActionsMenu actions={computeActions()} />
+      </CardContent>
+    </Card>
+  );
 }
 
 const DefaultNumberFormat = new Intl.NumberFormat();
