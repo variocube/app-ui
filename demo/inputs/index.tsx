@@ -12,9 +12,8 @@ import {
     Typography
 } from "@mui/material";
 import React, {useState} from "react";
-import {TextField, Checkbox, Selector, NumberField, IntegerNumberFormat} from "../../src";
+import {TextField, Checkbox, Selector, NumberField, IntegerNumberFormat, ActionMenuItem, ActionsMenu} from "../../src";
 import {EmailSenderField} from "../../src/Input/EmailSenderField";
-import {ActionMenuItem, ActionsMenu} from "../../src/Input/ActionsMenu";
 
 
 export function Inputs() {
