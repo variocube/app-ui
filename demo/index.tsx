@@ -222,7 +222,10 @@ function HelpDemo() {
 									<Grid item xs={12}>
 										<Typography variant="body1">
 											This is some test text
-											<HelpButton helpKey="Automobil" />
+											<HelpButton helpPage="Austria" helpAnchor={""} language={""} />
+											<HelpButton helpPage="Austria" helpAnchor={"red"} language={"de"} />
+											<HelpButton helpPage="Austria" helpAnchor={"Literatur"} language={""} />
+
 										</Typography>
 									</Grid>
 								</Grid>
