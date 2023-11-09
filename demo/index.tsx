@@ -210,7 +210,7 @@ function ContainerDemo() {
 function HelpDemo() {
 	return (
 		<ContainerSettingsContextProvider>
-			<HelpSettingsContextProvider baseUrl="https://de.wikipedia.org/wiki/">
+			<HelpSettingsContextProvider baseUrl="https://docs.variocube.com/logistics/">
 				<ContainerLayout>
 					<Grid container spacing={3}>
 						<Grid item xs={12}>
@@ -222,10 +222,9 @@ function HelpDemo() {
 									<Grid item xs={12}>
 										<Typography variant="body1">
 											This is some test text
-											<HelpButton helpPage="Austria" helpAnchor={""} language={""} />
-											<HelpButton helpPage="Austria" helpAnchor={"red"} language={"de"} />
-											<HelpButton helpPage="Austria" helpAnchor={"Literatur"} language={""} />
-
+											<HelpButton helpPage="Tenant_Settings" helpAnchor={"Sites"} language={""} />
+											<HelpButton helpPage="Tenant_Settings" helpAnchor={"Building_Cube_Mappings"} language={"de"} />
+											<HelpButton helpPage="Delivery_Create" helpAnchor={"Manual_handover_required"} language={""} />
 										</Typography>
 									</Grid>
 								</Grid>

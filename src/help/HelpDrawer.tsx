@@ -54,7 +54,7 @@ export function HelpDrawer() {
                     <Grid item xs={12} sx={{height: "100%"}}>
                         <iframe onLoad={()=>{
                             if (selectedHelpAnchor){
-                                console.log(iframe.current?.contentWindow?.document.getElementById(selectedHelpAnchor));
+                                iframe.current?.contentWindow?.postMessage(selectedHelpAnchor, "*");
                             }
                         }} ref={iframe} src={url + "?useformat=mobile"} style={{border: 0, overflow: "scroll", height: "100%", width: "100%"}}/>
                     </Grid>
