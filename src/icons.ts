@@ -7,3 +7,7 @@ export {default as ErrorIcon} from "@mui/icons-material/Error";
 export {default as SuccessIcon} from "@mui/icons-material/Done";
 export {default as SaveIcon} from "@mui/icons-material/SaveOutlined";
 export {default as CloseIcon} from '@mui/icons-material/Close';
+export {default as MoveUpIcon} from "@mui/icons-material/ArrowUpward";
+export {default as MoveDownIcon} from "@mui/icons-material/ArrowDownward";
+export {default as RemoveIcon} from "@mui/icons-material/Remove";
+export {default as AddIcon} from "@mui/icons-material/Add";

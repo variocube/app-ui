@@ -27,6 +27,7 @@ export interface DataTableColumn<T> {
     align?: TableCellProps["align"];
     sortable?: boolean;
     component?: FC<DataTableCellProps<T>>;
+    group?: string;
 }
 
 export interface DataTableCellProps<T> {
@@ -83,6 +84,9 @@ export interface DataTableProps<T> {
 
     /** An element that is rendered when the table is empty. */
     empty?: ReactElement;
+
+    /** A toolbar that is rendered above the table. */
+    toolbar?: React.ReactNode;
 }
 
 const defaultPageSizes = [10, 25, 50, 100];
@@ -101,6 +105,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
         page,
         onPageChange,
         pageSizes = defaultPageSizes,
+        toolbar,
     } = props;
 
     const theme = useTheme();
@@ -140,6 +145,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
 
     return (
         <Paper>
+            {toolbar}
             <TableContainer>
                 <Table>
                     <TableHead>

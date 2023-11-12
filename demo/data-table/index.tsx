@@ -2,6 +2,8 @@ import {Box, Container, SortDirection, Stack, Typography} from "@mui/material";
 import React, {useMemo, useState} from "react";
 import {
     DataTable,
+    DataTableColumn,
+    DataTableColumnSettings,
     DataTablePage,
     SpringPage,
     SpringPageable,
@@ -10,6 +12,7 @@ import {
     useSpringPageable
 } from "../../src";
 import {useAsync} from "react-async-hook";
+import {DataTableToolbar} from "../../src/data-table/DataTableToolbar";
 
 export function DataTableDemo() {
     return (
@@ -27,6 +30,7 @@ export function DataTableDemo() {
                 <SortableDataTable/>
                 <PagingDataTable/>
                 <SpringDataTable/>
+                <ColumnSettings/>
             </Stack>
         </Container>
     )
@@ -246,6 +250,41 @@ export function SpringDataTable() {
                 onSort={onSort}
                 onPageChange={onPageChange}
                 {...storage}
+            />
+        </Box>
+    )
+}
+
+export function ColumnSettings() {
+    const available = [
+        {label: "ID", field: "id", group: "Technical"},
+        {label: "Name", field: "name", group: "General"},
+        {label: "Description", field: "description", group: "General"},
+        {label: "Color", field: "color", group: "Properties"},
+        {label: "Taste", field: "taste", group: "Properties"},
+    ];
+    const [selected, setSelected] = useState<ReadonlyArray<DataTableColumn<Fruit>>>(available);
+    return (
+        <Box>
+            <Typography variant="h2" gutterBottom>
+                Column Settings
+            </Typography>
+            <DataTable
+                columns={selected}
+                rows={fruits}
+                toolbar={
+                    <DataTableToolbar>
+                        <DataTableColumnSettings
+                            available={available}
+                            selected={selected}
+                            onChange={setSelected}
+                            dialogTitle="Column Settings"
+                            selectLabel="Select columns"
+                            orderLabel="Order columns"
+                            closeLabel="Close"
+                        />
+                    </DataTableToolbar>
+                }
             />
         </Box>
     )
