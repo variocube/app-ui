@@ -11,3 +11,8 @@ export {default as MoveUpIcon} from "@mui/icons-material/ArrowUpward";
 export {default as MoveDownIcon} from "@mui/icons-material/ArrowDownward";
 export {default as RemoveIcon} from "@mui/icons-material/Remove";
 export {default as AddIcon} from "@mui/icons-material/Add";
+
+export {default as MoveUpCircleIcon} from "@mui/icons-material/ArrowCircleUp";
+export {default as MoveDownCircleIcon} from "@mui/icons-material/ArrowCircleDown";
+export {default as RemoveCircleIcon} from "@mui/icons-material/RemoveCircle";
+export {default as AddCircleIcon} from "@mui/icons-material/AddCircle";

@@ -42,13 +42,57 @@ interface Fruit {
     color: string;
     taste: string;
     description: string;
+    density: number;
+    calories: number;
+    stock: number;
+    price: number;
 }
 
 const fruits: Fruit[] = [
-    {id: 1, name: "Banana", color: "yellow", taste: "sweet", description: "Often used as measurement device"},
-    {id: 2, name: "Apple", color: "green", taste: "sour", description: "One per day keeps the doctor away"},
-    {id: 3, name: "Orange", color: "orange", taste: "fruity", description: "Helpful for Aperol Spriz"},
-    {id: 4, name: "Cherry", color: "red", taste: "sweet", description: "Great for picking"},
+    {
+        id: 1,
+        name: "Banana",
+        color: "yellow",
+        taste: "sweet",
+        description: "Often used as measurement device",
+        density: 951019.39,
+        calories: 100,
+        stock: 2,
+        price: 2.99,
+    },
+    {
+        id: 2,
+        name: "Apple",
+        color: "green",
+        taste: "sour",
+        description: "One per day keeps the doctor away",
+        density: 528344.1,
+        calories: 95,
+        stock: 50,
+        price: 1.99,
+    },
+    {
+        id: 3,
+        name: "Orange",
+        color: "orange",
+        taste: "fruity",
+        description: "Helpful for Aperol Spriz",
+        density: 718547.98,
+        calories: 73,
+        stock: 112,
+        price: 3.99,
+    },
+    {
+        id: 4,
+        name: "Cherry",
+        color: "red",
+        taste: "sweet",
+        description: "Great for picking",
+        density: 844327.52,
+        calories: 87,
+        stock: 1,
+        price: 6.99,
+    }
 ];
 
 export function SimpleDataTable() {
@@ -92,7 +136,7 @@ export function EmptyDataTable() {
 
 function compareFruits(a: Fruit, b: Fruit, sortField: keyof Fruit, sortDirection: SortDirection) {
     const factor = sortDirection == "desc" ? -1 : 1;
-    if (sortField == "id") {
+    if (sortField == "id" || sortField == "density" || sortField == "calories" || sortField == "price" || sortField == "stock") {
         return factor * (a[sortField] - b[sortField]);
     }
     else {
@@ -262,6 +306,10 @@ export function ColumnSettings() {
         {label: "Description", field: "description", group: "General"},
         {label: "Color", field: "color", group: "Properties"},
         {label: "Taste", field: "taste", group: "Properties"},
+        {label: "Density", field: "density", group: "Properties"},
+        {label: "Calories", field: "calories", group: "Properties"},
+        {label: "Stock", field: "stock", group: "Commercial"},
+        {label: "Price", field: "price", group: "Commercial"},
     ];
     const [selected, setSelected] = useState<ReadonlyArray<DataTableColumn<Fruit>>>(available);
     return (
@@ -275,13 +323,15 @@ export function ColumnSettings() {
                 toolbar={
                     <DataTableToolbar>
                         <DataTableColumnSettings
-                            available={available}
+                            columns={available}
                             selected={selected}
                             onChange={setSelected}
                             dialogTitle="Column Settings"
-                            selectLabel="Select columns"
-                            orderLabel="Order columns"
                             closeLabel="Close"
+                            addLabel="Add column"
+                            removeLabel="Remove column"
+                            moveUpLabel="Move up"
+                            moveDownLabel="Move down"
                         />
                     </DataTableToolbar>
                 }

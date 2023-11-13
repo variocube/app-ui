@@ -1,36 +1,38 @@
 import {DataTableColumn} from "./DataTable";
 import React, {Fragment, useState} from "react";
 import {
-    Box,
-    Button,
-    Checkbox,
+    Avatar,
     Dialog,
     DialogActions,
-    DialogContent,
-    DialogTitle,
-    Divider,
-    Hidden,
-    IconButton,
+    DialogTitle, IconButton,
     List,
+    ListItemAvatar,
     ListItemButton,
-    ListItemIcon,
     ListItemText,
     ListSubheader,
+    Menu,
     Stack,
-    Typography
 } from "@mui/material";
-import {MoveDownIcon, MoveUpIcon, TuningIcon} from "../icons";
+import {
+    AddCircleIcon,
+    CloseIcon,
+    MoveDownCircleIcon,
+    MoveUpCircleIcon,
+    RemoveCircleIcon,
+    TuningIcon
+} from "../icons";
 import {useFlag} from "../utils";
-import {Tabs} from "../tabs";
 
 export interface DataTableColumnButtonProps<T> {
-    available: ReadonlyArray<DataTableColumn<T>>;
+    columns: ReadonlyArray<DataTableColumn<T>>;
     selected: ReadonlyArray<DataTableColumn<T>>;
     onChange: (selected: ReadonlyArray<DataTableColumn<T>>) => any;
     dialogTitle: string;
     closeLabel: string;
-    selectLabel: string;
-    orderLabel: string;
+    addLabel: string;
+    moveUpLabel: string;
+    moveDownLabel: string;
+    removeLabel: string;
 }
 
 function groupColumns<T>(available: ReadonlyArray<DataTableColumn<T>>) {
@@ -53,28 +55,24 @@ function groupColumns<T>(available: ReadonlyArray<DataTableColumn<T>>) {
 
 export function DataTableColumnSettings<T>(props: DataTableColumnButtonProps<T>) {
     const {
-        available,
+        columns,
         selected,
         onChange,
         dialogTitle,
         closeLabel,
-        selectLabel,
-        orderLabel,
+        addLabel,
+        removeLabel,
+        moveUpLabel,
+        moveDownLabel,
     } = props;
 
     const [open, setOpen, clearOpen] = useFlag(false);
     const [focus, setFocus] = useState<string>();
-    const [tab, setTab] = useState<"select" | "order">("select");
+    const [addMenu, setAddMenu, clearAddMenu] = useFlag(false);
+    const [addAnchor, setAddAnchor] = useState<HTMLElement | null>(null);
 
+    const available = columns.filter(column => !selected.find(s => s.field == column.field));
     const {groups, other} = groupColumns(available);
-
-    function handleChange(column: DataTableColumn<T>, checked: boolean) {
-        if (checked) {
-            onChange([...selected, column]);
-        } else {
-            onChange(selected.filter(c => c.field != column.field));
-        }
-    }
 
     function move(sourceIndex: number, targetIndex: number) {
         const newSelected = [...selected];
@@ -98,70 +96,26 @@ export function DataTableColumnSettings<T>(props: DataTableColumnButtonProps<T>)
         }
     }
 
+    function remove() {
+        onChange(selected.filter(c => c.field != focus));
+        setFocus(undefined);
+    }
+
+    function add(column: DataTableColumn<T>) {
+        onChange([...selected, column]);
+        clearAddMenu();
+    }
+
     function changeFocus(column: DataTableColumn<T>) {
         setFocus(focus != column.field ? column.field : undefined)
     }
 
     function renderSelectListItems(columns: ReadonlyArray<DataTableColumn<T>>) {
         return columns.map(column => (
-            <ListItemButton key={column.field}>
-                <ListItemIcon>
-                    <Checkbox
-                        edge="start"
-                        checked={Boolean(selected.find(s => s.field == column.field))}
-                        onChange={(e) => handleChange(column, e.currentTarget.checked)}
-                    />
-                </ListItemIcon>
+            <ListItemButton key={column.field} onClick={() => add(column)}>
                 <ListItemText primary={column.label}/>
             </ListItemButton>
         ));
-    }
-
-    function renderSelect() {
-        return (
-            <List>
-                {Object.entries(groups).map(([group, columns]) => (
-                    <Fragment>
-                        <ListSubheader>{group}</ListSubheader>
-                        {renderSelectListItems(columns)}
-                    </Fragment>
-                ))}
-                {renderSelectListItems(other)}
-            </List>
-        )
-    }
-
-    function renderOrder() {
-        return (
-            (
-                <Fragment>
-                    <List>
-                        {selected.map(column => (
-                            <ListItemButton
-                                key={column.field}
-                                onClick={() => changeFocus(column)}
-                                selected={focus == column.field}
-                            >
-                                <ListItemText
-                                    primary={column.label}
-                                    secondary={column.group}
-                                />
-                            </ListItemButton>
-                        ))}
-                    </List>
-                    <DialogContent>
-                        <Stack spacing={2} direction="row" justifyContent="center">
-                            <IconButton onClick={moveUp} disabled={!focus} color="secondary">
-                                <MoveUpIcon/>
-                            </IconButton>
-                            <IconButton onClick={moveDown} disabled={!focus} color="secondary">
-                                <MoveDownIcon/>
-                            </IconButton>
-                        </Stack>
-                    </DialogContent>
-                </Fragment>
-            )
-        )
     }
 
     return (
@@ -169,41 +123,96 @@ export function DataTableColumnSettings<T>(props: DataTableColumnButtonProps<T>)
             <IconButton onClick={setOpen}>
                 <TuningIcon/>
             </IconButton>
-            <Dialog open={open} onClose={clearOpen} fullWidth maxWidth="md">
+            <Dialog open={open} onClose={clearOpen} fullWidth maxWidth="xs">
                 <DialogTitle>
                     {dialogTitle}
                 </DialogTitle>
-                <Hidden mdUp>
-                    <Tabs
-                        value={tab}
-                        onChange={(_, value) => setTab(value)}
-                        items={[
-                            {label: selectLabel, value: "select"},
-                            {label: orderLabel, value: "order"},
-                        ]}
-                    />
-                    {tab == "select" && renderSelect()}
-                    {tab == "order" && renderOrder()}
-
-                </Hidden>
-                <Hidden mdDown>
-                    <Stack direction="row">
-                        <Box sx={{flex: 1}}>
-                            <Typography variant="h6" px={2} gutterBottom>{selectLabel}</Typography>
-                            {renderSelect()}
-                        </Box>
-                        <Divider orientation="vertical" flexItem/>
-                        <Box sx={{flex: 1}}>
-                            <Typography variant="h6" px={2} gutterBottom>{orderLabel}</Typography>
-                            {renderOrder()}
-                        </Box>
-                    </Stack>
-                </Hidden>
+                <IconButton
+                    aria-label={closeLabel}
+                    title={closeLabel}
+                    onClick={clearOpen}
+                    sx={{
+                        position: 'absolute',
+                        right: 8,
+                        top: 8,
+                    }}
+                >
+                    <CloseIcon />
+                </IconButton>
+                <List sx={{flex: 1, overflowY: "scroll"}}>
+                    {selected.map((column, index) => (
+                        <ListItemButton
+                            key={column.field}
+                            onClick={() => changeFocus(column)}
+                            selected={focus == column.field}
+                        >
+                            <ListItemAvatar>
+                                <Avatar>{index + 1}</Avatar>
+                            </ListItemAvatar>
+                            <ListItemText
+                                primary={column.label}
+                                secondary={column.group}
+                            />
+                        </ListItemButton>
+                    ))}
+                </List>
                 <DialogActions>
-                    <Button color="primary" onClick={clearOpen}>
-                        {closeLabel}
-                    </Button>
+                    <Stack spacing={2} direction="row" justifyContent="space-between" flex={1}>
+                        <IconButton
+                            onClick={setAddMenu}
+                            ref={setAddAnchor}
+                            disabled={available.length == 0}
+                            color="primary"
+                            title={addLabel}
+                            size="large"
+                        >
+                            <AddCircleIcon fontSize="large"/>
+                        </IconButton>
+                        <Stack spacing={2} direction="row" justifyContent="center">
+                            <IconButton
+                                onClick={moveUp}
+                                disabled={!focus}
+                                color="secondary"
+                                title={moveUpLabel}
+                                size="large"
+                            >
+                                <MoveUpCircleIcon fontSize="large"/>
+                            </IconButton>
+                            <IconButton
+                                onClick={moveDown}
+                                disabled={!focus}
+                                color="secondary"
+                                title={moveDownLabel}
+                                size="large"
+                            >
+                                <MoveDownCircleIcon fontSize="large"/>
+                            </IconButton>
+                        </Stack>
+                        <IconButton
+                            onClick={remove}
+                            disabled={!focus}
+                            color="error"
+                            title={removeLabel}
+                            size="large"
+                        >
+                            <RemoveCircleIcon fontSize="large"/>
+                        </IconButton>
+                    </Stack>
                 </DialogActions>
+
+                <Menu
+                    open={addMenu}
+                    anchorEl={addAnchor}
+                    onClose={clearAddMenu}
+                >
+                    {Object.entries(groups).map(([group, columns]) => (
+                        <Fragment>
+                            <ListSubheader>{group}</ListSubheader>
+                            {renderSelectListItems(columns)}
+                        </Fragment>
+                    ))}
+                    {renderSelectListItems(other)}
+                </Menu>
             </Dialog>
         </Fragment>
     )
