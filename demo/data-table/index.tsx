@@ -1,10 +1,15 @@
 import {Box, Container, SortDirection, Stack, Typography} from "@mui/material";
 import React, {useMemo, useState} from "react";
 import {
+    createSimpleTFunc,
     DataTable,
+    DataTableColumn,
+    DataTableColumnSettings,
     DataTablePage,
+    DataTableToolbar,
     SpringPage,
     SpringPageable,
+    useDataTableColumnStorage,
     useDataTableStorage,
     useSpringPage,
     useSpringPageable
@@ -26,6 +31,7 @@ export function DataTableDemo() {
                 <EmptyDataTable/>
                 <SortableDataTable/>
                 <PagingDataTable/>
+                <ColumnSettings/>
                 <SpringDataTable/>
             </Stack>
         </Container>
@@ -38,14 +44,67 @@ interface Fruit {
     color: string;
     taste: string;
     description: string;
+    density: number;
+    calories: number;
+    stock: number;
+    price: number;
 }
 
 const fruits: Fruit[] = [
-    {id: 1, name: "Banana", color: "yellow", taste: "sweet", description: "Often used as measurement device"},
-    {id: 2, name: "Apple", color: "green", taste: "sour", description: "One per day keeps the doctor away"},
-    {id: 3, name: "Orange", color: "orange", taste: "fruity", description: "Helpful for Aperol Spriz"},
-    {id: 4, name: "Cherry", color: "red", taste: "sweet", description: "Great for picking"},
+    {
+        id: 1,
+        name: "Banana",
+        color: "yellow",
+        taste: "sweet",
+        description: "Often used as measurement device",
+        density: 951019.39,
+        calories: 100,
+        stock: 2,
+        price: 2.99,
+    },
+    {
+        id: 2,
+        name: "Apple",
+        color: "green",
+        taste: "sour",
+        description: "One per day keeps the doctor away",
+        density: 528344.1,
+        calories: 95,
+        stock: 50,
+        price: 1.99,
+    },
+    {
+        id: 3,
+        name: "Orange",
+        color: "orange",
+        taste: "fruity",
+        description: "Helpful for Aperol Spriz",
+        density: 718547.98,
+        calories: 73,
+        stock: 112,
+        price: 3.99,
+    },
+    {
+        id: 4,
+        name: "Cherry",
+        color: "red",
+        taste: "sweet",
+        description: "Great for picking",
+        density: 844327.52,
+        calories: 87,
+        stock: 1,
+        price: 6.99,
+    }
 ];
+
+const columnSettingsLabels = createSimpleTFunc({
+    title: "Columns Settings",
+    close: "Close",
+    add: "Add column",
+    remove: "Remove column",
+    moveUp: "Move up",
+    moveDown: "Move down",
+} as const);
 
 export function SimpleDataTable() {
     return (
@@ -88,7 +147,7 @@ export function EmptyDataTable() {
 
 function compareFruits(a: Fruit, b: Fruit, sortField: keyof Fruit, sortDirection: SortDirection) {
     const factor = sortDirection == "desc" ? -1 : 1;
-    if (sortField == "id") {
+    if (sortField == "id" || sortField == "density" || sortField == "calories" || sortField == "price" || sortField == "stock") {
         return factor * (a[sortField] - b[sortField]);
     }
     else {
@@ -196,6 +255,44 @@ export function PagingDataTable() {
 }
 
 
+export function ColumnSettings() {
+    const available = [
+        {label: "ID", field: "id", group: "Technical"},
+        {label: "Name", field: "name", group: "General"},
+        {label: "Description", field: "description", group: "General"},
+        {label: "Color", field: "color", group: "Properties"},
+        {label: "Taste", field: "taste", group: "Properties"},
+        {label: "Density", field: "density", group: "Properties"},
+        {label: "Calories", field: "calories", group: "Properties"},
+        {label: "Stock", field: "stock", group: "Commercial"},
+        {label: "Price", field: "price", group: "Commercial"},
+    ];
+    const [selected, setSelected] = useState<ReadonlyArray<DataTableColumn<Fruit>>>(available);
+    return (
+        <Box>
+            <Typography variant="h2" gutterBottom>
+                Column Settings
+            </Typography>
+            <DataTable
+                columns={selected}
+                rows={fruits}
+                toolbar={
+                    <DataTableToolbar>
+                        <DataTableColumnSettings
+                            columns={available}
+                            selected={selected}
+                            onChange={setSelected}
+                            labels={columnSettingsLabels}
+                        />
+                    </DataTableToolbar>
+                }
+            />
+        </Box>
+    )
+}
+
+
+
 function fakeSpringFetch(pageable: SpringPageable) {
     return new Promise<SpringPage<Fruit>>((resolve) => {
         setTimeout(() => {
@@ -215,6 +312,20 @@ function fakeSpringFetch(pageable: SpringPageable) {
 }
 
 export function SpringDataTable() {
+    const available = useMemo(() => ([
+        {label: "ID", field: "id", sortable: true, group: "Technical", default: true},
+        {label: "Name", field: "name", sortable: true, group: "General", default: true},
+        {label: "Description", field: "description", sortable: true, group: "General"},
+        {label: "Color", field: "color", sortable: true, group: "Properties", default: true},
+        {label: "Taste", field: "taste", sortable: true, group: "Properties", default: true},
+        {label: "Density", field: "density", sortable: true, group: "Properties"},
+        {label: "Calories", field: "calories", sortable: true, group: "Properties"},
+        {label: "Stock", field: "stock", sortable: true, group: "Commercial"},
+        {label: "Price", field: "price", sortable: true, group: "Commercial"},
+    ]), []);
+
+    const {columns, setColumns} = useDataTableColumnStorage("SpringDataTableColumns", available);
+
     const {onPageChange, onSort, ...storage} = useDataTableStorage("SpringDataTable", {
         pageSize: 4,
     });
@@ -232,12 +343,17 @@ export function SpringDataTable() {
                 using the <code>Pageable</code> and <code>Page</code> data types.
             </Typography>
             <DataTable
-                columns={[
-                    {label: "ID", field: "id", sortable: true},
-                    {label: "Name", field: "name", sortable: true},
-                    {label: "Color", field: "color", sortable: true},
-                    {label: "Taste", field: "taste", sortable: true}
-                ]}
+                toolbar={
+                    <DataTableToolbar>
+                        <DataTableColumnSettings
+                            columns={available}
+                            selected={columns}
+                            onChange={setColumns}
+                            labels={columnSettingsLabels}
+                        />
+                    </DataTableToolbar>
+                }
+                columns={columns}
                 rows={rows}
                 page={page}
                 loading={loading}
@@ -250,3 +366,4 @@ export function SpringDataTable() {
         </Box>
     )
 }
+
