@@ -90,7 +90,7 @@ export function Localization() {
 }
 
 export function TranslationDemo() {
-	const {t, hasKey, e, language, setLanguage} = useLocalization();
+	const {t, e, s, language, setLanguage} = useLocalization();
 
 	const handleLanguageChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => setLanguage(e.currentTarget.value),
@@ -131,6 +131,12 @@ export function TranslationDemo() {
 							<code>e("state", "pending")</code>
 						</TableCell>
 						<TableCell>{e("state", "pending")}</TableCell>
+					</TableRow>
+					<TableRow>
+						<TableCell>
+							<code>s("state")("pending")</code>
+						</TableCell>
+						<TableCell>{s("state")("pending")}</TableCell>
 					</TableRow>
 					<TableRow>
 						<TableCell>

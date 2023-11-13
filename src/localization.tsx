@@ -4,6 +4,7 @@ import Mustache from "mustache";
 import {useStorage} from "./storage";
 import {getNavigatorLanguages} from "./getNavigatorLanguages";
 import deepmerge from "deepmerge";
+import {defined} from "./utils";
 
 /**
  * Type for a message object (content of a translation file).
@@ -51,8 +52,11 @@ type SetLanguageFunc = (language: string | null) => any;
  * Returns the message associated with `key` in the current language.
  * Resolves placeholders with the values specified in `context`.
  */
-type TFunc<T> = (key: Leaves<T>, context?: Record<string, any>) => string;
+export type TFunc<T> = (key: Leaves<T>, context?: Record<string, any>) => string;
 
+/**
+ * Returns whether the specified key exists in the current language.
+ */
 type THasKeyFunc = (key: string) => boolean;
 
 
@@ -60,6 +64,14 @@ type THasKeyFunc = (key: string) => boolean;
  * Returns the value property `name` of the object associated with `key` in the current language.
  */
 type EFunc<T> = (key: Branches<T>, name: string) => string;
+
+
+type SFunc<T, P extends keyof T> = (prefix: P) => TFunc<T[P]>;
+
+/**
+ * Helper type for defining a function that resolves labels of a component.
+ */
+export type Labels<Key extends string> = TFunc<Record<Key, string>>;
 
 /**
  * The object returned by `useLocalization`.
@@ -80,6 +92,11 @@ export interface Localization<T extends MessageObject> {
      * Returns the value property `name` of the object associated with `key` in the current language.
      */
     e: EFunc<T>;
+
+    /**
+     * Returns a t-function for the subset of keys under the specified prefix.
+     */
+    s: SFunc<T, keyof T>;
 
     /**
      * Returns the currently used language.
@@ -252,16 +269,23 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
             }
         }, [messages, handleMissing]);
 
-        const hasKey = useCallback((key: Leaves<T>) => {
-            return !!messages && (!!getString(messages, key))
+        const hasKey = useCallback((key: string) => {
+            return defined(messages) && defined(getString(messages, key));
         }, [messages]);
 
         const e = useCallback((key: Branches<T>, name: string) => t(key + "." + name as Leaves<T>), [t]);
+
+        function _s<P extends string & keyof T>(prefix: P) {
+            return (key: string & keyof T[P]) => t(`${prefix}.${key}` as Leaves<T>);
+        }
+
+        const s = useCallback(_s, [t]);
 
         return {
             t,
             hasKey,
             e,
+            s,
             language,
             setLanguage
         } as Localization<T>;
@@ -309,7 +333,7 @@ function defaultMissing(key: string) {
 
 /*
  * Prepare for some heavy TypeScript shenanigans.
- * This actually enables type checking in the `t()` and `o()` functions.
+ * This enables type checking in the `t()` function and friends.
  *
  * Inspired by:
  * https://stackoverflow.com/questions/58434389/typescript-deep-keyof-of-a-nested-object/58436959#58436959
@@ -363,11 +387,18 @@ type Leaves<T, D extends number = MaxDepth> = [D] extends [never]
  */
 type Branches<T> = Exclude<Paths<T>, Leaves<T>>;
 
-function getString<T extends MessageObject>(obj: T, key: Leaves<T>) {
+function getString<T extends MessageObject>(obj: T, key: string) {
     return getKey(obj, key)?.toString();
 }
 
 function getKey<T extends MessageObject>(obj: T, key: string) {
     return key.split('.')
         .reduce((obj, key) => obj && obj[key] as any, obj) as any as (string | MessageObject | undefined);
+}
+
+/**
+ * Creates a simple TFunc from an object.
+ */
+export function createSimpleTFunc<T extends MessageObject>(obj: T): TFunc<T> {
+    return (key: Leaves<T>) => getString(obj, key) ?? "key not found";
 }

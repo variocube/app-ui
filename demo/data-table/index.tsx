@@ -1,10 +1,12 @@
 import {Box, Container, SortDirection, Stack, Typography} from "@mui/material";
 import React, {useMemo, useState} from "react";
 import {
+    createSimpleTFunc,
     DataTable,
     DataTableColumn,
     DataTableColumnSettings,
     DataTablePage,
+    DataTableToolbar,
     SpringPage,
     SpringPageable,
     useDataTableColumnStorage,
@@ -13,7 +15,6 @@ import {
     useSpringPageable
 } from "../../src";
 import {useAsync} from "react-async-hook";
-import {DataTableToolbar} from "../../src/data-table/DataTableToolbar";
 
 export function DataTableDemo() {
     return (
@@ -95,6 +96,15 @@ const fruits: Fruit[] = [
         price: 6.99,
     }
 ];
+
+const columnSettingsLabels = createSimpleTFunc({
+    title: "Columns Settings",
+    close: "Close",
+    add: "Add column",
+    remove: "Remove column",
+    moveUp: "Move up",
+    moveDown: "Move down",
+} as const);
 
 export function SimpleDataTable() {
     return (
@@ -272,12 +282,7 @@ export function ColumnSettings() {
                             columns={available}
                             selected={selected}
                             onChange={setSelected}
-                            dialogTitle="Column Settings"
-                            closeLabel="Close"
-                            addLabel="Add column"
-                            removeLabel="Remove column"
-                            moveUpLabel="Move up"
-                            moveDownLabel="Move down"
+                            labels={columnSettingsLabels}
                         />
                     </DataTableToolbar>
                 }
@@ -344,12 +349,7 @@ export function SpringDataTable() {
                             columns={available}
                             selected={columns}
                             onChange={setColumns}
-                            dialogTitle="Column Settings"
-                            closeLabel="Close"
-                            addLabel="Add column"
-                            removeLabel="Remove column"
-                            moveUpLabel="Move up"
-                            moveDownLabel="Move down"
+                            labels={columnSettingsLabels}
                         />
                     </DataTableToolbar>
                 }

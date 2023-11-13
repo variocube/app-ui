@@ -4,7 +4,8 @@ import {
     Avatar,
     Dialog,
     DialogActions,
-    DialogTitle, IconButton,
+    DialogTitle,
+    IconButton,
     List,
     ListItemAvatar,
     ListItemButton,
@@ -13,26 +14,15 @@ import {
     Menu,
     Stack,
 } from "@mui/material";
-import {
-    AddCircleIcon,
-    CloseIcon,
-    MoveDownCircleIcon,
-    MoveUpCircleIcon,
-    RemoveCircleIcon,
-    TuningIcon
-} from "../icons";
+import {AddCircleIcon, CloseIcon, MoveDownCircleIcon, MoveUpCircleIcon, RemoveCircleIcon, TuningIcon} from "../icons";
 import {useFlag} from "../utils";
+import {Labels} from "../localization";
 
 export interface DataTableColumnButtonProps<T> {
     columns: ReadonlyArray<DataTableColumn<T>>;
     selected: ReadonlyArray<DataTableColumn<T>>;
     onChange: (selected: ReadonlyArray<DataTableColumn<T>>) => any;
-    dialogTitle: string;
-    closeLabel: string;
-    addLabel: string;
-    moveUpLabel: string;
-    moveDownLabel: string;
-    removeLabel: string;
+    labels: Labels<"title" | "close" | "add" | "remove" | "moveUp" | "moveDown">;
 }
 
 function groupColumns<T>(available: ReadonlyArray<DataTableColumn<T>>) {
@@ -58,12 +48,7 @@ export function DataTableColumnSettings<T>(props: DataTableColumnButtonProps<T>)
         columns,
         selected,
         onChange,
-        dialogTitle,
-        closeLabel,
-        addLabel,
-        removeLabel,
-        moveUpLabel,
-        moveDownLabel,
+        labels,
     } = props;
 
     const [open, setOpen, clearOpen] = useFlag(false);
@@ -120,16 +105,16 @@ export function DataTableColumnSettings<T>(props: DataTableColumnButtonProps<T>)
 
     return (
         <Fragment>
-            <IconButton onClick={setOpen}>
+            <IconButton onClick={setOpen} title={labels("title")}>
                 <TuningIcon/>
             </IconButton>
             <Dialog open={open} onClose={clearOpen} fullWidth maxWidth="xs">
                 <DialogTitle>
-                    {dialogTitle}
+                    {labels("title")}
                 </DialogTitle>
                 <IconButton
-                    aria-label={closeLabel}
-                    title={closeLabel}
+                    aria-label={labels("close")}
+                    title={labels("close")}
                     onClick={clearOpen}
                     sx={{
                         position: 'absolute',
@@ -137,7 +122,7 @@ export function DataTableColumnSettings<T>(props: DataTableColumnButtonProps<T>)
                         top: 8,
                     }}
                 >
-                    <CloseIcon />
+                    <CloseIcon/>
                 </IconButton>
                 <List sx={{flex: 1, overflowY: "scroll"}}>
                     {selected.map((column, index) => (
@@ -163,7 +148,7 @@ export function DataTableColumnSettings<T>(props: DataTableColumnButtonProps<T>)
                             ref={setAddAnchor}
                             disabled={available.length == 0}
                             color="primary"
-                            title={addLabel}
+                            title={labels("add")}
                             size="large"
                         >
                             <AddCircleIcon fontSize="large"/>
@@ -173,7 +158,7 @@ export function DataTableColumnSettings<T>(props: DataTableColumnButtonProps<T>)
                                 onClick={moveUp}
                                 disabled={!focus}
                                 color="secondary"
-                                title={moveUpLabel}
+                                title={labels("moveUp")}
                                 size="large"
                             >
                                 <MoveUpCircleIcon fontSize="large"/>
@@ -182,7 +167,7 @@ export function DataTableColumnSettings<T>(props: DataTableColumnButtonProps<T>)
                                 onClick={moveDown}
                                 disabled={!focus}
                                 color="secondary"
-                                title={moveDownLabel}
+                                title={labels("moveDown")}
                                 size="large"
                             >
                                 <MoveDownCircleIcon fontSize="large"/>
@@ -192,7 +177,7 @@ export function DataTableColumnSettings<T>(props: DataTableColumnButtonProps<T>)
                             onClick={remove}
                             disabled={!focus}
                             color="error"
-                            title={removeLabel}
+                            title={labels("remove")}
                             size="large"
                         >
                             <RemoveCircleIcon fontSize="large"/>

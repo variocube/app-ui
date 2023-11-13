@@ -4,3 +4,4 @@ export * from "./useDataTableColumnStorage";
 export * from "./useSpringPageable";
 export * from "./useSpringPage";
 export * from "./DataTableColumnSettings";
+export * from "./DataTableToolbar";
