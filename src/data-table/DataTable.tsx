@@ -28,6 +28,7 @@ export interface DataTableColumn<T> {
     sortable?: boolean;
     component?: FC<DataTableCellProps<T>>;
     group?: string;
+    default?: boolean;
 }
 
 export interface DataTableCellProps<T> {

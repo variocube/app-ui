@@ -7,6 +7,7 @@ import {
     DataTablePage,
     SpringPage,
     SpringPageable,
+    useDataTableColumnStorage,
     useDataTableStorage,
     useSpringPage,
     useSpringPageable
@@ -29,8 +30,8 @@ export function DataTableDemo() {
                 <EmptyDataTable/>
                 <SortableDataTable/>
                 <PagingDataTable/>
-                <SpringDataTable/>
                 <ColumnSettings/>
+                <SpringDataTable/>
             </Stack>
         </Container>
     )
@@ -244,61 +245,6 @@ export function PagingDataTable() {
 }
 
 
-function fakeSpringFetch(pageable: SpringPageable) {
-    return new Promise<SpringPage<Fruit>>((resolve) => {
-        setTimeout(() => {
-            console.log("pageable", pageable);
-            const {page = 0, size = 10, sort = "id,asc"} = pageable;
-            const [sortField, sortDirection] = sort.split(",");
-            resolve({
-                content: fruits
-                    .sort((a, b) => compareFruits(a, b, sortField as keyof Fruit, sortDirection as SortDirection))
-                    .map(fruit => ({...fruit, id: page * size + fruit.id})),
-                totalElements: 1000,
-                number: page,
-                size: size,
-            } as SpringPage<Fruit>)
-        }, 200);
-    });
-}
-
-export function SpringDataTable() {
-    const {onPageChange, onSort, ...storage} = useDataTableStorage("SpringDataTable", {
-        pageSize: 4,
-    });
-    const pageable = useSpringPageable(storage);
-    const {loading, error, result} = useAsync(() => fakeSpringFetch(pageable), [pageable]);
-    const {rows, page} = useSpringPage(result);
-
-    return (
-        <Box>
-            <Typography variant="h2" gutterBottom>
-                Spring data table
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-                This data table emulates fetching from a Spring REST-API
-                using the <code>Pageable</code> and <code>Page</code> data types.
-            </Typography>
-            <DataTable
-                columns={[
-                    {label: "ID", field: "id", sortable: true},
-                    {label: "Name", field: "name", sortable: true},
-                    {label: "Color", field: "color", sortable: true},
-                    {label: "Taste", field: "taste", sortable: true}
-                ]}
-                rows={rows}
-                page={page}
-                loading={loading}
-                error={error}
-                pageSizes={[4]}
-                onSort={onSort}
-                onPageChange={onPageChange}
-                {...storage}
-            />
-        </Box>
-    )
-}
-
 export function ColumnSettings() {
     const available = [
         {label: "ID", field: "id", group: "Technical"},
@@ -339,3 +285,85 @@ export function ColumnSettings() {
         </Box>
     )
 }
+
+
+
+function fakeSpringFetch(pageable: SpringPageable) {
+    return new Promise<SpringPage<Fruit>>((resolve) => {
+        setTimeout(() => {
+            console.log("pageable", pageable);
+            const {page = 0, size = 10, sort = "id,asc"} = pageable;
+            const [sortField, sortDirection] = sort.split(",");
+            resolve({
+                content: fruits
+                    .sort((a, b) => compareFruits(a, b, sortField as keyof Fruit, sortDirection as SortDirection))
+                    .map(fruit => ({...fruit, id: page * size + fruit.id})),
+                totalElements: 1000,
+                number: page,
+                size: size,
+            } as SpringPage<Fruit>)
+        }, 200);
+    });
+}
+
+export function SpringDataTable() {
+    const available = useMemo(() => ([
+        {label: "ID", field: "id", sortable: true, group: "Technical", default: true},
+        {label: "Name", field: "name", sortable: true, group: "General", default: true},
+        {label: "Description", field: "description", sortable: true, group: "General"},
+        {label: "Color", field: "color", sortable: true, group: "Properties", default: true},
+        {label: "Taste", field: "taste", sortable: true, group: "Properties", default: true},
+        {label: "Density", field: "density", sortable: true, group: "Properties"},
+        {label: "Calories", field: "calories", sortable: true, group: "Properties"},
+        {label: "Stock", field: "stock", sortable: true, group: "Commercial"},
+        {label: "Price", field: "price", sortable: true, group: "Commercial"},
+    ]), []);
+
+    const {columns, setColumns} = useDataTableColumnStorage("SpringDataTableColumns", available);
+
+    const {onPageChange, onSort, ...storage} = useDataTableStorage("SpringDataTable", {
+        pageSize: 4,
+    });
+    const pageable = useSpringPageable(storage);
+    const {loading, error, result} = useAsync(() => fakeSpringFetch(pageable), [pageable]);
+    const {rows, page} = useSpringPage(result);
+
+    return (
+        <Box>
+            <Typography variant="h2" gutterBottom>
+                Spring data table
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+                This data table emulates fetching from a Spring REST-API
+                using the <code>Pageable</code> and <code>Page</code> data types.
+            </Typography>
+            <DataTable
+                toolbar={
+                    <DataTableToolbar>
+                        <DataTableColumnSettings
+                            columns={available}
+                            selected={columns}
+                            onChange={setColumns}
+                            dialogTitle="Column Settings"
+                            closeLabel="Close"
+                            addLabel="Add column"
+                            removeLabel="Remove column"
+                            moveUpLabel="Move up"
+                            moveDownLabel="Move down"
+                        />
+                    </DataTableToolbar>
+                }
+                columns={columns}
+                rows={rows}
+                page={page}
+                loading={loading}
+                error={error}
+                pageSizes={[4]}
+                onSort={onSort}
+                onPageChange={onPageChange}
+                {...storage}
+            />
+        </Box>
+    )
+}
+
