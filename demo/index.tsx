@@ -221,9 +221,15 @@ function HelpDemo() {
 									</Grid>
 									<Grid item xs={12}>
 										<Typography variant="body1">
-											This is some test text
+											Test Tenant_Settings#Sites, empty language
 											<HelpButton helpPage="Tenant_Settings" helpAnchor={"Sites"} language={""} />
+										</Typography>
+										<Typography variant="body1">
+											Test Tenant_Settings#Building_Cube_Mappings, de language
 											<HelpButton helpPage="Tenant_Settings" helpAnchor={"Building_Cube_Mappings"} language={"de"} />
+										</Typography>
+										<Typography variant="body1">
+											Test Delivery_Create#Manual_handover_required, empty language
 											<HelpButton helpPage="Delivery_Create" helpAnchor={"Manual_handover_required"} language={""} />
 										</Typography>
 									</Grid>
