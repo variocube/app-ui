@@ -5,28 +5,40 @@ import {Help} from "@mui/icons-material";
 import {useCallback, useMemo} from "react";
 
 interface HelpProps {
-    helpKey: string;
+    helpPage : string;
+    helpAnchor : string;
+    language : string; 
 }
 
-export function HelpButton({helpKey}: HelpProps) {
-    const {baseUrl, selectedHelpKey, setSelectedHelpKey, clearSelectedHelpKey} = useHelpSettingsContext();
+export function HelpButton({helpPage, helpAnchor = "", language = ""}: HelpProps) {
+    const {baseUrl, 
+        selectedHelpPage: selectedHelpPage, setSelectedHelpPage: setSelectedHelpPage, clearSelectedHelpPage: clearSelectedHelpPage,
+        selectedHelpAnchor : selectedHelpAnchor, setSelectedHelpAnchor: setSelectedHelpAnchor, clearSelectedHelpAnchor: clearSelectedHelpAnchor,
+        selectedHelpLanguage : selectedHelpLanguage, setSelectedHelpLanguage: setSelectedHelpLanguage,clearSelectedHelpLanguage: clearSelectedHelpLanguage
+    } = useHelpSettingsContext();
 
-    const selected = useMemo<boolean>(() => selectedHelpKey === helpKey, [selectedHelpKey, helpKey]);
+    const currentSelectedHelpPage = useMemo<boolean>(() => selectedHelpPage === helpPage, [selectedHelpPage, helpPage]);
+    const currentSelectedHelpAnchor = useMemo<boolean>(() => selectedHelpAnchor === helpAnchor, [selectedHelpAnchor, helpAnchor]);
+    const currentselectedHelpLanguage = useMemo<boolean>(() => selectedHelpLanguage === language, [selectedHelpLanguage, language]);
 
     const handleHelpButtonClicked = useCallback(() => {
-        if(!selected) {
-            setSelectedHelpKey(helpKey);
+        if(!currentSelectedHelpPage) {
+            setSelectedHelpPage(helpPage);
+            setSelectedHelpAnchor(helpAnchor || "");
+            setSelectedHelpLanguage(language || "");
         }else {
-            clearSelectedHelpKey();
+            clearSelectedHelpPage();
+            clearSelectedHelpAnchor();
+            clearSelectedHelpLanguage();
         }
-    }, [helpKey, selected]);
+    }, [helpPage, currentSelectedHelpPage, currentSelectedHelpAnchor, currentselectedHelpLanguage]);
 
     if(!baseUrl) {
         return null;
     }
 
     return (
-        <IconButton onClick={handleHelpButtonClicked} size="small" color={selected ? "primary" : "default"}>
+        <IconButton onClick={handleHelpButtonClicked} size="small" color={currentSelectedHelpPage && currentSelectedHelpAnchor && currentselectedHelpLanguage ? "primary" : "default"}>
             <Help />
         </IconButton>
     );
