@@ -1,28 +1,37 @@
 import * as React from "react";
 import {Drawer, Grid, IconButton, Toolbar} from "@mui/material";
 import {useHelpSettingsContext} from "./HelpSettingsContext";
-import {useCallback, useMemo} from "react";
+import {LegacyRef, useCallback, useMemo} from "react";
 import {Close, OpenInNew} from "@mui/icons-material";
 
-interface HelpDrawerProps {
+export const buildHelpDrawerUrl = (selectedHelpAnchor = "", selectedHelpLanguage = "", selectedHelpPage = "", baseUrl: string) => {
+    let extraAnchor = selectedHelpAnchor ? `#${selectedHelpAnchor}` : "";
+    let extraLanguage = selectedHelpLanguage ? `/${selectedHelpLanguage}` : "";
+    return `${baseUrl}${selectedHelpPage}${extraLanguage}${extraAnchor}`;
 }
 
-export function HelpDrawer(props: HelpDrawerProps) {
-    const {baseUrl, selectedHelpKey, clearSelectedHelpKey} = useHelpSettingsContext();
+export function HelpDrawer() {
+    const {baseUrl, selectedHelpPage: selectedHelpPage, clearSelectedHelpPage: clearSelectedHelpPage, 
+        selectedHelpAnchor : selectedHelpAnchor, clearSelectedHelpAnchor: clearSelectedHelpAnchor,
+        selectedHelpLanguage : selectedHelpLanguage, clearSelectedHelpLanguage: clearSelectedHelpLanguage} = useHelpSettingsContext();
 
-    const open = useMemo<boolean>(() => Boolean(selectedHelpKey), [selectedHelpKey]);
+    const open = useMemo<boolean>(() => Boolean(selectedHelpPage), [selectedHelpPage, selectedHelpAnchor, selectedHelpLanguage]);
     const url = useMemo<string>(() => {
-        if(selectedHelpKey) {
-            return `${baseUrl}${selectedHelpKey}`;
+        if(selectedHelpPage) {
+            return buildHelpDrawerUrl(selectedHelpAnchor,selectedHelpLanguage, selectedHelpPage, baseUrl);
         }else {
             return `${baseUrl}`;
         }
-    }, [baseUrl, selectedHelpKey]);
+    }, [baseUrl, selectedHelpPage, selectedHelpLanguage, selectedHelpAnchor]);
+
+    const iframe = React.useRef<HTMLIFrameElement>(null);
 
     const handleOpenInNew = useCallback(() => {
         window.open(url, url);
-        clearSelectedHelpKey();
-    }, [url, clearSelectedHelpKey]);
+        clearSelectedHelpPage();
+        clearSelectedHelpLanguage();
+        clearSelectedHelpAnchor();
+    }, [url, clearSelectedHelpPage]);
 
     return (
         <Drawer open={open} anchor="right" variant="persistent">
@@ -30,7 +39,7 @@ export function HelpDrawer(props: HelpDrawerProps) {
                 <Grid item xs={12}>
                     <Grid container>
                         <Grid item style={{flexGrow: 1}}>
-                            <IconButton size="small" onClick={() => clearSelectedHelpKey()}>
+                            <IconButton size="small" onClick={() => clearSelectedHelpPage()}>
                                 <Close />
                             </IconButton>
                         </Grid>
@@ -43,7 +52,11 @@ export function HelpDrawer(props: HelpDrawerProps) {
                 </Grid>
                 {open &&
                     <Grid item xs={12} sx={{height: "100%"}}>
-                        <iframe src={url + "?useformat=mobile"} style={{border: 0, overflow: "scroll", height: "100%", width: "100%"}}/>
+                        <iframe onLoad={()=>{
+                            if (selectedHelpAnchor){
+                                iframe.current?.contentWindow?.postMessage(selectedHelpAnchor, "*");
+                            }
+                        }} ref={iframe} src={url + "?useformat=mobile"} style={{border: 0, overflow: "scroll", height: "100%", width: "100%"}}/>
                     </Grid>
                 }
             </Grid>
