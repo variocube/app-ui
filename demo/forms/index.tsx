@@ -1,6 +1,6 @@
 import {Button, Card, CardActions, CardContent, Container, Stack, Typography} from "@mui/material";
 import * as React from "react";
-import {EditForm, TextField} from "../../src";
+import {EditForm, SearchForm, TextField} from "../../src";
 import {useAsync} from "react-async-hook";
 import {useEffect, useState} from "react";
 
@@ -20,6 +20,13 @@ export function Forms() {
                     and while saving the data.
                 </Typography>
                 <EditFormDemo/>
+                <Typography variant="h2" gutterBottom>
+                    Search Form
+                </Typography>
+                <Typography variant="body1">
+                    A form containing a <code>TextField</code> with an embedded submit button showing a search icon.
+                </Typography>
+                <SearchFormDemo/>
             </Stack>
         </Container>
     )
@@ -79,5 +86,19 @@ export function EditFormDemo() {
                 </CardContent>
             </EditForm>
         </Stack>
+    )
+}
+
+function SearchFormDemo() {
+    const [search, setSearch] = useState("");
+    return (
+        <Card>
+            <CardContent>
+                <SearchForm search={search} onSearch={setSearch}/>
+            </CardContent>
+            <CardContent>
+                You are searching for: {search}
+            </CardContent>
+        </Card>
     )
 }
