@@ -61,7 +61,7 @@ interface FlagChipProps extends FlagProps {
 
 function FlagChip({label, color, Icon, minimized}: FlagChipProps) {
 	return (
-		<Tooltip title={minimized ? label : undefined} placement="top">
+		<Tooltip title={minimized ? label : ''} placement="top">
 			<Chip
 				sx={{
 					borderColor: color,
