@@ -49,6 +49,8 @@ import {Localization} from "./localization";
 import {TabsDemo} from "./tabs";
 import {Theme} from "./theme";
 
+declare const VERSION: string;
+
 function Demo() {
 	return (
 		<BrowserRouter>
@@ -210,7 +212,7 @@ function ContainerDemo() {
 function HelpDemo() {
 	return (
 		<ContainerSettingsContextProvider>
-			<HelpSettingsContextProvider baseUrl="https://docs.variocube.com/logistics/">
+			<HelpSettingsContextProvider baseUrl="https://docs.variocube.com/logistics/" localStorageVar="appUiLastSeenVersion" currentVersion={VERSION} changeLogUrl="https://docs.variocube.com/logistics/Logistics_Changelog">
 				<ContainerLayout>
 					<Grid container spacing={3}>
 						<Grid item xs={12}>
