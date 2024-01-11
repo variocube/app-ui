@@ -15,7 +15,7 @@ import {
 import {
 	Box,
 	Button,
-	Container,
+	Container, DialogContent,
 	Grid,
 	List,
 	ListItemButton,
@@ -23,6 +23,7 @@ import {
 	ListItemText,
 	Paper,
 	Typography,
+	Link as MuiLink
 } from "@mui/material";
 import * as React from "react";
 import {useLocation} from "react-router";
@@ -210,9 +211,27 @@ function ContainerDemo() {
 }
 
 function HelpDemo() {
+
+	const localStorageVar = "appUiLastSeenVersion";
+	const changeLogUrl = "https://docs.variocube.com/logistics/Logistics_Changelog";
+	const dialogTitle = "New Version";
+
+	const dialogContent: React.ReactNode = (
+		<DialogContent>
+			<Typography>{`This is a newer Version of the application (${VERSION}). The last version you used was ${localStorage.getItem(localStorageVar ? localStorageVar : "")}.`}</Typography>
+			<Typography>Please go to the <MuiLink href={changeLogUrl} target="_blank">Change Log Page</MuiLink> to see the latest updates.</Typography>
+		</DialogContent>
+	);
+
 	return (
 		<ContainerSettingsContextProvider>
-			<HelpSettingsContextProvider baseUrl="https://docs.variocube.com/logistics/" localStorageVar="appUiLastSeenVersion" currentVersion={VERSION} changeLogUrl="https://docs.variocube.com/logistics/Logistics_Changelog">
+			<HelpSettingsContextProvider
+				baseUrl="https://docs.variocube.com/logistics/"
+				localStorageVar={localStorageVar}
+				currentVersion={VERSION}
+				dialogTitle={dialogTitle}
+				dialogContent={dialogContent}
+				changeLogUrl={changeLogUrl}>
 				<ContainerLayout>
 					<Grid container spacing={3}>
 						<Grid item xs={12}>

@@ -1,6 +1,16 @@
 import * as React from "react";
-import {createContext, Fragment, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState} from "react";
-import {Button, Dialog, DialogActions, DialogTitle, Link} from "@mui/material";
+import {
+    createContext,
+    Fragment,
+    PropsWithChildren,
+    ReactNode,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState
+} from "react";
+import {Button, Dialog, DialogActions, DialogTitle} from "@mui/material";
 const semver = require('semver')
 
 interface HelpSettingsContextData {
@@ -36,9 +46,11 @@ interface HelpSettingsContextProviderProps {
     localStorageVar?: string;
     changeLogUrl?: string;
     currentVersion?: string;
+    dialogTitle?: string;
+    dialogContent?: ReactNode;
 }
 
-export function HelpSettingsContextProvider({baseUrl,localStorageVar, changeLogUrl, currentVersion, children}: PropsWithChildren<HelpSettingsContextProviderProps>) {
+export function HelpSettingsContextProvider({baseUrl,localStorageVar, changeLogUrl, currentVersion, dialogTitle, dialogContent, children}: PropsWithChildren<HelpSettingsContextProviderProps>) {
     const [selectedHelpPage, setSelectedHelpPage] = useState<string | undefined>();
     const [selectedHelpAnchor, setSelectedHelpAnchor] = useState<string | undefined>();
     const [selectedHelpLanguage, setSelectedHelpLanguage] = useState<string | undefined>();
@@ -48,7 +60,6 @@ export function HelpSettingsContextProvider({baseUrl,localStorageVar, changeLogU
     }, []);
 
     const [openDialog, setOpenDialog] = useState<boolean>(false);
-    const [showDetailedDialog, setShowDetailedDialog] = useState<boolean>(false);
 
     const clearSelectedHelpPage = useCallback(() => {
         setSelectedHelpPage(undefined);
@@ -82,16 +93,12 @@ export function HelpSettingsContextProvider({baseUrl,localStorageVar, changeLogU
     ]);
 
     useEffect( () => {
-        if(changeLogUrl && localStorageVar){
-            if(localStorage.getItem(localStorageVar)){
-                if(semver.lt(localStorage.getItem(localStorageVar), currentVersion)){
-                    setShowDetailedDialog(true);
-                    setOpenDialog(true);
-                }
-            }else{
-                // Show Dialog with general info
-                setShowDetailedDialog(false);
+        if(changeLogUrl && localStorageVar && currentVersion){
+            const lastSeenVersion = localStorage.getItem(localStorageVar);
+            if(lastSeenVersion && semver.lt(lastSeenVersion, currentVersion)){
                 setOpenDialog(true);
+            }else{
+                localStorage.setItem(localStorageVar, currentVersion);
             }
         }
     }, []);
@@ -108,19 +115,13 @@ export function HelpSettingsContextProvider({baseUrl,localStorageVar, changeLogU
         <HelpSettingsContext.Provider value={defaultContext}>
             {children}
         </HelpSettingsContext.Provider>
-        <Dialog open={openDialog}>
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth>
             <DialogTitle>
-                {showDetailedDialog &&
-                  <div>
-                    This is a newer Version of the application ({currentVersion}). The last version you used was {localStorage.getItem(localStorageVar ? localStorageVar : "")}. Please go to the to <Link href={changeLogUrl ? changeLogUrl : ""} target="_blank">Change Log Page</Link> see the last updates.
-                  </div>
-                }
-                {!showDetailedDialog &&
-                  <div>
-                    You can find the Change Log for this application here: <Link href={changeLogUrl ? changeLogUrl : ""} target="_blank">Go to Change Log</Link>
-                  </div>
-                }
+                {dialogTitle}
             </DialogTitle>
+
+            {dialogContent}
+
             <DialogActions>
                 <Button variant="outlined" onClick={handleOk}>OK</Button>
             </DialogActions>
