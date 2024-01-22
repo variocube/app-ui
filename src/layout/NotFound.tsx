@@ -1,5 +1,5 @@
 import {Button, Grid, Stack, Typography} from "@mui/material";
-import {createElement, ReactElement} from "react";
+import {ReactElement} from "react";
 import {useNavigate} from "react-router";
 import {NotFoundSvg} from "./NotFoundSvg";
 import {ContainerLayout} from "../container";

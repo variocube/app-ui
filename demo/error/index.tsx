@@ -14,11 +14,13 @@ export function DemoError() {
     return (
         <Container maxWidth="md">
             <ErrorBoundary
-                bugsnagConfig={{
-                    // logistics api key in bugsnag
-                    apiKey: '085401950bf014c07f680aea32aa2ede',
-                    getUser
-                }}
+                // Only enable this property if you want to test it,
+                // otherwise please keep this commented to prevent unnecessary email reports from bugsnag
+                // bugsnagConfig={{
+                //     // logistics api key in bugsnag
+                //     apiKey: '085401950bf014c07f680aea32aa2ede',
+                //     getUser
+                // }}
                 anonymizeStorageKeyPatterns={['auth', 'credentials']}
             >
                 <ErrorContent />
