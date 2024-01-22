@@ -33,7 +33,7 @@ import {
 	ContainerSettingsContextProvider,
 	ContainerWidthControl,
 	HelpButton,
-	HelpSettingsContextProvider,
+	HelpSettingsContextProvider, NotFound,
 	render,
 	UserNav,
 	VCThemeProvider,
@@ -67,6 +67,7 @@ function Demo() {
 					<Route path="container" element={<ContainerDemo />} />
 					<Route path="help" element={<HelpDemo />} />
 					<Route path="confirm" element={<ConfirmDemo />} />
+					<Route path="not-found" element={<NotFound errorMsg="404: Not Found" backToHomeMsg="Back to Home" pathMsg="We could not find the following path: " />} />
 				</Route>
 			</Routes>
 		</BrowserRouter>
@@ -138,6 +139,7 @@ const MenuItems: MenuItemProps[] = [
 	{text: "Tabs", to: "/tabs", icon: Tab},
 	{text: "Help", to: "/help", icon: Help},
 	{text: "Confirm", to: "/confirm", icon: Psychology},
+	{text: "Not found", to:"/not-found", icon: Error},
 ];
 
 function SideNavListItem({icon: Icon, text, to}: MenuItemProps) {

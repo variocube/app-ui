@@ -1,6 +1,6 @@
 import React, {Component, ErrorInfo, Fragment} from "react";
 import {Accordion, AccordionDetails, AccordionSummary, Box, Typography} from "@mui/material";
-import {NotFound} from "./NotFound";
+import {NotFoundSvg} from "./NotFoundSvg";
 import ErrorStackParser from "error-stack-parser";
 import {ExpandMore} from "@mui/icons-material";
 
@@ -193,7 +193,7 @@ export class ErrorBoundary extends Component<Props, States> {
         const {errorContext: { error, url, referrer, userAgent } = {}} = ErrorBoundary;
         return (
             <Box p={3}>
-                <NotFound style={{ width: '100%', maxHeight: 300 }} />
+                <NotFoundSvg style={{ width: '100%', maxHeight: 300 }} />
                 <Box p={4} />
                 <Typography variant="h2" align="center">Oops, something went wrong!</Typography>
                 <Box p={2} />
