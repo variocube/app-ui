@@ -1,4 +1,4 @@
-import React, {createContext, PropsWithChildren, useContext, useEffect, useState} from "react";
+import React, {createContext, PropsWithChildren, useContext, useState} from "react";
 import {Helmet} from "react-helmet";
 
 interface LayoutContextType {
