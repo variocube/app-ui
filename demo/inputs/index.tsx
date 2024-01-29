@@ -13,14 +13,23 @@ import {
     Typography
 } from "@mui/material";
 import React, {useState} from "react";
-import {ActionMenuItem, ActionsMenu, Checkbox, IntegerNumberFormat, NumberField, Selector, TextField} from "../../src";
+import {
+    ActionMenuItem,
+    ActionsMenu,
+    Checkbox,
+    IntegerNumberFormat,
+    NumberField,
+    PageTitle,
+    Selector,
+    TextField
+} from "../../src";
 import {EmailSenderField} from "../../src/Input/EmailSenderField";
 
 
 export function Inputs() {
     return (
         <Container maxWidth="md">
-            <Typography variant="h1" gutterBottom>Inputs</Typography>
+            <PageTitle title="Inputs" gutterBottom />
 
             <Box sx={{mb: 4}}>
                 <Typography variant="h2" gutterBottom>Text field</Typography>
