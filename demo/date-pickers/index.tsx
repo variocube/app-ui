@@ -2,6 +2,7 @@ import {Button, Card, CardActions, CardContent, CardHeader, Container, Link, Sta
 import * as React from "react";
 import {useState} from "react";
 import {
+    PageTitle,
     PlainDate,
     PlainDatePicker,
     PlainDateTime,
@@ -14,9 +15,7 @@ import {
 export function Pickers() {
     return (
         <Container>
-            <Typography variant="h1" gutterBottom>
-                Date & time pickers
-            </Typography>
+            <PageTitle title="Date & time pickers" gutterBottom />
             <Typography variant="body1" gutterBottom>
                 The date and time pickers in this library are based on the {" "}
                 <Link href="https://tc39.es/proposal-temporal/docs/index.html" target="_blank">Temporal proposal</Link>,

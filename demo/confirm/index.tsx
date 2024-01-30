@@ -11,7 +11,7 @@ import {
     Typography
 } from "@mui/material";
 import * as React from "react";
-import {ConfirmButton, ConfirmMenuItem, TextField} from "../../src";
+import {ConfirmButton, ConfirmMenuItem, PageTitle, TextField} from "../../src";
 import {Delete, Edit, Warning} from "@mui/icons-material";
 import {Fragment} from "react";
 
@@ -19,9 +19,7 @@ export function ConfirmDemo() {
     return (
         <Container>
             <Stack spacing={2}>
-                <Typography variant="h1" gutterBottom>
-                    Confirm
-                </Typography>
+                <PageTitle title="Confirm" gutterBottom />
 
                 <Typography variant="h2" gutterBottom>
                     Confirm button

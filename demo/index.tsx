@@ -34,8 +34,8 @@ import {
 	ContainerSettingsContextProvider,
 	ContainerWidthControl,
 	HelpButton,
-	HelpSettingsContextProvider, NotFound,
-	render,
+	HelpSettingsContextProvider, NotFound, PageTitle,
+	render, useLayoutContext,
 	UserNav,
 	VCThemeProvider,
 } from "../src";
@@ -50,6 +50,7 @@ import {Localization} from "./localization";
 import {TabsDemo} from "./tabs";
 import {Theme} from "./theme";
 import {CubeDemo} from "./cube";
+import {useEffect} from "react";
 
 function Demo() {
 	return (
@@ -160,9 +161,18 @@ function SideNavListItem({icon: Icon, text, to}: MenuItemProps) {
 }
 
 function Start() {
+	const {setMeta} = useLayoutContext();
+
+	useEffect(() => {
+		setMeta({
+			'robots': 'noindex,follow',
+			'description': 'Welcome to appUI Demo page.'
+		})
+	}, [setMeta]);
+
 	return (
 		<Container>
-			<Typography variant="h1" gutterBottom>Welcome</Typography>
+			<PageTitle title="Welcome" gutterBottom />
 			<Typography variant="body1" gutterBottom>
 				This library provides common components for Variocube applications.
 			</Typography>
@@ -201,7 +211,7 @@ function ContainerDemo() {
 				<Grid container spacing={3}>
 					<Grid item xs={12}>
 						<Paper>
-							<Typography variant="h1" gutterBottom>Container with a Paper</Typography>
+							<PageTitle title="Container with a Paper" gutterBottom />
 						</Paper>
 					</Grid>
 					<Grid item xs={12}>
@@ -223,7 +233,7 @@ function HelpDemo() {
 							<Paper>
 								<Grid container spacing={3}>
 									<Grid item xs={12}>
-										<Typography variant="h1" gutterBottom>Help Demo</Typography>
+										<PageTitle title="Help Demo" gutterBottom />
 									</Grid>
 									<Grid item xs={12}>
 										<Typography variant="body1">

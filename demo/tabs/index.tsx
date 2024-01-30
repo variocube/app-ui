@@ -1,5 +1,5 @@
 import {Box, Container, Stack, Typography} from "@mui/material";
-import {Tabs} from "../../src";
+import {PageTitle, Tabs} from "../../src";
 import React, {useState} from "react";
 import {Tab as TabIcon} from "@mui/icons-material";
 import {Link} from "react-router-dom";
@@ -9,7 +9,7 @@ export function TabsDemo() {
 
     return (
         <Container maxWidth="md">
-            <Typography variant="h1" gutterBottom>Tabs</Typography>
+            <PageTitle title="Tabs" gutterBottom />
 
             <Box sx={{mb: 4}}>
                 <Typography variant="body1" gutterBottom>

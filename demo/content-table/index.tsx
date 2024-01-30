@@ -1,7 +1,7 @@
 import * as React from "react";
 import {Fragment, useMemo, useState} from "react";
 import {Box, Chip, Container, TableCell, TableRow, Typography} from "@mui/material";
-import {Checkbox, ContentTable, Page, Paging, PagingImpl} from "../../src";
+import {Checkbox, ContentTable, Page, PageTitle, Paging, PagingImpl} from "../../src";
 
 const baseColumns = {
     "foo": {show: true, name: "Foo"},
@@ -53,7 +53,7 @@ export const ContentTableDemo = () => {
 
     return (
         <Container maxWidth="lg" sx={{ overflow: 'auto'}}>
-            <Typography variant="h1" gutterBottom>Content Table</Typography>
+            <PageTitle title="Content Table" gutterBottom />
             <Box p={2}>
                 <Checkbox checked={empty} label="Show empty state" onChange={setEmpty} />
             </Box>

@@ -23,7 +23,7 @@ import {
 	CurrencyFormat,
 	DecimalFormat,
 	Instant,
-	Now,
+	Now, PageTitle,
 	PlainDate,
 	PlainDateTime,
 	PlainTime,
@@ -50,7 +50,7 @@ export function Localization() {
 
 	return (
 		<Container>
-			<Typography variant="h1" gutterBottom>Localization</Typography>
+			<PageTitle title="Localization" gutterBottom />
 
 			<Box my={4}>
 				<Typography variant="h2" gutterBottom>Translations</Typography>
