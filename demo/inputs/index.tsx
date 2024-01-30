@@ -16,7 +16,7 @@ import React, {useState} from "react";
 import {
     ActionMenuItem,
     ActionsMenu,
-    Checkbox,
+    Checkbox, CountrySelect, LocaleSelect,
     IntegerNumberFormat,
     NumberField,
     PageTitle,
@@ -83,6 +83,11 @@ export function Inputs() {
                     Special case of Mui <code>TextField</code> that validates aspects around e-mail addresses.
                 </Typography>
                 <EmailFieldsDemo/>
+            </Box>
+
+            <Box sx={{mb: 4}}>
+                <Typography variant="h2" gutterBottom>Country & Locale selectors</Typography>
+                <CountryLocaleSelectorDemo/>
             </Box>
 
         </Container>
@@ -328,4 +333,30 @@ function EmailFieldsDemo() {
             </CardContent>
         </Card>
     );
+}
+
+function CountryLocaleSelectorDemo() {
+    const [country, setCountry] = useState<string>();
+    const [locale, setLocale] = useState<string>();
+
+    return (
+        <Card>
+            <CardHeader title="Country selector" />
+            <CardContent>
+                <CountrySelect
+                    label="Select country"
+                    value={country ?? ''}
+                    onChange={v => setCountry(v ?? undefined)}
+                />
+            </CardContent>
+            <CardHeader title="Locale selector" />
+            <CardContent>
+                <LocaleSelect
+                    label="Select locale"
+                    value={locale}
+                    onChange={setLocale}
+                />
+            </CardContent>
+        </Card>
+    )
 }
