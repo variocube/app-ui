@@ -11,6 +11,7 @@ import {
 	SvgIconComponent,
 	Tab,
 	ViewList,
+	Widgets,
 } from "@mui/icons-material";
 import {
 	Box,
@@ -48,6 +49,7 @@ import {Inputs} from "./inputs";
 import {Localization} from "./localization";
 import {TabsDemo} from "./tabs";
 import {Theme} from "./theme";
+import {CubeDemo} from "./cube";
 
 function Demo() {
 	return (
@@ -68,6 +70,7 @@ function Demo() {
 					<Route path="help" element={<HelpDemo />} />
 					<Route path="confirm" element={<ConfirmDemo />} />
 					<Route path="not-found" element={<NotFound errorMsg="404: Not Found" backToHomeMsg="Back to Home" pathMsg="We could not find the following path: " />} />
+					<Route path="cube" element={<CubeDemo />} />
 				</Route>
 			</Routes>
 		</BrowserRouter>
@@ -140,6 +143,7 @@ const MenuItems: MenuItemProps[] = [
 	{text: "Help", to: "/help", icon: Help},
 	{text: "Confirm", to: "/confirm", icon: Psychology},
 	{text: "Not found", to:"/not-found", icon: Error},
+	{text: "Cube", to:"/cube", icon: Widgets},
 ];
 
 function SideNavListItem({icon: Icon, text, to}: MenuItemProps) {
