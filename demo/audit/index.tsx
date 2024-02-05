@@ -1,17 +1,7 @@
 import {Card, CardContent, Container, Stack, Typography} from "@mui/material";
 import * as React from "react";
 import {useState} from "react";
-import {
-    AuditChanges,
-    AuditTimeline,
-    AuditTimelineItem,
-    Checkbox,
-    Code,
-    CreateIcon,
-    Now,
-    RelativeTemporalFormat,
-    UpdateIcon
-} from "../../src";
+import {AuditChanges, AuditTimeline, AuditTimelineItem, Checkbox, Code, Now, RelativeTemporalFormat} from "../../src";
 
 export function AuditDemo() {
     return (
