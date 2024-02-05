@@ -19,7 +19,7 @@
     "@emotion/styled": "11.x",
     "@mui/icons-material": "5.x",
     "@mui/material": "5.x",
-    "@mui/lab": ">6.0.0-alpha <6",
+    "@mui/lab": ">5.0.0-alpha <6",
     "@mui/x-date-pickers": ">5.0.0-beta <6",
     "mustache": "4.x",
     "react": "17.x"
