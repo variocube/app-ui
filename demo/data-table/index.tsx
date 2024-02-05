@@ -1,6 +1,7 @@
 import {Box, Container, SortDirection, Stack, Typography} from "@mui/material";
 import React, {useMemo, useState} from "react";
 import {
+    Code,
     createSimpleTFunc,
     DataTable,
     DataTableColumn,
@@ -338,7 +339,7 @@ export function SpringDataTable() {
             </Typography>
             <Typography variant="body1" gutterBottom>
                 This data table emulates fetching from a Spring REST-API
-                using the <code>Pageable</code> and <code>Page</code> data types.
+                using the <Code>Pageable</Code> and <Code>Page</Code> data types.
             </Typography>
             <DataTable
                 toolbar={

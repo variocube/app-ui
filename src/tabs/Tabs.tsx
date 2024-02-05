@@ -169,7 +169,7 @@ export function Tabs(props: TabsProps) {
                                     <MenuItem
                                         key={'dropdownItem-' + i}
                                         onClick={handleClick}
-                                        component={component}
+                                        component={component ?? "li"}
                                         sx={i < overflowIndex ? hiddenSx : {}}
                                         selected={selected}
                                         {...rest}

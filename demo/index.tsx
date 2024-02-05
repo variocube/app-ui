@@ -29,7 +29,7 @@ import * as React from "react";
 import {useLocation} from "react-router";
 import {BrowserRouter, Link, Outlet, Route, Routes} from "react-router-dom";
 import {
-	AppShell,
+	AppShell, AuditIcon,
 	ContainerLayout,
 	ContainerSettingsContextProvider,
 	ContainerWidthControl,
@@ -51,6 +51,7 @@ import {TabsDemo} from "./tabs";
 import {Theme} from "./theme";
 import {CubeDemo} from "./cube";
 import {useEffect} from "react";
+import {AuditDemo} from "./audit";
 
 function Demo() {
 	return (
@@ -70,6 +71,7 @@ function Demo() {
 					<Route path="container" element={<ContainerDemo />} />
 					<Route path="help" element={<HelpDemo />} />
 					<Route path="confirm" element={<ConfirmDemo />} />
+					<Route path="audit" element={<AuditDemo />} />
 					<Route path="not-found" element={<NotFound errorMsg="404: Not Found" backToHomeMsg="Back to Home" pathMsg="We could not find the following path: " />} />
 					<Route path="cube" element={<CubeDemo />} />
 				</Route>
@@ -143,6 +145,7 @@ const MenuItems: MenuItemProps[] = [
 	{text: "Tabs", to: "/tabs", icon: Tab},
 	{text: "Help", to: "/help", icon: Help},
 	{text: "Confirm", to: "/confirm", icon: Psychology},
+	{text: "Audit", to: "/audit", icon: AuditIcon},
 	{text: "Not found", to:"/not-found", icon: Error},
 	{text: "Cube", to:"/cube", icon: Widgets},
 ];

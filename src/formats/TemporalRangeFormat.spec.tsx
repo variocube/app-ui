@@ -32,7 +32,7 @@ describe("TemporalRangeFormat", () => {
             );
         });
         const value = element!.root.children[0];
-        expect(value).toBe("6/22/2022 – 6/30/2022");
+        expect(value).toBe("6/22/2022 – 6/30/2022");
     });
 
     test("PlainDateTime de-AT", () => {
@@ -47,7 +47,7 @@ describe("TemporalRangeFormat", () => {
             );
         });
         const value = element!.root.children[0];
-        expect(value).toBe("22.6.2022, 14:22:00 – 17:55:00");
+        expect(value).toBe("22.6.2022, 14:22:00 – 17:55:00");
     });
 
     test("PlainDateTime en-US", () => {
@@ -62,7 +62,7 @@ describe("TemporalRangeFormat", () => {
             );
         });
         const value = element!.root.children[0];
-        expect(value).toBe("6/22/2022, 2:22:00 PM – 5:55:00 PM");
+        expect(value).toBe("6/22/2022, 2:22:00 PM – 5:55:00 PM");
     });
 
     test("PlainTime de-AT", () => {
@@ -77,7 +77,7 @@ describe("TemporalRangeFormat", () => {
             );
         });
         const value = element!.root.children[0];
-        expect(value).toBe("14:22:00 – 18:00:03");
+        expect(value).toBe("14:22:00 – 18:00:03");
     });
 
     test("PlainTime en-US", () => {
@@ -91,7 +91,7 @@ describe("TemporalRangeFormat", () => {
                 />);
         });
         const value = element!.root.children[0];
-        expect(value).toBe("2:22:00 PM – 6:00:03 PM");
+        expect(value).toBe("2:22:00 PM – 6:00:03 PM");
     });
 
     test("ZonedDateTime de-AT", () => {
@@ -106,7 +106,7 @@ describe("TemporalRangeFormat", () => {
             );
         });
         const value = element!.root.children[0];
-        expect(value).toBe("22.6.2022, 14:22:00 GMT+2 – 19:22:00 GMT+2");
+        expect(value).toBe("22.6.2022, 14:22:00 GMT+2 – 19:22:00 GMT+2");
     });
 
     test("ZonedDateTime en-US", () => {
@@ -121,7 +121,7 @@ describe("TemporalRangeFormat", () => {
             );
         });
         const value = element!.root.children[0];
-        expect(value).toBe("6/22/2022, 2:22:00 PM GMT+2 – 7:22:00 PM GMT+2");
+        expect(value).toBe("6/22/2022, 2:22:00 PM GMT+2 – 7:22:00 PM GMT+2");
     });
 
     test("Instant de-AT", () => {
@@ -137,7 +137,7 @@ describe("TemporalRangeFormat", () => {
             );
         });
         const value = element!.root.children[0];
-        expect(value).toBe("22.6.2022, 16:22:11 – 30.1.2024, 09:14:32");
+        expect(value).toBe("22.6.2022, 16:22:11 – 30.1.2024, 09:14:32");
     });
 
     test("Instant en-US", () => {
@@ -153,7 +153,7 @@ describe("TemporalRangeFormat", () => {
             );
         });
         const value = element!.root.children[0];
-        expect(value).toBe("6/22/2022, 2:22:11 PM – 1/30/2024, 8:14:32 AM");
+        expect(value).toBe("6/22/2022, 2:22:11 PM – 1/30/2024, 8:14:32 AM");
     });
 
 });

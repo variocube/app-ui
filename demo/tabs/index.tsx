@@ -1,5 +1,5 @@
-import {Box, Container, Stack, Typography} from "@mui/material";
-import {PageTitle, Tabs} from "../../src";
+import {Box, Container, Typography} from "@mui/material";
+import {Code, PageTitle, Tabs} from "../../src";
 import React, {useState} from "react";
 import {Tab as TabIcon} from "@mui/icons-material";
 import {Link} from "react-router-dom";
@@ -13,7 +13,7 @@ export function TabsDemo() {
 
             <Box sx={{mb: 4}}>
                 <Typography variant="body1" gutterBottom>
-                    Wrap the Mui <code>Tabs</code> and <code>Tab</code> components with opinionated defaults:
+                    Wrap the Mui <Code>Tabs</Code> and <Code>Tab</Code> components with opinionated defaults:
                     <ul>
                         <li>Divider on the bottom (horizontal tabs) or right (vertical tabs).</li>
                         <li>Icon position of "start".</li>

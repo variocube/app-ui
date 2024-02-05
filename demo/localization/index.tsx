@@ -18,6 +18,7 @@ import {
 import * as React from "react";
 import {useCallback} from "react";
 import {
+	Code,
 	CompactFormat,
 	createLocalizationContext,
 	CurrencyFormat,
@@ -116,31 +117,31 @@ export function TranslationDemo() {
 				<TableBody>
 					<TableRow>
 						<TableCell>
-							<code>t("nested.foo")</code>
+							<Code>t("nested.foo")</Code>
 						</TableCell>
 						<TableCell>{t("nested.foo")}</TableCell>
 					</TableRow>
 					<TableRow>
 						<TableCell>
-							<code>t("greeting", {"{"}name: "John"{"}"})</code>
+							<Code>t("greeting", {"{"}name: "John"{"}"})</Code>
 						</TableCell>
 						<TableCell>{t("greeting", {name: "John"})}</TableCell>
 					</TableRow>
 					<TableRow>
 						<TableCell>
-							<code>e("state", "pending")</code>
+							<Code>e("state", "pending")</Code>
 						</TableCell>
 						<TableCell>{e("state", "pending")}</TableCell>
 					</TableRow>
 					<TableRow>
 						<TableCell>
-							<code>s("state")("pending")</code>
+							<Code>s("state")("pending")</Code>
 						</TableCell>
 						<TableCell>{s("state")("pending")}</TableCell>
 					</TableRow>
 					<TableRow>
 						<TableCell>
-							<code>t("overriddenInDe")</code>
+							<Code>t("overriddenInDe")</Code>
 						</TableCell>
 						<TableCell>{t("overriddenInDe")}</TableCell>
 					</TableRow>
@@ -166,13 +167,13 @@ export function TranslationHasKeyDemo() {
 				<TableBody>
 					<TableRow>
 						<TableCell>
-							<code>hasKey("nested.foo") ? "Has Key" : "Has not Key"</code>
+							<Code>hasKey("nested.foo") ? "Has Key" : "Has not Key"</Code>
 						</TableCell>
 						<TableCell>{hasKey("nested.foo") ? "Has Key" : "Has not Key"}</TableCell>
 					</TableRow>
 					<TableRow>
 						<TableCell>
-							<code>hasKey("nested.doesnotexist") ? "Has Key" : "Has not Key"</code>
+							<Code>hasKey("nested.doesnotexist") ? "Has Key" : "Has not Key"</Code>
 						</TableCell>
 						<TableCell>{hasKey("nested.doesnotexist") ? "Has Key" : "Has not Key"}</TableCell>
 					</TableRow>
