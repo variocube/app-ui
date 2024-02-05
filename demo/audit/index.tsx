@@ -57,7 +57,6 @@ function AuditTimelineDemo() {
                             {op: "add", path: "/fruits", value: "tomatoes"}
                         ]}/>
                     }
-                    icon={<UpdateIcon/>}
                 />
                 <AuditTimelineItem
                     created={<RelativeTemporalFormat value={Now.instant().subtract({seconds: 7})}/>}
@@ -68,7 +67,6 @@ function AuditTimelineDemo() {
                             {op: "replace", path: "/name", fromValue: "Our fruit salad", value: "Our tasty fruit salad"}
                         ]}/>
                     }
-                    icon={<UpdateIcon/>}
                 />
                 <AuditTimelineItem
                     created={<RelativeTemporalFormat value={Now.instant().subtract({minutes: 17})}/>}
@@ -79,7 +77,6 @@ function AuditTimelineDemo() {
                             {op: "add", path: "/fruits", value: "apples"}
                         ]}/>
                     }
-                    icon={<UpdateIcon/>}
                 />
                 <AuditTimelineItem
                     created={<RelativeTemporalFormat value={Now.instant().subtract({hours: 2})}/>}
@@ -90,7 +87,6 @@ function AuditTimelineDemo() {
                             {op: "add", path: "/fruits", value: "bananas"}
                         ]}/>
                     }
-                    icon={<UpdateIcon/>}
                 />
                 <AuditTimelineItem
                     created={<RelativeTemporalFormat value={Now.instant().subtract({hours: 3})}/>}
@@ -101,7 +97,6 @@ function AuditTimelineDemo() {
                             name: "Our fruit salad",
                         }}/>
                     }
-                    icon={<CreateIcon/>}
                 />
             </AuditTimeline>
         </Stack>
