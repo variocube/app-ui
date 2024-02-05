@@ -13,13 +13,13 @@ import {
     Typography
 } from "@mui/material";
 import React from "react";
-import {Breadcrumbs, BreadcrumbItem, BreadcrumbLink, ThemeModeSwitcher, Code} from "../../src";
+import {Breadcrumbs, BreadcrumbItem, BreadcrumbLink, ThemeModeSwitcher, Code, PageTitle} from "../../src";
 
 
 export function Theme() {
     return (
         <Container maxWidth="md">
-            <Typography variant="h1" gutterBottom>Theme</Typography>
+            <PageTitle title="Theme" gutterBottom />
 
             <Typography variant="body1" gutterBottom>
                 <Code>VCThemeProvider</Code> provides the Variocube theme. It supports both a light and dark mode.

@@ -11,6 +11,7 @@ import {
 	SvgIconComponent,
 	Tab,
 	ViewList,
+	Widgets,
 } from "@mui/icons-material";
 import {
 	Box,
@@ -33,8 +34,8 @@ import {
 	ContainerSettingsContextProvider,
 	ContainerWidthControl,
 	HelpButton,
-	HelpSettingsContextProvider, NotFound,
-	render,
+	HelpSettingsContextProvider, NotFound, PageTitle,
+	render, useLayoutContext,
 	UserNav,
 	VCThemeProvider,
 } from "../src";
@@ -48,6 +49,8 @@ import {Inputs} from "./inputs";
 import {Localization} from "./localization";
 import {TabsDemo} from "./tabs";
 import {Theme} from "./theme";
+import {CubeDemo} from "./cube";
+import {useEffect} from "react";
 import {AuditDemo} from "./audit";
 
 function Demo() {
@@ -70,6 +73,7 @@ function Demo() {
 					<Route path="confirm" element={<ConfirmDemo />} />
 					<Route path="audit" element={<AuditDemo />} />
 					<Route path="not-found" element={<NotFound errorMsg="404: Not Found" backToHomeMsg="Back to Home" pathMsg="We could not find the following path: " />} />
+					<Route path="cube" element={<CubeDemo />} />
 				</Route>
 			</Routes>
 		</BrowserRouter>
@@ -143,6 +147,7 @@ const MenuItems: MenuItemProps[] = [
 	{text: "Confirm", to: "/confirm", icon: Psychology},
 	{text: "Audit", to: "/audit", icon: AuditIcon},
 	{text: "Not found", to:"/not-found", icon: Error},
+	{text: "Cube", to:"/cube", icon: Widgets},
 ];
 
 function SideNavListItem({icon: Icon, text, to}: MenuItemProps) {
@@ -159,9 +164,18 @@ function SideNavListItem({icon: Icon, text, to}: MenuItemProps) {
 }
 
 function Start() {
+	const {setMeta} = useLayoutContext();
+
+	useEffect(() => {
+		setMeta({
+			'robots': 'noindex,follow',
+			'description': 'Welcome to appUI Demo page.'
+		})
+	}, [setMeta]);
+
 	return (
 		<Container>
-			<Typography variant="h1" gutterBottom>Welcome</Typography>
+			<PageTitle title="Welcome" gutterBottom />
 			<Typography variant="body1" gutterBottom>
 				This library provides common components for Variocube applications.
 			</Typography>
@@ -200,7 +214,7 @@ function ContainerDemo() {
 				<Grid container spacing={3}>
 					<Grid item xs={12}>
 						<Paper>
-							<Typography variant="h1" gutterBottom>Container with a Paper</Typography>
+							<PageTitle title="Container with a Paper" gutterBottom />
 						</Paper>
 					</Grid>
 					<Grid item xs={12}>
@@ -222,7 +236,7 @@ function HelpDemo() {
 							<Paper>
 								<Grid container spacing={3}>
 									<Grid item xs={12}>
-										<Typography variant="h1" gutterBottom>Help Demo</Typography>
+										<PageTitle title="Help Demo" gutterBottom />
 									</Grid>
 									<Grid item xs={12}>
 										<Typography variant="body1">

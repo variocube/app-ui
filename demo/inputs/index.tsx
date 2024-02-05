@@ -16,10 +16,11 @@ import React, {useState} from "react";
 import {
     ActionMenuItem,
     ActionsMenu,
-    Checkbox,
-    Code,
+	Code,
+    Checkbox, CountrySelect, LocaleSelect,
     IntegerNumberFormat,
     NumberField,
+    PageTitle,
     Selector,
     TextField
 } from "../../src";
@@ -29,7 +30,7 @@ import {EmailSenderField} from "../../src/Input/EmailSenderField";
 export function Inputs() {
     return (
         <Container maxWidth="md">
-            <Typography variant="h1" gutterBottom>Inputs</Typography>
+            <PageTitle title="Inputs" gutterBottom />
 
             <Box sx={{mb: 4}}>
                 <Typography variant="h2" gutterBottom>Text field</Typography>
@@ -84,6 +85,11 @@ export function Inputs() {
                     Special case of Mui <Code>TextField</Code> that validates aspects around e-mail addresses.
                 </Typography>
                 <EmailFieldsDemo/>
+            </Box>
+
+            <Box sx={{mb: 4}}>
+                <Typography variant="h2" gutterBottom>Country & Locale selectors</Typography>
+                <CountryLocaleSelectorDemo/>
             </Box>
 
         </Container>
@@ -329,4 +335,30 @@ function EmailFieldsDemo() {
             </CardContent>
         </Card>
     );
+}
+
+function CountryLocaleSelectorDemo() {
+    const [country, setCountry] = useState<string>();
+    const [locale, setLocale] = useState<string>();
+
+    return (
+        <Card>
+            <CardHeader title="Country selector" />
+            <CardContent>
+                <CountrySelect
+                    label="Select country"
+                    value={country ?? ''}
+                    onChange={v => setCountry(v ?? undefined)}
+                />
+            </CardContent>
+            <CardHeader title="Locale selector" />
+            <CardContent>
+                <LocaleSelect
+                    label="Select locale"
+                    value={locale}
+                    onChange={setLocale}
+                />
+            </CardContent>
+        </Card>
+    )
 }

@@ -1,6 +1,6 @@
 import {Button, Card, CardActions, CardContent, Container, Stack, Typography} from "@mui/material";
 import * as React from "react";
-import {Code, EditForm, SearchForm, TextField} from "../../src";
+import {Code, EditForm, PageTitle, SearchForm, TextField} from "../../src";
 import {useAsync} from "react-async-hook";
 import {useEffect, useState} from "react";
 
@@ -9,9 +9,7 @@ export function Forms() {
     return (
         <Container>
             <Stack spacing={2}>
-                <Typography variant="h1" gutterBottom>
-                    Forms
-                </Typography>
+                <PageTitle title="Forms" gutterBottom />
                 <Typography variant="h2" gutterBottom>
                     Edit Form
                 </Typography>

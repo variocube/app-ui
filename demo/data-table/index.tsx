@@ -7,7 +7,7 @@ import {
     DataTableColumn,
     DataTableColumnSettings,
     DataTablePage,
-    DataTableToolbar,
+    DataTableToolbar, PageTitle,
     SpringPage,
     SpringPageable,
     useDataTableColumnStorage,
@@ -20,9 +20,7 @@ import {useAsync} from "react-async-hook";
 export function DataTableDemo() {
     return (
         <Container>
-            <Typography variant="h1" gutterBottom>
-                Data Table
-            </Typography>
+            <PageTitle title="Data Table" gutterBottom />
             <Typography variant="body1" gutterBottom>
                 Data table is alternative approach to ContentTable.{" "}
             </Typography>
