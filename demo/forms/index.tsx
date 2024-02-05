@@ -1,6 +1,6 @@
 import {Button, Card, CardActions, CardContent, Container, Stack, Typography} from "@mui/material";
 import * as React from "react";
-import {EditForm, SearchForm, TextField} from "../../src";
+import {Code, EditForm, SearchForm, TextField} from "../../src";
 import {useAsync} from "react-async-hook";
 import {useEffect, useState} from "react";
 
@@ -24,7 +24,7 @@ export function Forms() {
                     Search Form
                 </Typography>
                 <Typography variant="body1">
-                    A form containing a <code>TextField</code> with an embedded submit button showing a search icon.
+                    A form containing a <Code>TextField</Code> with an embedded submit button showing a search icon.
                 </Typography>
                 <SearchFormDemo/>
             </Stack>
@@ -36,7 +36,7 @@ export function EditFormDemo() {
     const [serverData, setServerData] = useState("data from server");
     const [formData, setFormData] = useState("");
 
-    const {loading, error, result, execute} = useAsync(() => {
+    const {loading, result, execute} = useAsync(() => {
         return new Promise<string>((resolve) => {
             setTimeout(() => resolve(serverData), 250);
         });

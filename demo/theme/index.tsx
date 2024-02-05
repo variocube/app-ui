@@ -3,7 +3,7 @@ import {
     AlertTitle,
     Button,
     Card,
-    CardContent,
+    CardContent, CardHeader,
     Container,
     List,
     ListItem,
@@ -13,7 +13,7 @@ import {
     Typography
 } from "@mui/material";
 import React from "react";
-import {Breadcrumbs, BreadcrumbItem, BreadcrumbLink, ThemeModeSwitcher} from "../../src";
+import {Breadcrumbs, BreadcrumbItem, BreadcrumbLink, ThemeModeSwitcher, Code} from "../../src";
 
 
 export function Theme() {
@@ -22,19 +22,46 @@ export function Theme() {
             <Typography variant="h1" gutterBottom>Theme</Typography>
 
             <Typography variant="body1" gutterBottom>
-                <code>VCThemeProvider</code> provides the Variocube theme. It supports both a light and dark mode.
-                The mode is automatically selected, but can be overridden with <code>ThemeModeSwitcher</code>.
+                <Code>VCThemeProvider</Code> provides the Variocube theme. It supports both a light and dark mode.
+                The mode is automatically selected, but can be overridden with <Code>ThemeModeSwitcher</Code>.
             </Typography>
 
             <Stack spacing={2} sx={{marginBottom: 2}}>
                 <Card>
+                    <CardHeader title="Theme mode switcher"/>
                     <CardContent>
+                        <ThemeModeSwitcher/>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader title="Buttons"/>
+                    <CardContent>
+                        <Typography variant="h6" py={2}>Contained</Typography>
                         <Stack direction="row" spacing={2}>
-                            <Button variant="contained" color="primary">Primary Btn</Button>
-                            <Button variant="contained" color="secondary">Secondary Btn</Button>
-                            <Button variant="outlined" color="primary">Primary Btn</Button>
-                            <Button variant="outlined" color="secondary">Secondary Btn</Button>
-                            <ThemeModeSwitcher/>
+                            <Button variant="contained" color="primary">Primary</Button>
+                            <Button variant="contained" color="secondary">Secondary</Button>
+                            <Button variant="contained" color="error">Error</Button>
+                            <Button variant="contained" color="success">Success</Button>
+                            <Button variant="contained" color="info">Info</Button>
+                            <Button variant="contained" color="warning">Warning</Button>
+                        </Stack>
+                        <Typography variant="h6" py={2}>Outlined</Typography>
+                        <Stack direction="row" spacing={2}>
+                            <Button variant="outlined" color="primary">Primary</Button>
+                            <Button variant="outlined" color="secondary">Secondary</Button>
+                            <Button variant="outlined" color="error">Error</Button>
+                            <Button variant="outlined" color="success">Success</Button>
+                            <Button variant="outlined" color="info">Info</Button>
+                            <Button variant="outlined" color="warning">Warning</Button>
+                        </Stack>
+                        <Typography variant="h6" py={2}>Text</Typography>
+                        <Stack direction="row" spacing={2}>
+                            <Button variant="text" color="primary">Primary</Button>
+                            <Button variant="text" color="secondary">Secondary</Button>
+                            <Button variant="text" color="error">Error</Button>
+                            <Button variant="text" color="success">Success</Button>
+                            <Button variant="text" color="info">Info</Button>
+                            <Button variant="text" color="warning">Warning</Button>
                         </Stack>
                     </CardContent>
                 </Card>
@@ -66,11 +93,11 @@ export function Theme() {
                 Breadcrumbs
             </Typography>
             <Typography variant="body1" gutterBottom>
-                For consistent styling of breadcrumbs use the following components from @variocube/app-ui.
+                For consistent styling of breadcrumbs use the following components from <Code>@variocube/app-ui</Code>.
                 <ul>
-                    <li>Use <code>Breadcrumbs</code> as container.</li>
-                    <li>Use <code>BreadcrumbLink</code> for breadcrumbs that are a link.</li>
-                    <li>Use <code>BreadcrumbItem</code> for the current location.</li>
+                    <li>Use <Code>Breadcrumbs</Code> as container.</li>
+                    <li>Use <Code>BreadcrumbLink</Code> for breadcrumbs that are a link.</li>
+                    <li>Use <Code>BreadcrumbItem</Code> for the current location.</li>
                 </ul>
             </Typography>
             <Card>

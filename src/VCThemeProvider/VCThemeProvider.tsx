@@ -3,6 +3,7 @@ import {createTheme, CssBaseline, PaletteMode, ThemeOptions, ThemeProvider, useM
 import {useStorage} from "../storage";
 import {RobotoFont} from "./RobotoFont";
 import deepmerge from "deepmerge";
+import {JetbrainsMonoFont} from "./JetbrainsMonoFont";
 
 /**
  * Theme colors.
@@ -12,9 +13,11 @@ export enum Colors {
     orange = "#ff6a00",
     blue = "#009dd8",
     success = "#4caf50",
-    error = "#aa0000",
+    errorLight = "#e62e2e",
+    errorDark = "#aa0000",
     warning = "#da9500",
-    info = "#082480",
+    infoLight = "#294fcc",
+    infoDark = "#082480",
 }
 
 interface PaletteModeContextValue {
@@ -72,11 +75,11 @@ export function VCThemeProvider({branding, children}: PropsWithChildren<VCThemeP
                     contrastText: Colors.white,
                 },
                 error: {
-                    main: Colors.error,
+                    main: mode == "light" ? Colors.errorDark : Colors.errorLight,
                     contrastText: Colors.white,
                 },
                 info: {
-                    main: Colors.info,
+                    main: mode == "light" ? Colors.infoDark : Colors.infoLight,
                     contrastText: Colors.white,
                 },
                 text: {
@@ -132,6 +135,7 @@ export function VCThemeProvider({branding, children}: PropsWithChildren<VCThemeP
             <PaletteModeContext.Provider value={{mode, setMode}}>
                 <CssBaseline/>
                 <RobotoFont/>
+                <JetbrainsMonoFont/>
                 {children}
             </PaletteModeContext.Provider>
         </ThemeProvider>

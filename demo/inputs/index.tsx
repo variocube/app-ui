@@ -13,7 +13,16 @@ import {
     Typography
 } from "@mui/material";
 import React, {useState} from "react";
-import {ActionMenuItem, ActionsMenu, Checkbox, IntegerNumberFormat, NumberField, Selector, TextField} from "../../src";
+import {
+    ActionMenuItem,
+    ActionsMenu,
+    Checkbox,
+    Code,
+    IntegerNumberFormat,
+    NumberField,
+    Selector,
+    TextField
+} from "../../src";
 import {EmailSenderField} from "../../src/Input/EmailSenderField";
 
 
@@ -25,12 +34,12 @@ export function Inputs() {
             <Box sx={{mb: 4}}>
                 <Typography variant="h2" gutterBottom>Text field</Typography>
                 <Typography variant="body1" gutterBottom>
-                    Wraps a Mui <code>TextField</code> that provides the current value as the first argument
-                    to the <code>onChange</code> handler. The event is provided as the second argument.
+                    Wraps a Mui <Code>TextField</Code> that provides the current value as the first argument
+                    to the <Code>onChange</Code> handler. The event is provided as the second argument.
                 </Typography>
                 <Typography variant="body1" gutterBottom>
                     It also displays errors from HTML5 form validation and allows for a
-                    custom <code>validate</code> function.
+                    custom <Code>validate</Code> function.
                 </Typography>
                 <TextFieldDemo/>
             </Box>
@@ -38,7 +47,7 @@ export function Inputs() {
             <Box sx={{mb: 4}}>
                 <Typography variant="h2" gutterBottom>Checkbox</Typography>
                 <Typography variant="body1" gutterBottom>
-                    Wraps a Mui <code>Checkbox</code> in a <code>FormControlLabel</code>
+                    Wraps a Mui <Code>Checkbox</Code> in a <Code>FormControlLabel</Code>
                 </Typography>
                 <CheckboxDemo/>
             </Box>
@@ -46,7 +55,7 @@ export function Inputs() {
             <Box sx={{mb: 4}}>
                 <Typography variant="h2" gutterBottom>Selector</Typography>
                 <Typography variant="body1" gutterBottom>
-                    Special case of Mui <code>TextField</code> that lets the user select from a list of options.
+                    Special case of Mui <Code>TextField</Code> that lets the user select from a list of options.
                 </Typography>
                 <SelectorDemo/>
             </Box>
@@ -54,7 +63,8 @@ export function Inputs() {
             <Box sx={{mb: 4}}>
                 <Typography variant="h2" gutterBottom>Action Menu</Typography>
                 <Typography variant="body1" gutterBottom>
-                    Special case of Mui <code>Button</code> in combination with Mui <code>Menu</code> that lets the user click on a button or select from a list of options.
+                    Special case of Mui <Code>Button</Code> in combination with Mui <Code>Menu</Code> that lets the user
+                    click on a button or select from a list of options.
                 </Typography>
                 <ActionMenuDemo/>
             </Box>
@@ -62,8 +72,8 @@ export function Inputs() {
             <Box sx={{mb: 4}}>
                 <Typography variant="h2" gutterBottom>Number field</Typography>
                 <Typography variant="body1" gutterBottom>
-                    Special case of Mui <code>TextField</code> that lets the user input a number in a certain
-                    <code>Intl.NumberFormat</code>.
+                    Special case of Mui <Code>TextField</Code> that lets the user input a number in a certain
+                    <Code>Intl.NumberFormat</Code>.
                 </Typography>
                 <NumberFieldDemo/>
             </Box>
@@ -71,7 +81,7 @@ export function Inputs() {
             <Box sx={{mb: 4}}>
                 <Typography variant="h2" gutterBottom>E-Mail fields</Typography>
                 <Typography variant="body1" gutterBottom>
-                    Special case of Mui <code>TextField</code> that validates aspects around e-mail addresses.
+                    Special case of Mui <Code>TextField</Code> that validates aspects around e-mail addresses.
                 </Typography>
                 <EmailFieldsDemo/>
             </Box>
@@ -206,46 +216,45 @@ function SelectorDemo() {
     );
 }
 
-function ActionMenuDemo(){
+function ActionMenuDemo() {
 
-  const actions: ActionMenuItem[] = [];
+    const actions: ActionMenuItem[] = [];
 
-  function computeActions(): ActionMenuItem[]
-  {
-    const printAction: ActionMenuItem = {
-      label: "Print",
-      onClick: () => window.print(),
-    };
-    const checkedOption: ActionMenuItem = {
-      label: "Mark Checked",
-      onClick: () => console.log("Mark Checked"),
-    };
-    const triggerNextStateOption: ActionMenuItem = {
-      label: "Trigger Next State",
-      onClick: () => console.log("Trigger Next State"),
-    };
-    const deleteOption: ActionMenuItem = {
-      label: "Delete",
-      onClick: () => console.log("Delete"),
-    };
-    const manualHandoverOption: ActionMenuItem = {
-      label: "Manual Handover",
-      onClick: () => console.log("Manual Handover"),
-    };
+    function computeActions(): ActionMenuItem[] {
+        const printAction: ActionMenuItem = {
+            label: "Print",
+            onClick: () => window.print(),
+        };
+        const checkedOption: ActionMenuItem = {
+            label: "Mark Checked",
+            onClick: () => console.log("Mark Checked"),
+        };
+        const triggerNextStateOption: ActionMenuItem = {
+            label: "Trigger Next State",
+            onClick: () => console.log("Trigger Next State"),
+        };
+        const deleteOption: ActionMenuItem = {
+            label: "Delete",
+            onClick: () => console.log("Delete"),
+        };
+        const manualHandoverOption: ActionMenuItem = {
+            label: "Manual Handover",
+            onClick: () => console.log("Manual Handover"),
+        };
 
-    actions.push(printAction, checkedOption, triggerNextStateOption, deleteOption, manualHandoverOption);
+        actions.push(printAction, checkedOption, triggerNextStateOption, deleteOption, manualHandoverOption);
 
-    return actions;
-  }
+        return actions;
+    }
 
 
-    return(
-    <Card>
-      <CardContent>
-        <ActionsMenu actions={computeActions()} />
-      </CardContent>
-    </Card>
-  );
+    return (
+        <Card>
+            <CardContent>
+                <ActionsMenu actions={computeActions()}/>
+            </CardContent>
+        </Card>
+    );
 }
 
 const DefaultNumberFormat = new Intl.NumberFormat();
@@ -308,11 +317,12 @@ function EmailFieldsDemo() {
             <CardContent>
                 <Grid container spacing={2}>
                     <Grid item xs={12} sm={8}>
-                        <EmailSenderField value={email} onChange={setEmail} updateValidity={setValidSender} fullWidth />
+                        <EmailSenderField value={email} onChange={setEmail} updateValidity={setValidSender} fullWidth/>
                     </Grid>
                     {!validSender &&
                         <Grid item xs={12} sm={4}>
-                            <Alert severity="error">The e-mail address you entered is not a valid sender e-mail address.</Alert>
+                            <Alert severity="error">The e-mail address you entered is not a valid sender e-mail
+                                address.</Alert>
                         </Grid>
                     }
                 </Grid>

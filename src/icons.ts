@@ -18,3 +18,6 @@ export {default as RemoveCircleIcon} from "@mui/icons-material/RemoveCircle";
 export {default as AddCircleIcon} from "@mui/icons-material/AddCircle";
 
 export {default as SearchIcon} from "@mui/icons-material/Search";
+export {default as AuditIcon} from "@mui/icons-material/TrackChanges";
+export {default as CreateIcon} from "@mui/icons-material/Create";
+export {default as UpdateIcon} from "@mui/icons-material/Update";
