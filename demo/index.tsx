@@ -164,15 +164,6 @@ function SideNavListItem({icon: Icon, text, to}: MenuItemProps) {
 }
 
 function Start() {
-	const {setMeta} = useLayoutContext();
-
-	useEffect(() => {
-		setMeta({
-			'robots': 'noindex,follow',
-			'description': 'Welcome to appUI Demo page.'
-		})
-	}, [setMeta]);
-
 	return (
 		<Container>
 			<PageTitle title="Welcome" gutterBottom />

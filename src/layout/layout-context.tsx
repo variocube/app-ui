@@ -1,45 +1,27 @@
-import React, {createContext, PropsWithChildren, useContext, useState} from "react";
-import {Helmet} from "react-helmet";
+import React, {createContext, PropsWithChildren, useContext, useEffect, useState} from "react";
 
 interface LayoutContextType {
-    setAppName: (appName: string) => void;
     setPageTitle: (name: string) => void;
-    setMeta: (meta: Record<string, string>) => void;
-    appName?: string;
-    pageTitle?: string;
-    meta?: Record<string, string>;
 }
 
 const LayoutContext = createContext<LayoutContextType>({
-    setAppName: () => void 0,
     setPageTitle: () => void 0,
-    setMeta: () => void 0,
 });
 
 interface LayoutProviderProps {
     appName: string
 }
 
-export function LayoutProvider({appName: pAppName, children}: PropsWithChildren<LayoutProviderProps>) {
+export function LayoutProvider({appName, children}: PropsWithChildren<LayoutProviderProps>) {
 
-    const [appName, setAppName] = useState<string>(pAppName);
-    const [pageTitle, setPageTitle] = useState<string>();
-    const [meta, setMeta] = useState<Record<string, string>>();
+	const [pageTitle, setPageTitle] = useState(appName);
+
+	useEffect(() => {
+		document.title = pageTitle ? `${pageTitle} | ${appName}` : appName;
+	}, [pageTitle]);
 
     return (
-        <LayoutContext.Provider value={{
-            appName, setAppName,
-            pageTitle, setPageTitle,
-            meta, setMeta
-        }}>
-            <Helmet>
-                <title>{pageTitle ?? appName}</title>
-                {meta && Object.entries(meta)
-                    .map(([name, content]) => (
-                        <meta key={name} {...{name, content}} />
-                    ))
-                }
-            </Helmet>
+        <LayoutContext.Provider value={{setPageTitle}}>
             {children}
         </LayoutContext.Provider>
     )
@@ -50,8 +32,8 @@ export const useLayoutContext = () => {
     if (!value) {
         throw new Error('Cannot find layout context. Are you missing a LayoutProvider in your component tree?');
     }
-    const {setAppName, setPageTitle, setMeta} = value;
+    const {setPageTitle} = value;
     return {
-        setAppName, setPageTitle, setMeta
+        setPageTitle
     }
 }
