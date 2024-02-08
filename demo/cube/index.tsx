@@ -1,6 +1,6 @@
 import React from "react";
 import {Box, Container, Grid, Stack, Typography} from "@mui/material";
-import {BoxFeatures, CubeState, LockState, UtilizationBar} from "../../src";
+import {BoxFeatures, CubeState, LockState, UtilizationBar, BoxNumber, BoxTypes, MaintenanceStatus} from "../../src";
 
 export function CubeDemo() {
     return (
@@ -97,6 +97,25 @@ export function CubeDemo() {
                     charger
                     minimized
                 />
+            </Stack>
+            <Typography variant="h2" gutterBottom>Box Numbers</Typography>
+            <Stack spacing={1} direction="row" alignItems='center' sx={{ mb: 4}}>
+                <Typography variant="body2">Avatar</Typography>
+                <BoxNumber number={0} />
+                <BoxNumber number={1} />
+                <BoxNumber number={2} />
+                <BoxNumber number={3} />
+
+            </Stack>
+            <Typography variant="h2" gutterBottom>Box Types</Typography>
+            <Stack spacing={1} direction="row" alignItems='center' sx={{ mb: 4}}>
+                <Typography variant="body2">Chips</Typography>
+                <BoxTypes boxTypes={["Type1", "Type2"]} />
+            </Stack>
+            <Typography variant="h2" gutterBottom>Maintenance Status</Typography>
+            <Stack spacing={1} direction="row" alignItems='center' sx={{ mb: 4}}>
+                <Typography variant="body2">Chip</Typography>
+                <MaintenanceStatus status="Maintenance" />
             </Stack>
         </Container>
     )
