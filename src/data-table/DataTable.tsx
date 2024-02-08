@@ -13,7 +13,7 @@ import {
     TableSortLabel,
     useTheme
 } from "@mui/material";
-import React, {Component, FC, Fragment, Key, ReactElement, useCallback, useEffect, useState} from "react";
+import React, {Component, FC, Fragment, Key, ReactElement, ReactNode, useCallback, useEffect, useState} from "react";
 import {ErrorAlert} from "../ErrorAlert";
 import {UndrawEmpty} from "../content-table/UndrawEmpty";
 
@@ -86,8 +86,11 @@ export interface DataTableProps<T> {
     /** An element that is rendered when the table is empty. */
     empty?: ReactElement;
 
-    /** A toolbar that is rendered above the table. */
-    toolbar?: React.ReactNode;
+	/** A header that is rendered above the table. */
+	header?: ReactNode;
+
+    /** A toolbar that is rendered below the table. */
+    toolbar?: ReactNode;
 }
 
 const defaultPageSizes = [10, 25, 50, 100];
@@ -106,6 +109,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
         page,
         onPageChange,
         pageSizes = defaultPageSizes,
+		header,
         toolbar,
     } = props;
 
@@ -144,9 +148,21 @@ export function DataTable<T>(props: DataTableProps<T>) {
         }
     }
 
+	const pagination = page && (
+		<TablePagination
+			component="div"
+			rowsPerPageOptions={pageSizes}
+			count={page.totalElements}
+			rowsPerPage={page.pageSize}
+			page={page.pageIndex}
+			onPageChange={handlePageChange}
+			onRowsPerPageChange={handleRowsPerPageChange}
+		/>
+	);
+
     return (
         <Paper>
-            {toolbar}
+            {header}
             <TableContainer>
                 <Table>
                     <TableHead>
@@ -205,18 +221,14 @@ export function DataTable<T>(props: DataTableProps<T>) {
                     </TableBody>
                 </Table>
             </TableContainer>
-            {page && (
-                <TablePagination
-                    component="div"
-                    rowsPerPageOptions={pageSizes}
-                    count={page.totalElements}
-                    rowsPerPage={page.pageSize}
-                    page={page.pageIndex}
-                    onPageChange={handlePageChange}
-                    onRowsPerPageChange={handleRowsPerPageChange}
-                />
-            )}
-
+			{toolbar && pagination && (
+				<Box display="flex" justifyContent="space-between">
+					{toolbar}
+					{pagination}
+				</Box>
+			)}
+			{!pagination && toolbar}
+			{!toolbar && pagination}
         </Paper>
     )
 }

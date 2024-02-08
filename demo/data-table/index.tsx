@@ -1,21 +1,24 @@
-import {Box, Container, SortDirection, Stack, Typography} from "@mui/material";
+import {Box, Container, IconButton, SortDirection, Stack, Typography} from "@mui/material";
 import React, {useMemo, useState} from "react";
 import {
-    Code,
-    createSimpleTFunc,
-    DataTable,
-    DataTableColumn,
-    DataTableColumnSettings,
-    DataTablePage,
-    DataTableToolbar, PageTitle,
-    SpringPage,
-    SpringPageable,
-    useDataTableColumnStorage,
-    useDataTableStorage,
-    useSpringPage,
-    useSpringPageable
+	Code,
+	createSimpleTFunc,
+	DataTable,
+	DataTableColumn,
+	DataTableColumnSettings,
+	DataTableHeader,
+	DataTablePage,
+	DataTableToolbar,
+	PageTitle,
+	SpringPage,
+	SpringPageable,
+	useDataTableColumnStorage,
+	useDataTableStorage,
+	useSpringPage,
+	useSpringPageable
 } from "../../src";
 import {useAsync} from "react-async-hook";
+import {CloudDownload} from "@mui/icons-material";
 
 export function DataTableDemo() {
     return (
@@ -30,6 +33,7 @@ export function DataTableDemo() {
                 <EmptyDataTable/>
                 <SortableDataTable/>
                 <PagingDataTable/>
+				<ToolbarDataTable/>
                 <ColumnSettings/>
                 <SpringDataTable/>
             </Stack>
@@ -254,6 +258,52 @@ export function PagingDataTable() {
 }
 
 
+export function ToolbarDataTable() {
+	const [pageIndex, setPageIndex] = useState(0);
+	const [pageSize, setPageSize] = useState(2);
+
+	const start = pageIndex * pageSize;
+	const end = start + pageSize;
+
+	const pageFruits = fruits.slice(start, end);
+
+	function handlePageChange({pageIndex, pageSize}: DataTablePage) {
+		setPageIndex(pageIndex);
+		setPageSize(pageSize);
+	}
+
+	return (
+		<Box>
+			<Typography variant="h2" gutterBottom>
+				Data table with toolbar
+			</Typography>
+			<DataTable
+				columns={[
+					{label: "ID", field: "id"},
+					{label: "Name", field: "name"},
+					{label: "Color", field: "color"},
+					{label: "Taste", field: "taste"}
+				]}
+				rows={pageFruits}
+				page={{
+					pageIndex,
+					pageSize,
+					totalElements: fruits.length
+				}}
+				pageSizes={[1, 2, 3]}
+				onPageChange={handlePageChange}
+				toolbar={
+					<DataTableToolbar>
+						<IconButton title="Export">
+							<CloudDownload/>
+						</IconButton>
+					</DataTableToolbar>
+				}
+			/>
+		</Box>
+	)
+}
+
 export function ColumnSettings() {
     const available = [
         {label: "ID", field: "id", group: "Technical"},
@@ -275,15 +325,15 @@ export function ColumnSettings() {
             <DataTable
                 columns={selected}
                 rows={fruits}
-                toolbar={
-                    <DataTableToolbar>
+                header={
+                    <DataTableHeader>
                         <DataTableColumnSettings
                             columns={available}
                             selected={selected}
                             onChange={setSelected}
                             labels={columnSettingsLabels}
                         />
-                    </DataTableToolbar>
+                    </DataTableHeader>
                 }
             />
         </Box>
@@ -342,15 +392,15 @@ export function SpringDataTable() {
                 using the <Code>Pageable</Code> and <Code>Page</Code> data types.
             </Typography>
             <DataTable
-                toolbar={
-                    <DataTableToolbar>
+                header={
+                    <DataTableHeader>
                         <DataTableColumnSettings
                             columns={available}
                             selected={columns}
                             onChange={setColumns}
                             labels={columnSettingsLabels}
                         />
-                    </DataTableToolbar>
+                    </DataTableHeader>
                 }
                 columns={columns}
                 rows={rows}
