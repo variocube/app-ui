@@ -14,7 +14,7 @@ interface LayoutProviderProps {
 
 export function LayoutProvider({appName, children}: PropsWithChildren<LayoutProviderProps>) {
 
-	const [pageTitle, setPageTitle] = useState(appName);
+	const [pageTitle, setPageTitle] = useState("");
 
 	useEffect(() => {
 		document.title = pageTitle ? `${pageTitle} | ${appName}` : appName;
