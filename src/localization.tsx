@@ -57,7 +57,7 @@ export type TFunc<T> = (key: Leaves<T>, context?: Record<string, any>) => string
 /**
  * Returns whether the specified key exists in the current language.
  */
-type THasKeyFunc = (key: string) => boolean;
+type THasKeyFunc<T> = (key: string) => key is Leaves<T>;
 
 
 /**
@@ -86,7 +86,7 @@ export interface Localization<T extends MessageObject> {
     /**
      * Returns if the current key can be associated with a message.
      */
-    hasKey: THasKeyFunc;
+    hasKey: THasKeyFunc<T>;
 
     /**
      * Returns the value property `name` of the object associated with `key` in the current language.
@@ -269,9 +269,11 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
             }
         }, [messages, handleMissing]);
 
-        const hasKey = useCallback((key: string) => {
-            return defined(messages) && defined(getString(messages, key));
-        }, [messages]);
+		function _hasKey(key: string): key is Leaves<T> {
+			return defined(messages) && defined(getString(messages, key));
+		}
+
+        const hasKey = useCallback(_hasKey, [messages]);
 
         const e = useCallback((key: Branches<T>, name: string) => t(key + "." + name as Leaves<T>), [t]);
 
