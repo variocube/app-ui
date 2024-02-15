@@ -57,7 +57,7 @@ export function RelativeTemporalFormat(props: RelativeTemporalFormatProps) {
         }
         if (value instanceof Instant) {
             const now = Now.instant();
-            const relativeTo = now.toZonedDateTimeISO(Now.timeZoneId());
+            const relativeTo = now.toZonedDateTimeISO(Now.timeZone());
             return value.since(now, {largestUnit: "auto"})
                 .round({largestUnit: "years", relativeTo}) // first time rounds to hours
                 .round({largestUnit: "years", relativeTo}); // second time round to years
