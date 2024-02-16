@@ -22,7 +22,7 @@ export function HelpButton({helpPage, helpAnchor = "", language = ""}: HelpProps
     const currentselectedHelpLanguage = useMemo<boolean>(() => selectedHelpLanguage === language, [selectedHelpLanguage, language]);
 
     const handleHelpButtonClicked = useCallback(() => {
-        if(!currentSelectedHelpPage) {
+		if(!currentSelectedHelpPage) {
             setSelectedHelpPage(helpPage);
             setSelectedHelpAnchor(helpAnchor || "");
             setSelectedHelpLanguage(language || "");
@@ -38,7 +38,12 @@ export function HelpButton({helpPage, helpAnchor = "", language = ""}: HelpProps
     }
 
     return (
-        <IconButton onClick={handleHelpButtonClicked} size="small" color={currentSelectedHelpPage && currentSelectedHelpAnchor && currentselectedHelpLanguage ? "primary" : "default"}>
+        <IconButton
+			onClick={ev => {
+				ev.stopPropagation();
+				handleHelpButtonClicked();
+			}}
+			size="small" color={currentSelectedHelpPage && currentSelectedHelpAnchor && currentselectedHelpLanguage ? "primary" : "default"}>
             <Help />
         </IconButton>
     );
