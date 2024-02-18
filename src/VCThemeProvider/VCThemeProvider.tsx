@@ -5,19 +5,42 @@ import {RobotoFont} from "./RobotoFont";
 import deepmerge from "deepmerge";
 import {JetbrainsMonoFont} from "./JetbrainsMonoFont";
 
-/**
- * Theme colors.
- */
-export enum Colors {
-    white = "#ffffff",
-    orange = "#ff6a00",
-    blue = "#009dd8",
-    success = "#4caf50",
-    errorLight = "#e62e2e",
-    errorDark = "#aa0000",
-    warning = "#da9500",
-    infoLight = "#294fcc",
-    infoDark = "#082480",
+const DEFAULT_PRIMARY = "#ff6a00";
+const DEFAULT_SECONDARY = "#009dd8";
+
+const SUCCESS = {
+	light: "#429945",
+	dark: "#58cc5c"
+}
+
+const WARNING = {
+	light: "#ccaa00",
+	dark: "#e6bf00"
+};
+
+const ERROR = {
+	light: "#aa0000",
+	dark: "#e62e2e"
+}
+
+const INFO = {
+	light: "#082480",
+	dark: "#294fcc"
+}
+
+const BACKGROUND = {
+	light: "#fffaf7",
+	dark: "#15161a"
+}
+
+const PAPER = {
+	light: "#ffffff",
+	dark: "#282b33"
+}
+
+const TEXT = {
+	light: "#282b33",
+	dark: "#fdfaf7"
 }
 
 interface PaletteModeContextValue {
@@ -54,40 +77,39 @@ export function VCThemeProvider({branding, children}: PropsWithChildren<VCThemeP
         setModeOverride(newMode != defaultMode ? newMode : null);
     }, [defaultMode]);
 
+	const {
+		colorPrimary: primary = DEFAULT_PRIMARY,
+		colorSecondary: secondary = DEFAULT_SECONDARY
+	} = branding ?? {};
+
     const theme = useMemo(() => {
         const themeOptions: ThemeOptions = {
             palette: {
                 mode,
                 primary: {
-                    main: branding?.colorPrimary || Colors.orange,
-                    contrastText: Colors.white,
+                    main: primary,
                 },
                 secondary: {
-                    main: branding?.colorSecondary || Colors.blue,
-                    contrastText: Colors.white,
+                    main: secondary,
                 },
                 success: {
-                    main: Colors.success,
-                    contrastText: Colors.white,
+                    main: SUCCESS[mode],
                 },
                 warning: {
-                    main: Colors.warning,
-                    contrastText: Colors.white,
+                    main: WARNING[mode],
                 },
                 error: {
-                    main: mode == "light" ? Colors.errorDark : Colors.errorLight,
-                    contrastText: Colors.white,
+                    main: ERROR[mode],
                 },
                 info: {
-                    main: mode == "light" ? Colors.infoDark : Colors.infoLight,
-                    contrastText: Colors.white,
+                    main: INFO[mode],
                 },
                 text: {
-                    primary: mode == "dark" ? "#fdfaf7" : "#282b33",
+                    primary: TEXT[mode],
                 },
                 background: {
-                    default: mode == "dark" ? "#15161a" : "#fffaf7",
-                    paper: mode == "dark" ? "#282b33" : "#fff"
+					default: BACKGROUND[mode],
+					paper: PAPER[mode]
                 }
             },
             typography: {
@@ -124,7 +146,14 @@ export function VCThemeProvider({branding, children}: PropsWithChildren<VCThemeP
                     defaultProps: {
                         underline: "hover"
                     }
-                }
+                },
+				MuiPaper: {
+					styleOverrides: {
+						root: {
+							backgroundImage: "unset"
+						}
+					}
+				}
             }
         };
         return createTheme(deepmerge(themeOptions, branding?.muiThemeOptions || {}));

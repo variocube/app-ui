@@ -85,6 +85,8 @@ function AuditTimelineDemo() {
                     changes={
                         <AuditChanges data={{
                             name: "Our fruit salad",
+							tasty: true,
+							guests: 5
                         }}/>
                     }
                 />

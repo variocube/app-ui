@@ -1,5 +1,5 @@
 import React, {PropsWithChildren} from "react";
-import {Typography, TypographyProps, useTheme} from "@mui/material";
+import {darken, lighten, Typography, TypographyProps, useTheme} from "@mui/material";
 
 export interface CodeProps {
     variant?: TypographyProps["variant"];
@@ -19,7 +19,14 @@ export function Code(props: PropsWithChildren<CodeProps>) {
         children
     } = props;
     const theme = useTheme();
-    const backgroundAlpha = theme.palette.mode == "light" ? 0.15 : 0.35;
+
+	const backgroundColor = theme.palette.mode == "light"
+		? darken(theme.palette.background.default, 0.04)
+		: theme.palette.background.paper
+
+	const backgroundColorOnPaper = theme.palette.mode == "light"
+		? darken(theme.palette.background.default, 0.025)
+		: lighten(theme.palette.background.paper, 0.1);
 
     return (
         <Typography
@@ -33,7 +40,12 @@ export function Code(props: PropsWithChildren<CodeProps>) {
             py={py}
             whiteSpace="break-spaces"
             borderRadius="0.25em"
-            bgcolor={`rgba(128, 128, 128, ${backgroundAlpha})`}
+            sx={{
+				bgcolor: backgroundColor,
+				".MuiPaper-root &": {
+					bgcolor: backgroundColorOnPaper,
+				}
+			}}
         >
             {children}
         </Typography>

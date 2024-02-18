@@ -1,18 +1,21 @@
 import {Add, ChangeCircleOutlined, Remove} from "@mui/icons-material";
-import {Box, Chip, List, ListItem, ListItemIcon, ListItemText} from "@mui/material";
+import {Box, Chip, List, ListItem, ListItemIcon, ListItemText, Stack} from "@mui/material";
 import React, {Fragment} from "react";
 import {AppAuditLogEntry, JsonPatch, JsonPatchItem} from "./types";
 import {Code} from "../code/Code";
 import {CodeBlock} from "../code/CodeBlock";
+import {Json} from "../code/Json";
 
 export function AuditChanges({data, patch}: Pick<AppAuditLogEntry, "data" | "patch">) {
-
-	return patch
-		? <AuditPatch patch={patch} />
-		: <CodeBlock>{JSON.stringify(data, null, 4)}</CodeBlock>;
+	return (
+		<Stack spacing={2}>
+			{patch && <AuditPatch patch={patch} />}
+			{data && <AuditData data={data}/>}
+		</Stack>
+	);
 }
 
-function AuditPatch({patch}: { patch: JsonPatch }) {
+export function AuditPatch({patch}: { patch: JsonPatch }) {
 	return (
 		<List dense disablePadding>
 			{patch.map(item => (
@@ -52,6 +55,12 @@ function AuditPatch({patch}: { patch: JsonPatch }) {
 				</ListItem>
 			))}
 		</List>
+	);
+}
+
+export function AuditData({data}: {data: any}) {
+	return (
+		<CodeBlock><Json data={data}/></CodeBlock>
 	);
 }
 

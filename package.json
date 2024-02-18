@@ -18,8 +18,8 @@
     "@emotion/react": "11.x",
     "@emotion/styled": "11.x",
     "@mui/icons-material": "5.x",
-    "@mui/material": "5.x",
     "@mui/lab": ">5.0.0-alpha <6",
+    "@mui/material": "5.x",
     "@mui/x-date-pickers": ">5.0.0-beta <6",
     "mustache": "4.x",
     "react": "17.x"
@@ -29,6 +29,7 @@
     "@js-temporal/polyfill": "0.4.3",
     "deepmerge": "^4.3.0",
     "error-stack-parser": "^2.1.4",
+    "json-lexer": "^1.2.0",
     "react-async-hook": "^4.0.0",
     "roboto-fontface": "^0.10.0"
   },
