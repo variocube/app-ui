@@ -20,8 +20,8 @@ export function TextField({onChange, validate, onBlur, helperText, select, Selec
             if (validate) {
                 input.current?.setCustomValidity(validate(value) || "");
             }
-            incValidationCount();
         }
+		incValidationCount();
     }
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
