@@ -4,6 +4,7 @@
 
 const path = require("path")
 const HtmlWebPackPlugin = require("html-webpack-plugin");
+const webpack = require("webpack");
 
 module.exports = {
 
@@ -79,6 +80,9 @@ module.exports = {
             meta: {
                 viewport: "width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, shrink-to-fit=no",
             }
+        }),
+        new webpack.DefinePlugin({
+            VERSION: JSON.stringify(require("./package.json").version),
         }),
     ]
 };

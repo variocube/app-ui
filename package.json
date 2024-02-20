@@ -31,7 +31,8 @@
     "error-stack-parser": "^2.1.4",
     "json-lexer": "^1.2.0",
     "react-async-hook": "^4.0.0",
-    "roboto-fontface": "^0.10.0"
+    "roboto-fontface": "^0.10.0",
+    "semver": "^7.5.4"
   },
   "devDependencies": {
     "@emotion/react": "^11.9.0",

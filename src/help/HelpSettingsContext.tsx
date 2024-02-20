@@ -1,5 +1,17 @@
 import * as React from "react";
-import {createContext, PropsWithChildren, useCallback, useContext, useMemo, useState} from "react";
+import {
+    createContext,
+    Fragment,
+    PropsWithChildren,
+    ReactNode,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState
+} from "react";
+import {Button, Dialog, DialogActions, DialogTitle} from "@mui/material";
+const semver = require('semver')
 
 interface HelpSettingsContextData {
     baseUrl: string;
@@ -31,9 +43,14 @@ const HelpSettingsContext = createContext(emptyContext);
 
 interface HelpSettingsContextProviderProps {
     baseUrl: string;
+    localStorageVar?: string;
+    changeLogUrl?: string;
+    currentVersion?: string;
+    dialogTitle?: string;
+    dialogContent?: ReactNode;
 }
 
-export function HelpSettingsContextProvider({baseUrl, children}: PropsWithChildren<HelpSettingsContextProviderProps>) {
+export function HelpSettingsContextProvider({baseUrl,localStorageVar, changeLogUrl, currentVersion, dialogTitle, dialogContent, children}: PropsWithChildren<HelpSettingsContextProviderProps>) {
     const [selectedHelpPage, setSelectedHelpPage] = useState<string | undefined>();
     const [selectedHelpAnchor, setSelectedHelpAnchor] = useState<string | undefined>();
     const [selectedHelpLanguage, setSelectedHelpLanguage] = useState<string | undefined>();
@@ -41,6 +58,8 @@ export function HelpSettingsContextProvider({baseUrl, children}: PropsWithChildr
     const handleSetSelectedHelpPage = useCallback((helpPage: string) => {
         setSelectedHelpPage(helpPage);
     }, []);
+
+    const [openDialog, setOpenDialog] = useState<boolean>(false);
 
     const clearSelectedHelpPage = useCallback(() => {
         setSelectedHelpPage(undefined);
@@ -73,10 +92,41 @@ export function HelpSettingsContextProvider({baseUrl, children}: PropsWithChildr
         selectedHelpLanguage, handleSetSelectedHelpLanguage,clearSelectedHelpLanguage
     ]);
 
+    useEffect( () => {
+        if(changeLogUrl && localStorageVar && currentVersion){
+            const lastSeenVersion = localStorage.getItem(localStorageVar);
+            if(lastSeenVersion && semver.lt(lastSeenVersion, currentVersion)){
+                setOpenDialog(true);
+            }else{
+                localStorage.setItem(localStorageVar, currentVersion);
+            }
+        }
+    }, []);
+
+    function handleOk() {
+        if(localStorageVar && currentVersion){
+            localStorage.setItem(localStorageVar, currentVersion);
+        }
+        setOpenDialog(false);
+    }
+
     return (
+        <Fragment>
         <HelpSettingsContext.Provider value={defaultContext}>
             {children}
         </HelpSettingsContext.Provider>
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth>
+            <DialogTitle>
+                {dialogTitle}
+            </DialogTitle>
+
+            {dialogContent}
+
+            <DialogActions>
+                <Button variant="outlined" onClick={handleOk}>OK</Button>
+            </DialogActions>
+        </Dialog>
+        </Fragment>
     );
 }
 
