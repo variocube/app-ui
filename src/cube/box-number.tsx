@@ -1,8 +1,8 @@
 import { Avatar } from "@mui/material";
-import React from "react";
+import React, { ReactNode } from "react";
 
 interface BoxNumberProps {
-    number: number;
+    number: ReactNode ;
 }
 
 export function BoxNumber({number, ...rest}: BoxNumberProps) {
