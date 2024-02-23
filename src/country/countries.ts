@@ -12,6 +12,10 @@ export function findCountry(code?: string | null) {
 	return countries.filter(country => country.code == code).pop();
 }
 
+export function findCountryByPhoneCode(code?: string | null) {
+	return countries.filter(country => country.phone === code).pop();
+}
+
 export const countries = [
 	{code: "AD", label: "Andorra", phone: "376"},
 	{code: "AE", label: "United Arab Emirates", phone: "971"},

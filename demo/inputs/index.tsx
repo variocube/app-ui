@@ -14,15 +14,15 @@ import {
 } from "@mui/material";
 import React, {useState} from "react";
 import {
-    ActionMenuItem,
-    ActionsMenu,
+	ActionMenuItem,
+	ActionsMenu,
 	Code,
-    Checkbox, CountrySelect, LocaleSelect,
-    IntegerNumberFormat,
-    NumberField,
-    PageTitle,
-    Selector,
-    TextField
+	Checkbox, CountrySelect, LocaleSelect,
+	IntegerNumberFormat,
+	NumberField,
+	PageTitle,
+	Selector,
+	TextField, PhonePrefixSelect
 } from "../../src";
 import {EmailSenderField} from "../../src/Input/EmailSenderField";
 
@@ -339,6 +339,7 @@ function EmailFieldsDemo() {
 
 function CountryLocaleSelectorDemo() {
     const [country, setCountry] = useState<string>();
+    const [prefix, setPrefix] = useState<string>();
     const [locale, setLocale] = useState<string>();
 
     return (
@@ -357,6 +358,14 @@ function CountryLocaleSelectorDemo() {
                     label="Select locale"
                     value={locale}
                     onChange={setLocale}
+                />
+            </CardContent>
+            <CardHeader title="Phone prefix selector" />
+            <CardContent>
+                <PhonePrefixSelect
+                    label="Select phone prefix"
+                    value={prefix ?? ''}
+                    onChange={v => setPrefix(v ?? undefined)}
                 />
             </CardContent>
         </Card>
