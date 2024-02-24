@@ -5,7 +5,7 @@ interface VCAppLogoProps extends BoxProps {
     appName?: string;
 }
 
-export function VCAppLogo({appName, ...props}: VCAppLogoProps) {
+export function VCAppLogo({appName, paddingX, paddingY, ...props}: VCAppLogoProps) {
     return (
         <Box {...props}>
             <Box sx={{display: "flex", flexFlow: "row nowrap", alignItems: "center"}}>
@@ -16,7 +16,9 @@ export function VCAppLogo({appName, ...props}: VCAppLogoProps) {
                         fontSize: "20px",
                         fontWeight: 900,
                         textTransform: "uppercase",
-                        marginLeft: "8px"
+                        marginLeft: "8px",
+                        paddingX: paddingX,
+                        paddingY: paddingY
                     }}>
                         {appName}
                     </Box>

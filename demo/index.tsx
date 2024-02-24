@@ -85,7 +85,7 @@ function Demo() {
 
 function App() {
 	return (
-		<VCThemeProvider>
+		<VCThemeProvider branding={{}}>
 			<AppShell
 				appName={"UI docs"}
 				sideNav={<SideNav />}

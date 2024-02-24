@@ -4,6 +4,8 @@ import {useFlag} from "../utils";
 import {MenuIcon} from "../icons";
 import {VCAppLogo} from "../VCLogo";
 import {LayoutProvider} from "../layout";
+import { UrlAppLogo } from "../UrlLogo";
+import { usePaletteMode } from "../VCThemeProvider";
 
 interface AppShellProps {
     appName: string;
@@ -29,6 +31,7 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
     const [drawerOpen, setDrawerOpen, clearDrawerOpen, toggleDrawerOpen] = useFlag(false);
 
     const theme = useTheme();
+    const { logoDarkUrl, logoLightUrl, logoPaddingX, logoPaddingY } = usePaletteMode();
 
     const drawerPermanent = useMediaQuery(theme.breakpoints.up(sideNavFixed));
     useEffect(() => {
@@ -86,18 +89,57 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
                                 <MenuIcon/>
                             </IconButton>
                         )}
-                        <VCAppLogo
-                            appName={drawerPermanent ? appName : undefined}
-                            sx={{
-                                py: 1,
-                                ...(!drawerPermanent && {
-                                    position: "absolute",
-                                    top: "50%",
-                                    left: "50%",
-                                    transform: "translate(-50%, -50%)"
-                                })
-                            }}
-                        />
+                        {theme.palette.mode == 'light' && logoLightUrl ?
+                            <UrlAppLogo
+                                url={logoLightUrl}
+                                paddingY={logoPaddingY || 0}
+                                paddingX={logoPaddingX || 0}
+                                appName={drawerPermanent ? appName : undefined}
+                                sx={{
+                                    py: 1,
+                                    ...(!drawerPermanent && {
+                                        position: "absolute",
+                                        top: "50%",
+                                        left: "50%",
+                                        transform: "translate(-50%, -50%)",
+
+                                    })
+                                }}
+                            />
+                            :
+                            theme.palette.mode == 'dark' && logoDarkUrl ?
+                                <UrlAppLogo
+                                    url={logoDarkUrl}
+                                    paddingY={logoPaddingY || 0}
+                                    paddingX={logoPaddingX || 0}
+                                    appName={drawerPermanent ? appName : undefined}
+                                    sx={{
+                                        py: 1,
+                                        ...(!drawerPermanent && {
+                                            position: "absolute",
+                                            top: "50%",
+                                            left: "50%",
+                                            transform: "translate(-50%, -50%)",
+
+                                        })
+                                    }}
+                                />
+                                :
+                                <VCAppLogo
+                                    appName={drawerPermanent ? appName : undefined}
+                                    paddingY={logoPaddingY || 0}
+                                    paddingX={logoPaddingX || 0}
+                                    sx={{
+                                        py: 1,
+                                        ...(!drawerPermanent && {
+                                            position: "absolute",
+                                            top: "50%",
+                                            left: "50%",
+                                            transform: "translate(-50%, -50%)"
+                                        })
+                                    }}
+                                />
+                        }
                         {topNav}
                         {!topNav && <Box/>}
                     </Box>

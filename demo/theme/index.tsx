@@ -1,22 +1,26 @@
 import {
-	Alert,
-	AlertTitle, Box,
-	Button,
-	Card,
-	CardContent, CardHeader,
-	Container,
-	List,
-	ListItem,
-	ListItemButton,
-	ListItemText,
-	Stack,
-	Typography
+    Alert,
+    AlertTitle, Box,
+    Button,
+    Card,
+    CardContent, CardHeader,
+    Container,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
+    Stack,
+    Typography
 } from "@mui/material";
 import React from "react";
-import {Breadcrumbs, BreadcrumbItem, BreadcrumbLink, ThemeModeSwitcher, Code, PageTitle} from "../../src";
+import { Breadcrumbs, BreadcrumbItem, BreadcrumbLink, ThemeModeSwitcher, Code, PageTitle, usePaletteMode, TextField, NumberField } from "../../src";
 
 
 export function Theme() {
+
+    const { colorPrimary, setColorPrimary, colorSecondary, setColorSecondary, logoLightUrl, setLogoLightUrl, logoDarkUrl, setLogoDarkUrl, logoPaddingX, setLogoPaddingX, logoPaddingY, setLogoPaddingY } = usePaletteMode();
+    const GermanNumberFormat = new Intl.NumberFormat("de-DE");
+
     return (
         <Container maxWidth="md">
             <PageTitle title="Theme" gutterBottom />
@@ -26,15 +30,30 @@ export function Theme() {
                 The mode is automatically selected, but can be overridden with <Code>ThemeModeSwitcher</Code>.
             </Typography>
 
-            <Stack spacing={2} sx={{marginBottom: 2}}>
+            <Stack spacing={2} sx={{ marginBottom: 2 }}>
                 <Card>
-                    <CardHeader title="Theme mode switcher"/>
+                    <CardHeader title="Theme mode switcher" />
                     <CardContent>
-                        <ThemeModeSwitcher/>
+                        <ThemeModeSwitcher />
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader title="Buttons"/>
+                    <CardHeader title="Branding" />
+                    <CardContent>
+                        <TextField label="Primary Color" value={colorPrimary || ""} onChange={(event) => setColorPrimary(event)} />
+                        <TextField label="Seondary Color" value={colorSecondary || ""} onChange={(event) => setColorSecondary(event)} />
+                    </CardContent>
+                    <CardContent>
+                        <TextField label="Logo Light Url" value={logoLightUrl || ""} onChange={(event) => setLogoLightUrl(event)} />
+                        <TextField label="Logo Dark Url" value={logoDarkUrl || ""} onChange={(event) => setLogoDarkUrl(event)} />
+                    </CardContent>
+                    <CardContent>
+                        <NumberField numberFormat={GermanNumberFormat} label="Padding X" numberValue={logoPaddingX === undefined ? null : logoPaddingX} onChangeNumber={(event) => setLogoPaddingX(event) as any} />
+                        <NumberField numberFormat={GermanNumberFormat} label="Padding Y" numberValue={logoPaddingY === undefined ? null : logoPaddingY} onChangeNumber={(event) => setLogoPaddingY(event)} />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader title="Buttons" />
                     <CardContent>
                         <Typography variant="h6" py={2}>Contained</Typography>
                         <Stack direction="row" spacing={2}>
@@ -65,35 +84,35 @@ export function Theme() {
                         </Stack>
                     </CardContent>
                 </Card>
-				<Card>
-					<CardHeader title="Typography"/>
-					<CardContent>
-						<Typography variant="h1" gutterBottom>Heading 1</Typography>
-						<Typography variant="h2" gutterBottom>Heading 2</Typography>
-						<Typography variant="h3" gutterBottom>Heading 3</Typography>
-						<Typography variant="h4" gutterBottom>Heading 4</Typography>
-						<Typography variant="h5" gutterBottom>Heading 5</Typography>
-						<Typography variant="h6" gutterBottom>Heading 6</Typography>
-						<Box my={2} />
-						<Typography variant="body1"><strong>Paragraph 1</strong></Typography>
-						<Typography variant="body1">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus accusantium asperiores aut blanditiis consequatur cupiditate ducimus harum magni modi numquam odio porro possimus praesentium provident sapiente totam, velit, vitae voluptatum!</Typography>
-						<Box my={2} />
-						<Typography variant="body2"><strong>Paragraph 2</strong></Typography>
-						<Typography variant="body2">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab ad alias, commodi cum dolorum id ipsa laudantium magnam modi neque nostrum quae quibusdam quod sequi vel velit veritatis. Dolorem, illum.</Typography>
-					</CardContent>
-				</Card>
                 <Card>
-					<CardHeader title="List Items"/>
-					<CardContent>
-						<List>
-							<ListItem>
-								<ListItemText primary="List text primary" secondary="List text secondary"/>
-							</ListItem>
-							<ListItemButton disabled>
-								<ListItemText primary="Disabled text primary" secondary="Disabled text secondary"/>
-							</ListItemButton>
-						</List>
-					</CardContent>
+                    <CardHeader title="Typography" />
+                    <CardContent>
+                        <Typography variant="h1" gutterBottom>Heading 1</Typography>
+                        <Typography variant="h2" gutterBottom>Heading 2</Typography>
+                        <Typography variant="h3" gutterBottom>Heading 3</Typography>
+                        <Typography variant="h4" gutterBottom>Heading 4</Typography>
+                        <Typography variant="h5" gutterBottom>Heading 5</Typography>
+                        <Typography variant="h6" gutterBottom>Heading 6</Typography>
+                        <Box my={2} />
+                        <Typography variant="body1"><strong>Paragraph 1</strong></Typography>
+                        <Typography variant="body1">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus accusantium asperiores aut blanditiis consequatur cupiditate ducimus harum magni modi numquam odio porro possimus praesentium provident sapiente totam, velit, vitae voluptatum!</Typography>
+                        <Box my={2} />
+                        <Typography variant="body2"><strong>Paragraph 2</strong></Typography>
+                        <Typography variant="body2">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab ad alias, commodi cum dolorum id ipsa laudantium magnam modi neque nostrum quae quibusdam quod sequi vel velit veritatis. Dolorem, illum.</Typography>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader title="List Items" />
+                    <CardContent>
+                        <List>
+                            <ListItem>
+                                <ListItemText primary="List text primary" secondary="List text secondary" />
+                            </ListItem>
+                            <ListItemButton disabled>
+                                <ListItemText primary="Disabled text primary" secondary="Disabled text secondary" />
+                            </ListItemButton>
+                        </List>
+                    </CardContent>
 
                 </Card>
                 <Alert severity="error">
