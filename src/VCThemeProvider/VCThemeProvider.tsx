@@ -1,83 +1,83 @@
-import React, {createContext, PropsWithChildren, useCallback, useContext, useMemo} from "react";
-import {createTheme, CssBaseline, PaletteMode, ThemeOptions, ThemeProvider, useMediaQuery} from "@mui/material";
-import {useStorage} from "../storage";
-import {RobotoFont} from "./RobotoFont";
+import React, { createContext, PropsWithChildren, useCallback, useContext, useMemo } from "react";
+import { createTheme, CssBaseline, PaletteMode, ThemeOptions, ThemeProvider, useMediaQuery } from "@mui/material";
+import { useStorage } from "../storage";
+import { RobotoFont } from "./RobotoFont";
 import deepmerge from "deepmerge";
-import {JetbrainsMonoFont} from "./JetbrainsMonoFont";
+import { JetbrainsMonoFont } from "./JetbrainsMonoFont";
 
 const DEFAULT_PRIMARY = "#ff6a00";
 const DEFAULT_SECONDARY = "#009dd8";
 
 const SUCCESS = {
-	light: "#429945",
-	dark: "#58cc5c"
+    light: "#429945",
+    dark: "#58cc5c"
 }
 
 const WARNING = {
-	light: "#ccaa00",
-	dark: "#e6bf00"
+    light: "#ccaa00",
+    dark: "#e6bf00"
 };
 
 const ERROR = {
-	light: "#aa0000",
-	dark: "#e62e2e"
+    light: "#aa0000",
+    dark: "#e62e2e"
 }
 
 const INFO = {
-	light: "#082480",
-	dark: "#294fcc"
+    light: "#082480",
+    dark: "#294fcc"
 }
 
 const BACKGROUND = {
-	light: "#fffaf7",
-	dark: "#15161a"
+    light: "#fffaf7",
+    dark: "#15161a"
 }
 
 const PAPER = {
-	light: "#ffffff",
-	dark: "#282b33"
+    light: "#ffffff",
+    dark: "#282b33"
 }
 
 const TEXT = {
-	light: "#282b33",
-	dark: "#fdfaf7"
+    light: "#282b33",
+    dark: "#fdfaf7"
 }
 
 interface PaletteModeContextValue {
     mode: PaletteMode;
     setMode: (mode: PaletteMode) => any;
-    logoLightUrl? : string,
-    setLogoLightUrl : (logoLightUrl: string | undefined) => void,
-    logoDarkUrl? : string,
-    setLogoDarkUrl : (logoDarkUrl: string | undefined) => void,
-    logoPaddingX? : number | null,
-    setLogoPaddingX : (logoPaddingX: number | null) => void,
-    logoPaddingY? : number | null,
-    setLogoPaddingY : (logoPaddingY: number | null) => void,
-    colorPrimary : string,
-    setColorPrimary : (colorPrimary: string) => void,
-    colorSecondary : string,
-    setColorSecondary : (colorPrimary: string) => void
+    logoLightUrl?: string,
+    setLogoLightUrl: (logoLightUrl: string | undefined) => void,
+    logoDarkUrl?: string,
+    setLogoDarkUrl: (logoDarkUrl: string | undefined) => void,
+    logoPaddingX?: number | null,
+    setLogoPaddingX: (logoPaddingX: number | null) => void,
+    logoPaddingY?: number | null,
+    setLogoPaddingY: (logoPaddingY: number | null) => void,
+    colorPrimary: string,
+    setColorPrimary: (colorPrimary: string) => void,
+    colorSecondary: string,
+    setColorSecondary: (colorPrimary: string) => void
 }
 
 const PaletteModeContext = createContext<PaletteModeContextValue>({
     mode: "light",
     setMode: () => void 0,
-    logoLightUrl : "",
+    logoLightUrl: "",
     setLogoLightUrl: () => void 0,
-    logoDarkUrl : "",
+    logoDarkUrl: "",
     setLogoDarkUrl: () => void 0,
     logoPaddingX: 0,
     setLogoPaddingX: () => void 0,
     logoPaddingY: 0,
     setLogoPaddingY: () => void 0,
-    colorPrimary : DEFAULT_PRIMARY,
+    colorPrimary: DEFAULT_PRIMARY,
     setColorPrimary: () => void 0,
-    colorSecondary : DEFAULT_SECONDARY,
+    colorSecondary: DEFAULT_SECONDARY,
     setColorSecondary: () => void 0
 });
 
-interface VCThemeProviderProps {
+export interface VCThemeProviderProps {
     branding?: {
         colorPrimary?: string;
         colorSecondary?: string;
@@ -88,8 +88,12 @@ interface VCThemeProviderProps {
         logoDarkUrl?: string;
     }
 }
-
-export function VCThemeProvider({branding, children}: PropsWithChildren<VCThemeProviderProps>) {
+const isColor = (strColor: string) => {
+    const s = new Option().style;
+    s.color = strColor;
+    return s.color !== '';
+}
+export function VCThemeProvider({ branding, children }: PropsWithChildren<VCThemeProviderProps>) {
 
     const [colorPrimary, setColorPrimary] = React.useState(branding?.colorPrimary || DEFAULT_PRIMARY);
     const [colorSecondary, setColorSecondary] = React.useState(branding?.colorSecondary || DEFAULT_SECONDARY);
@@ -113,16 +117,20 @@ export function VCThemeProvider({branding, children}: PropsWithChildren<VCThemeP
         setModeOverride(newMode != defaultMode ? newMode : null);
     }, [defaultMode]);
 
-    const isColor = (strColor : string) => {
-        const s = new Option().style;
-        s.color = strColor;
-        return s.color !== '';
-      }
+    React.useEffect(() => {
+        if (branding?.logoLightUrl) setLogoLightUrl(branding.logoLightUrl);
+        if (branding?.logoDarkUrl) setLogoDarkUrl(branding.logoDarkUrl);
+        if (branding?.logoPaddingX) setLogoPaddingX(branding.logoPaddingX);
+        if (branding?.logoPaddingY) setLogoPaddingY(branding.logoPaddingY);
 
-	const {
-		colorPrimary: primary = isColor(colorPrimary) ? colorPrimary : DEFAULT_PRIMARY,
-		colorSecondary: secondary = isColor(colorSecondary) ? colorSecondary : DEFAULT_SECONDARY
-	} = branding ?? {};
+    }, [branding]);
+
+    const {
+        colorPrimary: primary = isColor(colorPrimary) ? colorPrimary : DEFAULT_PRIMARY,
+        colorSecondary: secondary = isColor(colorSecondary) ? colorSecondary : DEFAULT_SECONDARY,
+    } = branding ?? {};
+
+
 
 
     const theme = useMemo(() => {
@@ -152,8 +160,8 @@ export function VCThemeProvider({branding, children}: PropsWithChildren<VCThemeP
                     primary: TEXT[mode],
                 },
                 background: {
-					default: BACKGROUND[mode],
-					paper: PAPER[mode]
+                    default: BACKGROUND[mode],
+                    paper: PAPER[mode]
                 }
             },
             typography: {
@@ -191,13 +199,13 @@ export function VCThemeProvider({branding, children}: PropsWithChildren<VCThemeP
                         underline: "hover"
                     }
                 },
-				MuiPaper: {
-					styleOverrides: {
-						root: {
-							backgroundImage: "unset"
-						}
-					}
-				}
+                MuiPaper: {
+                    styleOverrides: {
+                        root: {
+                            backgroundImage: "unset"
+                        }
+                    }
+                }
             }
         };
         return createTheme(deepmerge(themeOptions, branding?.muiThemeOptions || {}));
@@ -205,13 +213,16 @@ export function VCThemeProvider({branding, children}: PropsWithChildren<VCThemeP
 
     return (
         <ThemeProvider theme={theme}>
-            <PaletteModeContext.Provider value={{mode, setMode, 
+            <PaletteModeContext.Provider value={{
+                mode, setMode,
                 colorPrimary, setColorPrimary, colorSecondary, setColorSecondary,
-                logoDarkUrl, setLogoDarkUrl, logoLightUrl, setLogoLightUrl,
-                logoPaddingX, setLogoPaddingX, logoPaddingY, setLogoPaddingY}}>
-                <CssBaseline/>
-                <RobotoFont/>
-                <JetbrainsMonoFont/>
+                logoDarkUrl, setLogoDarkUrl,
+                logoLightUrl, setLogoLightUrl,
+                logoPaddingX, setLogoPaddingX, logoPaddingY, setLogoPaddingY
+            }}>
+                <CssBaseline />
+                <RobotoFont />
+                <JetbrainsMonoFont />
                 {children}
             </PaletteModeContext.Provider>
         </ThemeProvider>
