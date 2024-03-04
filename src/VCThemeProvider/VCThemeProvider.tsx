@@ -1,67 +1,81 @@
-import React, {createContext, PropsWithChildren, useCallback, useContext, useMemo} from "react";
-import {createTheme, CssBaseline, PaletteMode, ThemeOptions, ThemeProvider, useMediaQuery} from "@mui/material";
-import {useStorage} from "../storage";
-import {RobotoFont} from "./RobotoFont";
+import React, { createContext, PropsWithChildren, useCallback, useContext, useMemo } from "react";
+import { createTheme, CssBaseline, decomposeColor, PaletteMode, ThemeOptions, ThemeProvider, useMediaQuery } from "@mui/material";
+import { useStorage } from "../storage";
+import { RobotoFont } from "./RobotoFont";
 import deepmerge from "deepmerge";
-import {JetbrainsMonoFont} from "./JetbrainsMonoFont";
+import { JetbrainsMonoFont } from "./JetbrainsMonoFont";
 
 const DEFAULT_PRIMARY = "#ff6a00";
 const DEFAULT_SECONDARY = "#009dd8";
 
 const SUCCESS = {
-	light: "#429945",
-	dark: "#58cc5c"
+    light: "#429945",
+    dark: "#58cc5c"
 }
 
 const WARNING = {
-	light: "#ccaa00",
-	dark: "#e6bf00"
+    light: "#ccaa00",
+    dark: "#e6bf00"
 };
 
 const ERROR = {
-	light: "#aa0000",
-	dark: "#e62e2e"
+    light: "#aa0000",
+    dark: "#e62e2e"
 }
 
 const INFO = {
-	light: "#082480",
-	dark: "#294fcc"
+    light: "#082480",
+    dark: "#294fcc"
 }
 
 const BACKGROUND = {
-	light: "#fffaf7",
-	dark: "#15161a"
+    light: "#fffaf7",
+    dark: "#15161a"
 }
 
 const PAPER = {
-	light: "#ffffff",
-	dark: "#282b33"
+    light: "#ffffff",
+    dark: "#282b33"
 }
 
 const TEXT = {
-	light: "#282b33",
-	dark: "#fdfaf7"
+    light: "#282b33",
+    dark: "#fdfaf7"
 }
 
-interface PaletteModeContextValue {
+interface ThemeContextValue {
     mode: PaletteMode;
     setMode: (mode: PaletteMode) => any;
+	customLogo?: CustomLogo;
 }
 
-const PaletteModeContext = createContext<PaletteModeContextValue>({
+export interface CustomLogo {
+	paddingX?: number | null;
+	paddingY?: number | null;
+	url: string;
+}
+
+const ThemeContext = createContext<ThemeContextValue>({
     mode: "light",
     setMode: () => void 0,
 });
 
-interface VCThemeProviderProps {
-    branding?: {
-        colorPrimary?: string;
-        colorSecondary?: string;
-        muiThemeOptions?: ThemeOptions;
-    }
+export interface Branding {
+	colorPrimary?: string;
+	colorSecondary?: string;
+	muiThemeOptions?: ThemeOptions;
+	logoPaddingX?: number | null;
+	logoPaddingY?: number | null;
+	logoLightUrl?: string;
+	logoDarkUrl?: string;
 }
 
-export function VCThemeProvider({branding, children}: PropsWithChildren<VCThemeProviderProps>) {
+export interface VCThemeProviderProps {
+    branding?: Branding;
+}
+
+export function VCThemeProvider({ branding, children }: PropsWithChildren<VCThemeProviderProps>) {
+
     // Determine default mode based on user preference
     const userPrefersDark = useMediaQuery("(prefers-color-scheme: dark)");
     const defaultMode = useMemo(() => userPrefersDark ? "dark" : "light", [userPrefersDark]);
@@ -77,20 +91,26 @@ export function VCThemeProvider({branding, children}: PropsWithChildren<VCThemeP
         setModeOverride(newMode != defaultMode ? newMode : null);
     }, [defaultMode]);
 
-	const {
-		colorPrimary: primary = DEFAULT_PRIMARY,
-		colorSecondary: secondary = DEFAULT_SECONDARY
-	} = branding ?? {};
+    const {
+        colorPrimary,
+        colorSecondary,
+		logoLightUrl,
+		logoDarkUrl,
+		logoPaddingX,
+		logoPaddingY,
+    } = branding ?? {};
+
 
     const theme = useMemo(() => {
+
         const themeOptions: ThemeOptions = {
             palette: {
                 mode,
                 primary: {
-                    main: primary,
+                    main: sanitizeColor(colorPrimary, DEFAULT_PRIMARY),
                 },
                 secondary: {
-                    main: secondary,
+                    main: sanitizeColor(colorSecondary, DEFAULT_SECONDARY),
                 },
                 success: {
                     main: SUCCESS[mode],
@@ -108,8 +128,8 @@ export function VCThemeProvider({branding, children}: PropsWithChildren<VCThemeP
                     primary: TEXT[mode],
                 },
                 background: {
-					default: BACKGROUND[mode],
-					paper: PAPER[mode]
+                    default: BACKGROUND[mode],
+                    paper: PAPER[mode]
                 }
             },
             typography: {
@@ -147,34 +167,66 @@ export function VCThemeProvider({branding, children}: PropsWithChildren<VCThemeP
                         underline: "hover"
                     }
                 },
-				MuiPaper: {
-					styleOverrides: {
-						root: {
-							backgroundImage: "unset"
-						}
-					}
-				}
+                MuiPaper: {
+                    styleOverrides: {
+                        root: {
+                            backgroundImage: "unset"
+                        }
+                    }
+                }
             }
         };
         return createTheme(deepmerge(themeOptions, branding?.muiThemeOptions || {}));
     }, [mode, branding]);
 
+	const customLogo = useMemo(() => {
+		const logoUrl = mode == "light" ? (logoLightUrl || logoDarkUrl) : (logoDarkUrl || logoLightUrl);
+		if (logoUrl) {
+			return {
+				url: logoUrl,
+				paddingX: logoPaddingX,
+				paddingY: logoPaddingY
+			}
+		}
+	}, [logoLightUrl, logoDarkUrl, mode, logoPaddingX, logoPaddingY]);
+
     return (
         <ThemeProvider theme={theme}>
-            <PaletteModeContext.Provider value={{mode, setMode}}>
-                <CssBaseline/>
-                <RobotoFont/>
-                <JetbrainsMonoFont/>
+            <ThemeContext.Provider value={{mode, setMode, customLogo}}>
+                <CssBaseline />
+                <RobotoFont />
+                <JetbrainsMonoFont />
                 {children}
-            </PaletteModeContext.Provider>
+            </ThemeContext.Provider>
         </ThemeProvider>
     )
 }
 
+function sanitizeColor(color: string | undefined, fallback: string) {
+	try {
+		if (color) {
+			decomposeColor(color);
+			return color;
+		}
+	}
+	catch (error) {
+	}
+	return fallback;
+}
+
 export function usePaletteMode() {
-    const value = useContext(PaletteModeContext);
+    const value = useContext(ThemeContext);
     if (!value) {
-        throw new Error("Could not find palette mode context. Are you missing a VCThemeProvider in your component tree?");
+        throw new Error("Could not find theme context. Are you missing a VCThemeProvider in your component tree?");
     }
-    return value;
+	const {mode, setMode} = value;
+    return {mode, setMode};
+}
+
+export function useCustomLogo() {
+	const value = useContext(ThemeContext);
+	if (!value) {
+		throw new Error("Could not find theme context. Are you missing a VCThemeProvider in your component tree?");
+	}
+	return value.customLogo;
 }

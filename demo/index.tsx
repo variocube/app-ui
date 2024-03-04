@@ -16,27 +16,33 @@ import {
 import {
 	Box,
 	Button,
-	Container, DialogContent,
+	Container,
+	DialogContent,
 	Grid,
+	Link as MuiLink,
 	List,
 	ListItemButton,
 	ListItemIcon,
 	ListItemText,
 	Paper,
-	Typography,
-	Link as MuiLink
+	Typography
 } from "@mui/material";
 import * as React from "react";
+import {useState} from "react";
 import {useLocation} from "react-router";
 import {BrowserRouter, Link, Outlet, Route, Routes} from "react-router-dom";
 import {
-	AppShell, AuditIcon,
+	AppShell,
+	AuditIcon,
+	Branding,
 	ContainerLayout,
 	ContainerSettingsContextProvider,
 	ContainerWidthControl,
 	HelpButton,
-	HelpSettingsContextProvider, NotFound, PageTitle,
-	render, useLayoutContext,
+	HelpSettingsContextProvider,
+	NotFound,
+	PageTitle,
+	render,
 	UserNav,
 	VCThemeProvider,
 } from "../src";
@@ -51,8 +57,8 @@ import {Localization} from "./localization";
 import {TabsDemo} from "./tabs";
 import {Theme} from "./theme";
 import {CubeDemo} from "./cube";
-import {useEffect} from "react";
 import {AuditDemo} from "./audit";
+import {BrandingProvider} from "./branding";
 
 declare const VERSION: string;
 
@@ -84,18 +90,22 @@ function Demo() {
 }
 
 function App() {
+	const [branding, setBranding] = useState<Branding>();
+
 	return (
-		<VCThemeProvider>
-			<AppShell
-				appName={"UI docs"}
-				sideNav={<SideNav />}
-				topNav={<TopNav />}
-				sideNavWidth={240}
-				footer={<Footer />}
-			>
-				<Outlet />
-			</AppShell>
-		</VCThemeProvider>
+		<BrandingProvider value={setBranding}>
+			<VCThemeProvider branding={branding}>
+				<AppShell
+					appName={"UI docs"}
+					sideNav={<SideNav />}
+					topNav={<TopNav />}
+					sideNavWidth={240}
+					footer={<Footer />}
+				>
+					<Outlet />
+				</AppShell>
+			</VCThemeProvider>
+		</BrandingProvider>
 	);
 }
 

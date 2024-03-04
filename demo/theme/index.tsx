@@ -1,9 +1,11 @@
 import {
 	Alert,
-	AlertTitle, Box,
+	AlertTitle,
+	Box,
 	Button,
 	Card,
-	CardContent, CardHeader,
+	CardContent,
+	CardHeader,
 	Container,
 	List,
 	ListItem,
@@ -12,11 +14,44 @@ import {
 	Stack,
 	Typography
 } from "@mui/material";
-import React from "react";
-import {Breadcrumbs, BreadcrumbItem, BreadcrumbLink, ThemeModeSwitcher, Code, PageTitle} from "../../src";
+import React, {useState} from "react";
+import {
+	BreadcrumbItem,
+	BreadcrumbLink,
+	Breadcrumbs,
+	Code,
+	EditForm,
+	IntegerNumberFormat,
+	Logo,
+	NumberField,
+	PageTitle,
+	TextField,
+	ThemeModeSwitcher
+} from "../../src";
+import {useSetBranding} from "../branding";
 
 
 export function Theme() {
+	const [colorPrimary, setColorPrimary] = useState("");
+	const [colorSecondary, setColorSecondary] = useState("");
+	const [logoLightUrl, setLogoLightUrl] = useState("");
+	const [logoDarkUrl, setLogoDarkUrl] = useState("");
+	const [logoPaddingX, setLogoPaddingX] = useState<number | null>(null);
+	const [logoPaddingY, setLogoPaddingY] = useState<number | null>(null);
+
+	const setBranding = useSetBranding();
+
+	async function handleApplyBranding() {
+		setBranding({
+			colorPrimary,
+			colorSecondary,
+			logoLightUrl,
+			logoDarkUrl,
+			logoPaddingX,
+			logoPaddingY
+		});
+	}
+
     return (
         <Container maxWidth="md">
             <PageTitle title="Theme" gutterBottom />
@@ -26,15 +61,15 @@ export function Theme() {
                 The mode is automatically selected, but can be overridden with <Code>ThemeModeSwitcher</Code>.
             </Typography>
 
-            <Stack spacing={2} sx={{marginBottom: 2}}>
+            <Stack spacing={2} sx={{ marginBottom: 2 }}>
                 <Card>
-                    <CardHeader title="Theme mode switcher"/>
+                    <CardHeader title="Theme mode switcher" />
                     <CardContent>
-                        <ThemeModeSwitcher/>
+                        <ThemeModeSwitcher />
                     </CardContent>
                 </Card>
                 <Card>
-                    <CardHeader title="Buttons"/>
+                    <CardHeader title="Buttons" />
                     <CardContent>
                         <Typography variant="h6" py={2}>Contained</Typography>
                         <Stack direction="row" spacing={2}>
@@ -65,35 +100,35 @@ export function Theme() {
                         </Stack>
                     </CardContent>
                 </Card>
-				<Card>
-					<CardHeader title="Typography"/>
-					<CardContent>
-						<Typography variant="h1" gutterBottom>Heading 1</Typography>
-						<Typography variant="h2" gutterBottom>Heading 2</Typography>
-						<Typography variant="h3" gutterBottom>Heading 3</Typography>
-						<Typography variant="h4" gutterBottom>Heading 4</Typography>
-						<Typography variant="h5" gutterBottom>Heading 5</Typography>
-						<Typography variant="h6" gutterBottom>Heading 6</Typography>
-						<Box my={2} />
-						<Typography variant="body1"><strong>Paragraph 1</strong></Typography>
-						<Typography variant="body1">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus accusantium asperiores aut blanditiis consequatur cupiditate ducimus harum magni modi numquam odio porro possimus praesentium provident sapiente totam, velit, vitae voluptatum!</Typography>
-						<Box my={2} />
-						<Typography variant="body2"><strong>Paragraph 2</strong></Typography>
-						<Typography variant="body2">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab ad alias, commodi cum dolorum id ipsa laudantium magnam modi neque nostrum quae quibusdam quod sequi vel velit veritatis. Dolorem, illum.</Typography>
-					</CardContent>
-				</Card>
                 <Card>
-					<CardHeader title="List Items"/>
-					<CardContent>
-						<List>
-							<ListItem>
-								<ListItemText primary="List text primary" secondary="List text secondary"/>
-							</ListItem>
-							<ListItemButton disabled>
-								<ListItemText primary="Disabled text primary" secondary="Disabled text secondary"/>
-							</ListItemButton>
-						</List>
-					</CardContent>
+                    <CardHeader title="Typography" />
+                    <CardContent>
+                        <Typography variant="h1" gutterBottom>Heading 1</Typography>
+                        <Typography variant="h2" gutterBottom>Heading 2</Typography>
+                        <Typography variant="h3" gutterBottom>Heading 3</Typography>
+                        <Typography variant="h4" gutterBottom>Heading 4</Typography>
+                        <Typography variant="h5" gutterBottom>Heading 5</Typography>
+                        <Typography variant="h6" gutterBottom>Heading 6</Typography>
+                        <Box my={2} />
+                        <Typography variant="body1"><strong>Paragraph 1</strong></Typography>
+                        <Typography variant="body1">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus accusantium asperiores aut blanditiis consequatur cupiditate ducimus harum magni modi numquam odio porro possimus praesentium provident sapiente totam, velit, vitae voluptatum!</Typography>
+                        <Box my={2} />
+                        <Typography variant="body2"><strong>Paragraph 2</strong></Typography>
+                        <Typography variant="body2">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab ad alias, commodi cum dolorum id ipsa laudantium magnam modi neque nostrum quae quibusdam quod sequi vel velit veritatis. Dolorem, illum.</Typography>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader title="List Items" />
+                    <CardContent>
+                        <List>
+                            <ListItem>
+                                <ListItemText primary="List text primary" secondary="List text secondary" />
+                            </ListItem>
+                            <ListItemButton disabled>
+                                <ListItemText primary="Disabled text primary" secondary="Disabled text secondary" />
+                            </ListItemButton>
+                        </List>
+                    </CardContent>
 
                 </Card>
                 <Alert severity="error">
@@ -110,7 +145,9 @@ export function Theme() {
                 </Alert>
             </Stack>
 
-            <Typography variant="h2" gutterBottom>
+			<Box py={4}/>
+
+			<Typography variant="h2" gutterBottom>
                 Breadcrumbs
             </Typography>
             <Typography variant="body1" gutterBottom>
@@ -133,6 +170,77 @@ export function Theme() {
                 </CardContent>
             </Card>
 
-        </Container>
+			<Box py={4}/>
+
+			<Typography variant="h2" gutterBottom>
+				Branding
+			</Typography>
+			<Typography variant="body1" gutterBottom>
+				<Code>VCThemeProvider</Code> allows to pass in a <Code>branding</Code> object. This demo
+				allows you to try different values in the branding by changing the fields below.
+			</Typography>
+			<EditForm
+				loading={false}
+				onSave={handleApplyBranding}
+			>
+				<CardContent>
+					<Stack direction="row" spacing={2}>
+						<TextField
+							label="colorPrimary"
+							value={colorPrimary}
+							onChange={setColorPrimary}
+						/>
+						<TextField
+							label="colorSecondary"
+							value={colorSecondary}
+							onChange={setColorSecondary}
+						/>
+					</Stack>
+				</CardContent>
+				<CardContent>
+					<Stack direction="row" spacing={2}>
+						<TextField
+							label="logoLightUrl"
+							value={logoLightUrl}
+							onChange={setLogoLightUrl}
+						/>
+						<TextField
+							label="logoDarkUrl"
+							value={logoDarkUrl}
+							onChange={setLogoDarkUrl}
+						/>
+					</Stack>
+				</CardContent>
+				<CardContent>
+					<Stack direction="row" spacing={2}>
+						<NumberField
+							numberFormat={IntegerNumberFormat}
+							label="logoPaddingX"
+							numberValue={logoPaddingX}
+							onChangeNumber={setLogoPaddingX}
+						/>
+						<NumberField
+							numberFormat={IntegerNumberFormat}
+							label="logoPaddingX"
+							numberValue={logoPaddingY}
+							onChangeNumber={setLogoPaddingY}
+						/>
+					</Stack>
+				</CardContent>
+			</EditForm>
+
+			<Box py={4}/>
+
+			<Typography variant="h2" gutterBottom>
+				Logo
+			</Typography>
+			<Typography variant="body1" gutterBottom>
+				<Code>Logo</Code> displays the Variocube logo or a custom logo if specified in the
+				<Code>branding</Code> object.
+			</Typography>
+			<Card sx={{display: "flex", flexFlow: "row nowrap", p: 2}}>
+				<Logo display="block"/>
+			</Card>
+		</Container>
     );
 }

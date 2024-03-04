@@ -1,9 +1,9 @@
 import {AppBar, Box, Breakpoint, Drawer, IconButton, useMediaQuery, useTheme} from "@mui/material";
-import React, {PropsWithChildren, useEffect, useState} from "react";
+import React, {PropsWithChildren, useEffect} from "react";
 import {useFlag} from "../utils";
 import {MenuIcon} from "../icons";
-import {VCAppLogo} from "../VCLogo";
 import {LayoutProvider} from "../layout";
+import {VCAppLogo} from "../logo/VCAppLogo";
 
 interface AppShellProps {
     appName: string;
@@ -86,18 +86,18 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
                                 <MenuIcon/>
                             </IconButton>
                         )}
-                        <VCAppLogo
-                            appName={drawerPermanent ? appName : undefined}
-                            sx={{
-                                py: 1,
-                                ...(!drawerPermanent && {
-                                    position: "absolute",
-                                    top: "50%",
-                                    left: "50%",
-                                    transform: "translate(-50%, -50%)"
-                                })
-                            }}
-                        />
+						<VCAppLogo
+							appName={drawerPermanent ? appName : undefined}
+							sx={{
+								py: 1,
+								...(!drawerPermanent && {
+									position: "absolute",
+									top: "50%",
+									left: "50%",
+									transform: "translate(-50%, -50%)"
+								})
+							}}
+						/>
                         {topNav}
                         {!topNav && <Box/>}
                     </Box>
