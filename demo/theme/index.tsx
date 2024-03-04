@@ -1,25 +1,56 @@
 import {
-    Alert,
-    AlertTitle, Box,
-    Button,
-    Card,
-    CardContent, CardHeader,
-    Container,
-    List,
-    ListItem,
-    ListItemButton,
-    ListItemText,
-    Stack,
-    Typography
+	Alert,
+	AlertTitle,
+	Box,
+	Button,
+	Card,
+	CardContent,
+	CardHeader,
+	Container,
+	List,
+	ListItem,
+	ListItemButton,
+	ListItemText,
+	Stack,
+	Typography
 } from "@mui/material";
-import React from "react";
-import { Breadcrumbs, BreadcrumbItem, BreadcrumbLink, ThemeModeSwitcher, Code, PageTitle, usePaletteMode, TextField, NumberField } from "../../src";
+import React, {useState} from "react";
+import {
+	BreadcrumbItem,
+	BreadcrumbLink,
+	Breadcrumbs,
+	Code,
+	EditForm,
+	IntegerNumberFormat,
+	Logo,
+	NumberField,
+	PageTitle,
+	TextField,
+	ThemeModeSwitcher
+} from "../../src";
+import {useSetBranding} from "../branding";
 
 
 export function Theme() {
+	const [colorPrimary, setColorPrimary] = useState("");
+	const [colorSecondary, setColorSecondary] = useState("");
+	const [logoLightUrl, setLogoLightUrl] = useState("");
+	const [logoDarkUrl, setLogoDarkUrl] = useState("");
+	const [logoPaddingX, setLogoPaddingX] = useState<number | null>(null);
+	const [logoPaddingY, setLogoPaddingY] = useState<number | null>(null);
 
-    const { colorPrimary, setColorPrimary, colorSecondary, setColorSecondary, logoLightUrl, setLogoLightUrl, logoDarkUrl, setLogoDarkUrl, logoPaddingX, setLogoPaddingX, logoPaddingY, setLogoPaddingY } = usePaletteMode();
-    const GermanNumberFormat = new Intl.NumberFormat("de-DE");
+	const setBranding = useSetBranding();
+
+	async function handleApplyBranding() {
+		setBranding({
+			colorPrimary,
+			colorSecondary,
+			logoLightUrl,
+			logoDarkUrl,
+			logoPaddingX,
+			logoPaddingY
+		});
+	}
 
     return (
         <Container maxWidth="md">
@@ -35,21 +66,6 @@ export function Theme() {
                     <CardHeader title="Theme mode switcher" />
                     <CardContent>
                         <ThemeModeSwitcher />
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader title="Branding" />
-                    <CardContent>
-                        <TextField label="Primary Color" value={colorPrimary || ""} onChange={(event) => setColorPrimary(event)} />
-                        <TextField label="Seondary Color" value={colorSecondary || ""} onChange={(event) => setColorSecondary(event)} />
-                    </CardContent>
-                    <CardContent>
-                        <TextField label="Logo Light Url" value={logoLightUrl || ""} onChange={(event) => setLogoLightUrl(event)} />
-                        <TextField label="Logo Dark Url" value={logoDarkUrl || ""} onChange={(event) => setLogoDarkUrl(event)} />
-                    </CardContent>
-                    <CardContent>
-                        <NumberField numberFormat={GermanNumberFormat} label="Padding X" numberValue={logoPaddingX === undefined ? null : logoPaddingX} onChangeNumber={(event) => setLogoPaddingX(event) as any} />
-                        <NumberField numberFormat={GermanNumberFormat} label="Padding Y" numberValue={logoPaddingY === undefined ? null : logoPaddingY} onChangeNumber={(event) => setLogoPaddingY(event)} />
                     </CardContent>
                 </Card>
                 <Card>
@@ -129,7 +145,9 @@ export function Theme() {
                 </Alert>
             </Stack>
 
-            <Typography variant="h2" gutterBottom>
+			<Box py={4}/>
+
+			<Typography variant="h2" gutterBottom>
                 Breadcrumbs
             </Typography>
             <Typography variant="body1" gutterBottom>
@@ -152,6 +170,77 @@ export function Theme() {
                 </CardContent>
             </Card>
 
-        </Container>
+			<Box py={4}/>
+
+			<Typography variant="h2" gutterBottom>
+				Branding
+			</Typography>
+			<Typography variant="body1" gutterBottom>
+				<Code>VCThemeProvider</Code> allows to pass in a <Code>branding</Code> object. This demo
+				allows you to try different values in the branding by changing the fields below.
+			</Typography>
+			<EditForm
+				loading={false}
+				onSave={handleApplyBranding}
+			>
+				<CardContent>
+					<Stack direction="row" spacing={2}>
+						<TextField
+							label="colorPrimary"
+							value={colorPrimary}
+							onChange={setColorPrimary}
+						/>
+						<TextField
+							label="colorSecondary"
+							value={colorSecondary}
+							onChange={setColorSecondary}
+						/>
+					</Stack>
+				</CardContent>
+				<CardContent>
+					<Stack direction="row" spacing={2}>
+						<TextField
+							label="logoLightUrl"
+							value={logoLightUrl}
+							onChange={setLogoLightUrl}
+						/>
+						<TextField
+							label="logoDarkUrl"
+							value={logoDarkUrl}
+							onChange={setLogoDarkUrl}
+						/>
+					</Stack>
+				</CardContent>
+				<CardContent>
+					<Stack direction="row" spacing={2}>
+						<NumberField
+							numberFormat={IntegerNumberFormat}
+							label="logoPaddingX"
+							numberValue={logoPaddingX}
+							onChangeNumber={setLogoPaddingX}
+						/>
+						<NumberField
+							numberFormat={IntegerNumberFormat}
+							label="logoPaddingX"
+							numberValue={logoPaddingY}
+							onChangeNumber={setLogoPaddingY}
+						/>
+					</Stack>
+				</CardContent>
+			</EditForm>
+
+			<Box py={4}/>
+
+			<Typography variant="h2" gutterBottom>
+				Logo
+			</Typography>
+			<Typography variant="body1" gutterBottom>
+				<Code>Logo</Code> displays the Variocube logo or a custom logo if specified in the
+				<Code>branding</Code> object.
+			</Typography>
+			<Card sx={{display: "flex", flexFlow: "row nowrap", p: 2}}>
+				<Logo display="block"/>
+			</Card>
+		</Container>
     );
 }

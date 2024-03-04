@@ -1,7 +1,7 @@
 export * from "./content-table";
 export * from "./Paging";
 export * from "./Input";
-export * from "./VCLogo";
+export * from "./logo";
 export * from "./VCThemeProvider";
 export * from "./icons";
 export * from "./localization";
@@ -28,3 +28,4 @@ export * from "./cube";
 export * from "./confirm";
 export * from "./code";
 export * from "./audit";
+export * from "./logo";
