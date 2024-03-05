@@ -1,6 +1,5 @@
 import {Button, Grid, Stack, Typography} from "@mui/material";
 import {ReactElement} from "react";
-import {useNavigate} from "react-router";
 import {NotFoundSvg} from "./NotFoundSvg";
 import {ContainerLayout} from "../container";
 import React from "react";
@@ -15,7 +14,6 @@ interface NotFoundProps {
 export function NotFound(props: NotFoundProps) {
   const {svg, errorMsg,pathMsg, backToHomeMsg} = props;
 
-  const navigate = useNavigate();
   const path = window.location.pathname;
 
   const defaultErrorMsg = "404: Not Found";
@@ -44,7 +42,7 @@ export function NotFound(props: NotFoundProps) {
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1" align="center">
-            <Button onClick={(_e) => navigate("/")}>{backToHomeMsg != "" ? backToHomeMsg : defaultBackToHomeMsg}</Button>
+            <Button href="/">{backToHomeMsg != "" ? backToHomeMsg : defaultBackToHomeMsg}</Button>
           </Typography>
         </Grid>
       </Grid>
