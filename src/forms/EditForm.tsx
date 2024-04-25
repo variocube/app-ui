@@ -1,6 +1,6 @@
-import {Box, Button, Card, CardContent, CircularProgress, Stack} from "@mui/material";
+import {Button, Card, CardContent, CircularProgress, Stack, CardProps as MuiCardProps, CardContentProps as MuiCardContentProps} from "@mui/material";
 import {useFlag} from "../utils";
-import React, {Fragment, PropsWithChildren, useMemo} from "react";
+import React, {PropsWithChildren, useMemo} from "react";
 import {useAsyncCallback} from "react-async-hook";
 import {CloseIcon, SaveIcon, SuccessIcon} from "../icons";
 import {ErrorAlert} from "../ErrorAlert";
@@ -9,9 +9,11 @@ interface EditFormProps {
 	loading: boolean;
 	onSave: () => Promise<any>;
 	onCancel?: () => void;
+	CardProps?: MuiCardProps;
+	CardContentProps?: MuiCardContentProps;
 }
 
-export function EditForm({children, loading, onSave, onCancel}: PropsWithChildren<EditFormProps>) {
+export function EditForm({children, loading, onSave, onCancel, CardProps, CardContentProps}: PropsWithChildren<EditFormProps>) {
 	const [saved, setSaved, clearSaved] = useFlag(false);
 
 	const {loading: saving, error, execute: save} = useAsyncCallback(
@@ -36,15 +38,15 @@ export function EditForm({children, loading, onSave, onCancel}: PropsWithChildre
 	}, [pending, saved]);
 
 	return (
-		<Card>
+		<Card {...CardProps}>
 			<form onSubmit={save} onChange={clearSaved}>
 				{children}
 				{error && (
-					<CardContent>
+					<CardContent {...CardContentProps}>
 						<ErrorAlert error={error} />
 					</CardContent>
 				)}
-				<CardContent>
+				<CardContent {...CardContentProps}>
 					<Stack direction="row" spacing={2}>
 						<Button
 							type="submit"
