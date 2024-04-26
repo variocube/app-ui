@@ -1,7 +1,7 @@
 import * as React from "react";
-import {Drawer, Grid, IconButton, Toolbar} from "@mui/material";
+import {Drawer, Grid, IconButton} from "@mui/material";
 import {useHelpSettingsContext} from "./HelpSettingsContext";
-import {LegacyRef, useCallback, useMemo} from "react";
+import {useCallback, useMemo} from "react";
 import {Close, OpenInNew} from "@mui/icons-material";
 
 export const buildHelpDrawerUrl = (selectedHelpAnchor = "", selectedHelpLanguage = "", selectedHelpPage = "", baseUrl: string) => {
@@ -56,7 +56,7 @@ export function HelpDrawer() {
                             if (selectedHelpAnchor){
                                 iframe.current?.contentWindow?.postMessage(selectedHelpAnchor, "*");
                             }
-                        }} ref={iframe} src={url + "?useformat=mobile"} style={{border: 0, overflow: "scroll", height: "100%", width: "100%"}}/>
+                        }} ref={iframe} src={url} style={{border: 0, overflow: "scroll", height: "100%", width: "100%"}}/>
                     </Grid>
                 }
             </Grid>
