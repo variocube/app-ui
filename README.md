@@ -50,3 +50,10 @@ render(<App/>);
     // ...other config
 }
 ```
+
+
+## Using for local development 
+1. In the project run: 
+npm pack 
+2. In Consumer Project run:
+npm install ..\app-ui\variocube-app-ui-1.0.0.tgz
