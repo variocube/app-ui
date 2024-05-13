@@ -11,7 +11,8 @@ import {
     useState
 } from "react";
 import {Button, Dialog, DialogActions, DialogTitle} from "@mui/material";
-const semver = require('semver')
+const semver = require('semver');
+const semverDiff = require('semver/functions/diff');
 
 interface HelpSettingsContextData {
     baseUrl: string;
@@ -95,10 +96,13 @@ export function HelpSettingsContextProvider({baseUrl,localStorageVar, changeLogU
     useEffect( () => {
         if(changeLogUrl && localStorageVar && currentVersion){
             const lastSeenVersion = localStorage.getItem(localStorageVar);
-            if(lastSeenVersion && semver.lt(lastSeenVersion, currentVersion)){
-                setOpenDialog(true);
+            if(lastSeenVersion &&
+				semver.lt(lastSeenVersion, currentVersion) &&
+				["major", "minor"].includes(semverDiff(lastSeenVersion, currentVersion) as string))
+			{
+				setOpenDialog(true);
             }else{
-                localStorage.setItem(localStorageVar, currentVersion);
+				localStorage.setItem(localStorageVar, currentVersion);
             }
         }
     }, []);
