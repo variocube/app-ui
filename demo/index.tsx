@@ -267,11 +267,11 @@ function HelpDemo() {
 										</Typography>
 										<Typography variant="body1">
 											Test Tenant_Settings#Building_Cube_Mappings, de language
-											<HelpButton helpPage="Tenant_Settings" helpAnchor={"Building_Cube_Mappings"} language={"de"} />
+											<HelpButton helpPage="Tenant_Settings" helpAnchor={"Building_Cube_Mappings"} language={""} />
 										</Typography>
 										<Typography variant="body1">
 											Test Delivery_Create#Manual_handover_required, empty language
-											<HelpButton helpPage="Delivery_Create" helpAnchor={"Manual_handover_required"} language={""} />
+											<HelpButton helpPage="Delivery_Create" helpAnchor={"Manual_Handover_Required"} language={""} />
 										</Typography>
 									</Grid>
 								</Grid>
