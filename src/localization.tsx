@@ -1,16 +1,16 @@
+import deepmerge from "deepmerge";
+import Mustache from "mustache";
 import * as React from "react";
 import {createContext, PropsWithChildren, useCallback, useContext, useEffect, useState} from "react";
-import Mustache from "mustache";
-import {useStorage} from "./storage";
 import {getNavigatorLanguages} from "./getNavigatorLanguages";
-import deepmerge from "deepmerge";
+import {useStorage} from "./storage";
 import {defined} from "./utils";
 
 /**
  * Type for a message object (content of a translation file).
  */
 export interface MessageObject {
-    [key: string]: string | MessageObject;
+	[key: string]: string | MessageObject;
 }
 
 /**
@@ -22,25 +22,25 @@ export type MissingFunc = (key: string) => string;
  * Localization context options
  */
 export interface LocalizationContextOptions<T extends MessageObject> {
-    /**
-     * Loads the message object for the given language.
-     *
-     * This will typically dynamically import a JSON file containing the messages.
-     * @param language The language to load
-     */
-    load: (language: string) => Promise<T>;
+	/**
+	 * Loads the message object for the given language.
+	 *
+	 * This will typically dynamically import a JSON file containing the messages.
+	 * @param language The language to load
+	 */
+	load: (language: string) => Promise<T>;
 
-    /**
-     * The fallback language to use, when the user's preferred languages cannot be loaded.
-     */
-    fallback: string;
+	/**
+	 * The fallback language to use, when the user's preferred languages cannot be loaded.
+	 */
+	fallback: string;
 
-    /**
-     * A function that is called when a key could not be found.
-     * Default: a function that prints a warning to the console and returns an empty string.
-     * @param key The key that could not be found.
-     */
-    missing?: "fallback" | MissingFunc;
+	/**
+	 * A function that is called when a key could not be found.
+	 * Default: a function that prints a warning to the console and returns an empty string.
+	 * @param key The key that could not be found.
+	 */
+	missing?: "fallback" | MissingFunc;
 }
 
 /**
@@ -59,12 +59,10 @@ export type TFunc<T> = (key: Leaves<T>, context?: Record<string, any>) => string
  */
 type THasKeyFunc<T> = (key: string) => key is Leaves<T>;
 
-
 /**
  * Returns the value property `name` of the object associated with `key` in the current language.
  */
 type EFunc<T> = (key: Branches<T>, name: string) => string;
-
 
 type SFunc<T, P extends keyof T> = (prefix: P) => TFunc<T[P]>;
 
@@ -77,49 +75,49 @@ export type Labels<Key extends string> = TFunc<Record<Key, string>>;
  * The object returned by `useLocalization`.
  */
 export interface Localization<T extends MessageObject> {
-    /**
-     * Returns the message associated with `key` in the current language.
-     * Resolves placeholders with the values specified in `context`.
-     */
-    t: TFunc<T>;
+	/**
+	 * Returns the message associated with `key` in the current language.
+	 * Resolves placeholders with the values specified in `context`.
+	 */
+	t: TFunc<T>;
 
-    /**
-     * Returns if the current key can be associated with a message.
-     */
-    hasKey: THasKeyFunc<T>;
+	/**
+	 * Returns if the current key can be associated with a message.
+	 */
+	hasKey: THasKeyFunc<T>;
 
-    /**
-     * Returns the value property `name` of the object associated with `key` in the current language.
-     */
-    e: EFunc<T>;
+	/**
+	 * Returns the value property `name` of the object associated with `key` in the current language.
+	 */
+	e: EFunc<T>;
 
-    /**
-     * Returns a t-function for the subset of keys under the specified prefix.
-     */
-    s: SFunc<T, keyof T>;
+	/**
+	 * Returns a t-function for the subset of keys under the specified prefix.
+	 */
+	s: SFunc<T, keyof T>;
 
-    /**
-     * Returns the currently used language.
-     */
-    language: string;
+	/**
+	 * Returns the currently used language.
+	 */
+	language: string;
 
-    /**
-     * Sets the current language.
-     */
-    setLanguage: SetLanguageFunc;
+	/**
+	 * Sets the current language.
+	 */
+	setLanguage: SetLanguageFunc;
 }
 
 interface LocalizationContextType<T extends MessageObject> {
-    messages: T | undefined;
-    language: string;
-    setLanguage: SetLanguageFunc;
-    fallbackMessages: T | undefined;
+	messages: T | undefined;
+	language: string;
+	setLanguage: SetLanguageFunc;
+	fallbackMessages: T | undefined;
 }
 
 interface LocalizationProviderProps<T extends MessageObject> {
-    language: string | null;
-    onChangeLanguage: SetLanguageFunc;
-    overrides?: Record<string, Partial<T>>;
+	language: string | null;
+	onChangeLanguage: SetLanguageFunc;
+	overrides?: Record<string, Partial<T>>;
 }
 
 /**
@@ -135,169 +133,168 @@ const LANGUAGE_STORAGE_KEY = "variocube-language-v2";
  * @param options The options
  */
 export function createLocalizationContext<T extends MessageObject>(options: LocalizationContextOptions<T>) {
+	const {load, fallback, missing = defaultMissing} = options;
 
-    const {load, fallback, missing = defaultMissing} = options;
+	/**
+	 * Returns a promise to the messages for the first language of the given list of languages
+	 * that could be successfully loaded.
+	 * @param languages The languages to try loading
+	 */
+	const loadBestMatch = async (languages: (string | null)[]) => {
+		for (const language of processLanguageList(languages)) {
+			try {
+				const messages = await load(language);
+				if (messages) {
+					document.documentElement.setAttribute("lang", language);
+					return {messages, language};
+				}
+			} catch (error) {
+				// try next language
+			}
+		}
+		throw new Error("Could not load any language. This is likely a configuration error.");
+	};
 
-    /**
-     * Returns a promise to the messages for the first language of the given list of languages
-     * that could be successfully loaded.
-     * @param languages The languages to try loading
-     */
-    const loadBestMatch = async (languages: (string | null)[]) => {
-        for (const language of processLanguageList(languages)) {
-            try {
-                const messages = await load(language);
-                if (messages) {
-                    return {messages, language};
-                }
-            }
-            catch (error) {
-                // try next language
-            }
-        }
-        throw new Error("Could not load any language. This is likely a configuration error.");
-    }
+	/**
+	 * The React context.
+	 */
+	const LocalizationContext = createContext<LocalizationContextType<T>>({
+		messages: undefined,
+		language: fallback,
+		setLanguage: () => void 0,
+		fallbackMessages: undefined,
+	});
 
-    /**
-     * The React context.
-     */
-    const LocalizationContext = createContext<LocalizationContextType<T>>({
-        messages: undefined,
-        language: fallback,
-        setLanguage: () => void 0,
-        fallbackMessages: undefined,
-    });
+	/**
+	 * Localization provider component.
+	 */
+	const LocalizationProvider = (props: PropsWithChildren<LocalizationProviderProps<T>>) => {
+		const {children, language, onChangeLanguage, overrides} = props;
 
-    /**
-     * Localization provider component.
-     */
-    const LocalizationProvider = (props: PropsWithChildren<LocalizationProviderProps<T>>) => {
+		const [loaded, setLoaded] = useState<{ messages: T; language: string }>();
 
-        const {children, language, onChangeLanguage, overrides} = props;
+		// The context value
+		const [value, setValue] = useState<LocalizationContextType<T>>({
+			messages: undefined,
+			language: fallback,
+			setLanguage: onChangeLanguage,
+			fallbackMessages: undefined,
+		});
 
-        const [loaded, setLoaded] = useState<{messages: T, language: string}>();
+		// Loads the fallback messages if required by the missing option
+		useEffect(() => {
+			if (missing == "fallback") {
+				load(fallback)
+					.then(fallbackMessages => setValue(v => ({...v, fallbackMessages})))
+					.catch(error => console.error(error));
+			}
+		}, []);
 
-        // The context value
-        const [value, setValue] = useState<LocalizationContextType<T>>({
-            messages: undefined,
-            language: fallback,
-            setLanguage: onChangeLanguage,
-            fallbackMessages: undefined,
-        });
+		// Loads the best matching language and stores the result in `loaded`.
+		useEffect(() => {
+			loadBestMatch([language, ...getNavigatorLanguages(), fallback])
+				.then(setLoaded)
+				.catch(error => console.error(error));
+		}, [language]);
 
-        // Loads the fallback messages if required by the missing option
-        useEffect(() => {
-            if (missing == "fallback") {
-                load(fallback)
-                    .then(fallbackMessages => setValue(v => ({...v, fallbackMessages})))
-                    .catch(error => console.error(error));
-            }
-        }, []);
+		// Update context value when `loaded` or `overrides` change.
+		useEffect(() => {
+			if (loaded) {
+				const {language, messages} = loaded;
 
-        // Loads the best matching language and stores the result in `loaded`.
-        useEffect(() => {
-            loadBestMatch([language, ...getNavigatorLanguages(), fallback])
-                .then(setLoaded)
-                .catch(error => console.error(error));
-        }, [language]);
+				setValue(v => ({
+					...v,
+					language,
+					messages: deepmerge(messages, (overrides && overrides[language]) ?? {}),
+				}));
+			}
+		}, [overrides, loaded]);
 
-        // Update context value when `loaded` or `overrides` change.
-        useEffect(() => {
-            if (loaded) {
-                const {language, messages} = loaded;
+		return (
+			<LocalizationContext.Provider value={value}>
+				{children}
+			</LocalizationContext.Provider>
+		);
+	};
 
-                setValue(v => ({
-                    ...v,
-                    language,
-                    messages: deepmerge(messages, (overrides && overrides[language]) ?? {})
-                }));
-            }
-        }, [overrides, loaded]);
+	/**
+	 * Localization provider that stores the current language in the local storage.
+	 */
+	const StorageLocalizationProvider = (
+		{children, overrides}: PropsWithChildren<Pick<LocalizationProviderProps<T>, "overrides">>,
+	) => {
+		// The user defined language, or null if user did not manually select a language
+		const [userDefinedLanguage, setUserDefinedLanguage] = useStorage<string | null>(LANGUAGE_STORAGE_KEY, null);
 
+		return (
+			<LocalizationProvider
+				language={userDefinedLanguage}
+				onChangeLanguage={setUserDefinedLanguage}
+				overrides={overrides}
+			>
+				{children}
+			</LocalizationProvider>
+		);
+	};
 
-        return (
-            <LocalizationContext.Provider value={value}>
-                {children}
-            </LocalizationContext.Provider>
-        );
-    }
+	/**
+	 * Returns accessors to the currently used language.
+	 */
+	const useLocalization = () => {
+		const value = useContext(LocalizationContext);
+		if (!value) {
+			throw new Error(
+				"Cannot find localization context. Are you missing a LocalizationProvider in your component tree?",
+			);
+		}
+		const {messages, language, setLanguage, fallbackMessages} = value;
 
-    /**
-     * Localization provider that stores the current language in the local storage.
-     */
-    const StorageLocalizationProvider = ({children, overrides}: PropsWithChildren<Pick<LocalizationProviderProps<T>, "overrides">>) => {
-        // The user defined language, or null if user did not manually select a language
-        const [userDefinedLanguage, setUserDefinedLanguage] = useStorage<string | null>(LANGUAGE_STORAGE_KEY, null);
+		const handleMissing = useCallback((key: Leaves<T>) => {
+			if (missing == "fallback") {
+				return fallbackMessages ? getString(fallbackMessages, key) : undefined;
+			}
+			return missing(key);
+		}, [fallbackMessages]);
 
-        return (
-          <LocalizationProvider
-            language={userDefinedLanguage}
-            onChangeLanguage={setUserDefinedLanguage}
-            overrides={overrides}
-          >
-              {children}
-          </LocalizationProvider>
-        )
-    }
-
-
-
-    /**
-     * Returns accessors to the currently used language.
-     */
-    const useLocalization = () => {
-        const value = useContext(LocalizationContext);
-        if (!value) {
-            throw new Error("Cannot find localization context. Are you missing a LocalizationProvider in your component tree?");
-        }
-        const {messages, language, setLanguage, fallbackMessages} = value;
-
-        const handleMissing = useCallback((key: Leaves<T>) => {
-            if (missing == "fallback") {
-                return fallbackMessages ? getString(fallbackMessages, key) : undefined;
-            }
-            return missing(key);
-        }, [fallbackMessages]);
-
-        const t = useCallback((key: Leaves<T>, context?: Record<string, any>) => {
-            if (messages) {
-                const localized = getString(messages, key) ?? handleMissing(key);
-                if (localized) {
-                    return Mustache.render(localized, context);
-                }
-                return localized;
-            }
-        }, [messages, handleMissing]);
+		const t = useCallback((key: Leaves<T>, context?: Record<string, any>) => {
+			if (messages) {
+				const localized = getString(messages, key) ?? handleMissing(key);
+				if (localized) {
+					return Mustache.render(localized, context);
+				}
+				return localized;
+			}
+		}, [messages, handleMissing]);
 
 		function _hasKey(key: string): key is Leaves<T> {
 			return defined(messages) && defined(getString(messages, key));
 		}
 
-        const hasKey = useCallback(_hasKey, [messages]);
+		const hasKey = useCallback(_hasKey, [messages]);
 
-        const e = useCallback((key: Branches<T>, name: string) => t(key + "." + name as Leaves<T>), [t]);
+		const e = useCallback((key: Branches<T>, name: string) => t(key + "." + name as Leaves<T>), [t]);
 
-        function _s<P extends string & keyof T>(prefix: P) {
-            return (key: string & keyof T[P]) => t(`${prefix}.${key}` as Leaves<T>);
-        }
+		function _s<P extends string & keyof T>(prefix: P) {
+			return (key: string & keyof T[P]) => t(`${prefix}.${key}` as Leaves<T>);
+		}
 
-        const s = useCallback(_s, [t]);
+		const s = useCallback(_s, [t]);
 
-        return {
-            t,
-            hasKey,
-            e,
-            s,
-            language,
-            setLanguage
-        } as Localization<T>;
-    }
+		return {
+			t,
+			hasKey,
+			e,
+			s,
+			language,
+			setLanguage,
+		} as Localization<T>;
+	};
 
-    return {
-        LocalizationProvider,
-        StorageLocalizationProvider,
-        useLocalization,
-    }
+	return {
+		LocalizationProvider,
+		StorageLocalizationProvider,
+		useLocalization,
+	};
 }
 
 /**
@@ -308,20 +305,20 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
  * @param languages
  */
 function processLanguageList(languages: (string | null)[]) {
-    const expanded = [];
-    for (const language of languages) {
-        if (language) {
-            // push the original language, e.g. "en-US"
-            expanded.push(language);
-            // push the language only, e.g.
-            const languageOnly = language.split("-").shift();
-            if (languageOnly && languageOnly != language) {
-                expanded.push(languageOnly);
-            }
-        }
-    }
-    // avoid duplicates
-    return new Set(expanded);
+	const expanded = [];
+	for (const language of languages) {
+		if (language) {
+			// push the original language, e.g. "en-US"
+			expanded.push(language);
+			// push the language only, e.g.
+			const languageOnly = language.split("-").shift();
+			if (languageOnly && languageOnly != language) {
+				expanded.push(languageOnly);
+			}
+		}
+	}
+	// avoid duplicates
+	return new Set(expanded);
 }
 
 /**
@@ -329,8 +326,8 @@ function processLanguageList(languages: (string | null)[]) {
  * @param key The missing key.
  */
 function defaultMissing(key: string) {
-    console.warn("Missing translation key", key);
-    return "";
+	console.warn("Missing translation key", key);
+	return "";
 }
 
 /*
@@ -345,17 +342,14 @@ function defaultMissing(key: string) {
  * Concatenates two strings with a dot in the middle, unless the last string is empty.
  * So Join<"a","b.c"> is "a.b.c" while Join<"a",""> is "a".
  */
-type Join<K, P> = K extends string
-    ? P extends string
-        ? `${K}${"" extends P ? "" : "."}${P}`
-        : never
-    : never;
+type Join<K, P> = K extends string ? P extends string ? `${K}${"" extends P ? "" : "."}${P}`
+	: never
+	: never;
 
 /**
  * Helper type for reduction the depth type param.
  */
-type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-    11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...0[]];
+type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...0[]];
 
 /**
  * Our max depth.
@@ -365,24 +359,19 @@ type MaxDepth = 5;
 /**
  * Returns a union of all paths for a given type T
  */
-type Paths<T, D extends number = MaxDepth> = [D] extends [never]
-    ? never
-    : T extends object
-        ? {
-            [K in keyof T]-?: K extends string | number
-                ? `${K}` | Join<K, Paths<T[K], Prev[D]>>
-                : never
-        }[keyof T]
-        : "";
+type Paths<T, D extends number = MaxDepth> = [D] extends [never] ? never
+	: T extends object ? {
+			[K in keyof T]-?: K extends string | number ? `${K}` | Join<K, Paths<T[K], Prev[D]>>
+				: never;
+		}[keyof T]
+	: "";
 
 /**
  * Returns a union of all the leaf paths for a given type T
  */
-type Leaves<T, D extends number = MaxDepth> = [D] extends [never]
-    ? never
-    : T extends object
-        ? { [K in keyof T]-?: Join<K, Leaves<T[K], Prev[D]>> }[keyof T]
-        : "";
+type Leaves<T, D extends number = MaxDepth> = [D] extends [never] ? never
+	: T extends object ? { [K in keyof T]-?: Join<K, Leaves<T[K], Prev[D]>> }[keyof T]
+	: "";
 
 /**
  * Returns a union of all branch paths for a given type T
@@ -390,17 +379,17 @@ type Leaves<T, D extends number = MaxDepth> = [D] extends [never]
 type Branches<T> = Exclude<Paths<T>, Leaves<T>>;
 
 function getString<T extends MessageObject>(obj: T, key: string) {
-    return getKey(obj, key)?.toString();
+	return getKey(obj, key)?.toString();
 }
 
 function getKey<T extends MessageObject>(obj: T, key: string) {
-    return key.split('.')
-        .reduce((obj, key) => obj && obj[key] as any, obj) as any as (string | MessageObject | undefined);
+	return key.split(".")
+		.reduce((obj, key) => obj && obj[key] as any, obj) as any as (string | MessageObject | undefined);
 }
 
 /**
  * Creates a simple TFunc from an object.
  */
 export function createSimpleTFunc<T extends MessageObject>(obj: T): TFunc<T> {
-    return (key: Leaves<T>) => getString(obj, key) ?? "key not found";
+	return (key: Leaves<T>) => getString(obj, key) ?? "key not found";
 }
