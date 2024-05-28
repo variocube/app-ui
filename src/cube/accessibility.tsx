@@ -14,12 +14,11 @@ import {
 	Typography
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { PlainTime, tryParsePlainTime } from "../temporal";
+import { Duration, Now, PlainTime, ZonedDateTime, tryParsePlainTime } from "../temporal";
 import React from "react";
 import { EditForm } from "../forms";
 import { Checkbox, TextField } from "../Input";
-import { PlainTimePicker } from "../date-pickers";
-
+import { PlainTimePicker } from "../date-pickers"; 
 
 export interface SiteAccessibility {
 	alwaysAccessible: boolean;
@@ -281,3 +280,100 @@ const EMPTY_WEEKDAY_ACCESSIBLE_HOURS: AccessibilityTimeframe[] = [
 	{ weekday: "Saturday", accessibleFrom: undefined, accessibleUntil: undefined },
 	{ weekday: "Sunday", accessibleFrom: undefined, accessibleUntil: undefined },
 ]
+
+/**
+ * Accessibility common functions 
+ */
+export function dayOfWeekAsString(dayIndex: number) {
+    return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][dayIndex] || '';
+}
+
+export const getStartOfAccessibleToday = (accessibility: SiteAccessibility) => {
+    if (accessibility) {
+        if (accessibility.alwaysAccessible) {
+            return "00:00";
+        }
+        const dayOfWeek = (new Date()).getDay();
+        if (accessibility.weekdayAccessibleHours) {
+            const dowTimes = accessibility.weekdayAccessibleHours.find(dow => dow.weekday === dayOfWeekAsString(dayOfWeek));
+            return dowTimes && dowTimes.accessibleFrom  ? dowTimes.accessibleFrom : accessibility.accessibleFrom;
+        }
+    }
+}
+
+export const getStartOfAccessible = (accessibility: SiteAccessibility, day: Date) => {
+    if (accessibility) {
+        if (accessibility.alwaysAccessible) {
+            return "00:00";
+        }
+        const dayOfWeek = day.getDay();
+        if (accessibility.weekdayAccessibleHours) {
+            const dowTimes = accessibility.weekdayAccessibleHours.find(dow => dow.weekday === dayOfWeekAsString(dayOfWeek));
+            return dowTimes && dowTimes.accessibleFrom  ? dowTimes.accessibleFrom : accessibility.accessibleFrom;
+        }
+    }
+}
+
+export const getEndOfAccessibleToday = (accessibility: SiteAccessibility) => {
+    if (accessibility) {
+        if (accessibility.alwaysAccessible) {
+            return "24:00";
+        }
+        const dayOfWeek = (new Date()).getDay();
+        if (accessibility.weekdayAccessibleHours) {
+            const dowTimes = accessibility.weekdayAccessibleHours.find(dow => dow.weekday === dayOfWeekAsString(dayOfWeek));
+            return dowTimes && dowTimes.accessibleUntil ? dowTimes.accessibleUntil : accessibility.accessibleUntil;
+        }
+    }
+}
+
+export const getEndOfAccessible = (accessibility: SiteAccessibility, day: Date) => {
+    if (accessibility) {
+        if (accessibility.alwaysAccessible) {
+            return "24:00";
+        }
+        const dayOfWeek = day.getDay();
+        if (accessibility.weekdayAccessibleHours) {
+            const dowTimes = accessibility.weekdayAccessibleHours.find(dow => dow.weekday === dayOfWeekAsString(dayOfWeek));
+            return dowTimes && dowTimes.accessibleUntil ? dowTimes.accessibleUntil : accessibility.accessibleUntil;
+        }
+    }
+}
+
+
+//returns the until time for the booking, depending on if the cube has accessibility defined or not
+export const getUntil = (from: ZonedDateTime, accessibility?: SiteAccessibility, duration?: number): ZonedDateTime => {
+    if (accessibility && accessibility.accessibleUntil) {
+        const endOfDay = getEndOfAccessibleToday(accessibility);
+        const now = Now.instant().toZonedDateTimeISO("Europe/Vienna");
+        const until = now.with({ hour: endOfDay?.split(":")[0] as any, minute: endOfDay?.split(":")[1] as any, second: 0, millisecond: 0, microsecond: 0 });
+        return until;
+    }
+    return from.add(Duration.from({ minutes: duration }));
+}
+
+/**
+ * 
+ * @param timeOnly example "14:00"
+ * @returns 
+ */
+export function toZonedDateTime(timeOnly: string| undefined ) {
+    const now = Now.instant().toZonedDateTimeISO("Europe/Vienna");
+    const until = now.with({ hour: timeOnly?.split(":")[0] as any, minute: timeOnly?.split(":")[1] as any, second: 0, millisecond: 0, microsecond: 0 });
+    return until;
+}
+
+/**
+ * Returns true if the "now" Parameter is in the accessible times.
+ * @param accessibility 
+ * @param now 
+ * @returns 
+ */
+export const isInAccesssibleTime = (accessibility?: SiteAccessibility, now = Now.instant().toZonedDateTimeISO("Europe/Vienna")) => {
+    if (!accessibility || accessibility.alwaysAccessible)
+        return true; 
+    const from = toZonedDateTime(getStartOfAccessibleToday(accessibility));
+    const until = toZonedDateTime(getEndOfAccessibleToday(accessibility)); 
+    return from.epochSeconds<=now.epochSeconds && now.epochSeconds<=until.epochSeconds ;
+}
+
