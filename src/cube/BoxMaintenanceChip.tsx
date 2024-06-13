@@ -13,7 +13,7 @@ export function BoxMaintenanceChip({maintenanceRequiredAt, minimized, t}: BoxMai
 		<Tooltip
 			title={
 				<Typography>
-					t("maintenanceRequiredAt") {maintenanceRequiredAt} 
+					{t("maintenanceRequiredAt")} {maintenanceRequiredAt} 
 				</Typography>
 			}
 		>
