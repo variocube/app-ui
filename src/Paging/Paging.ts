@@ -31,27 +31,29 @@ export interface Paging {
 
 export class PagingImpl implements Paging {
 
+    private storage = sessionStorage;
+
     private readonly baseSettings = { pageNumber: 0, pageSize: 25 };
 
     constructor(private _storageKey: string, private _unpaged: boolean = false) {
-        const stored = localStorage.getItem(_storageKey);
+        const stored = this.storage.getItem(_storageKey);
         if (!stored) {
-            localStorage.setItem(_storageKey, JSON.stringify(this.baseSettings));
+            this.storage.setItem(_storageKey, JSON.stringify(this.baseSettings));
         }
     }
 
     updateSettings<K>(settings: PagingSettings<K>) {
-        localStorage.setItem(this._storageKey, JSON.stringify(settings));
+        this.storage.setItem(this._storageKey, JSON.stringify(settings));
     }
 
     getSettings<K>(): PagingSettings<K> {
-        const stored = localStorage.getItem(this._storageKey);
+        const stored = this.storage.getItem(this._storageKey);
         if (stored) return JSON.parse(stored) as PagingSettings<K>;
         return this.baseSettings;
     }
 
     resetSettings() {
-        localStorage.setItem(this._storageKey, JSON.stringify(this.baseSettings));
+        this.storage.setItem(this._storageKey, JSON.stringify(this.baseSettings));
     }
 
     toQueryString(prefix?: string) {
