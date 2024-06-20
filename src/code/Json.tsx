@@ -1,38 +1,36 @@
-import React, {Fragment, useMemo} from "react";
+import {Box} from "@mui/material";
 import jsonLexer, {LexerTokens} from "json-lexer";
-import {Box, useTheme} from "@mui/material";
-import {green, lightBlue, orange, purple} from "@mui/material/colors";
+import React, {Fragment, useMemo} from "react";
+import {useCodeColors} from "../VCThemeProvider";
 
-const COLORS = {
-	literal: orange,
-	number: lightBlue,
-	string: green,
-	key: purple,
-}
-
-export function Json({data}: {data: any}) {
+export function Json({data}: { data: any }) {
 	const tokens = useMemo(() => {
 		const jsonString = JSON.stringify(data, null, 4);
 		return detectKeys(jsonLexer(jsonString));
 	}, [data]);
 
-	const theme = useTheme();
-	const shade = theme.palette.mode == "light" ? 700 : 300;
+	const colors = useCodeColors();
 
 	return (
 		<Fragment>
 			{tokens.map(({type, value, raw}) => {
 				switch (type) {
-					case "punctuator": return raw;
-					case "whitespace": return raw;
-					case "literal": return <Box component="span" color={COLORS.literal[shade]}>{raw}</Box>;
-					case "number": return <Box component="span" color={COLORS.number[shade]}>{raw}</Box>;
-					case "string": return <Box component="span" color={COLORS.string[shade]}>{raw}</Box>;
-					case "key": return <Box component="span" color={COLORS.key[shade]}>{value}</Box>;
+					case "punctuator":
+						return raw;
+					case "whitespace":
+						return raw;
+					case "literal":
+						return <Box component="span" color={colors.literal}>{raw}</Box>;
+					case "number":
+						return <Box component="span" color={colors.number}>{raw}</Box>;
+					case "string":
+						return <Box component="span" color={colors.string}>{raw}</Box>;
+					case "key":
+						return <Box component="span" color={colors.key}>{value}</Box>;
 				}
 			})}
 		</Fragment>
-	)
+	);
 }
 
 type NodeType = "array" | "object";
@@ -45,7 +43,7 @@ function detectKeys(tokens: LexerTokens) {
 		if (token.type == "string" && nextStringIsKey) {
 			return {
 				...token,
-				type: "key"
+				type: "key",
 			};
 		}
 		if (token.type == "punctuator") {
@@ -73,4 +71,3 @@ function detectKeys(tokens: LexerTokens) {
 		return token;
 	});
 }
-

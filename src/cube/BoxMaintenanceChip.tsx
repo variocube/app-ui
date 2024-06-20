@@ -1,21 +1,22 @@
 import HandymanIcon from "@mui/icons-material/Handyman";
-import {Chip, Tooltip, Typography} from "@mui/material";
-import React from "react"; 
+import {Chip, Tooltip} from "@mui/material";
+import React from "react";
+import {Labels} from "../localization";
 
 interface BoxMaintenanceChipProps {
-	maintenanceRequiredAt: string;
+	maintenanceRequiredAt?: string | undefined | null;
 	minimized?: boolean;
-	t: any;
+	labels: Labels<"maintenanceRequired">;
 }
 
-export function BoxMaintenanceChip({maintenanceRequiredAt, minimized, t}: BoxMaintenanceChipProps) { 
+export function BoxMaintenanceChip({maintenanceRequiredAt, minimized, labels}: BoxMaintenanceChipProps) {
+	if (!maintenanceRequiredAt) {
+		return null;
+	}
 	return (
 		<Tooltip
-			title={
-				<Typography>
-					{t("maintenanceRequiredAt")} {maintenanceRequiredAt} 
-				</Typography>
-			}
+			title={minimized ? labels("maintenanceRequired") : undefined}
+			placement="top"
 		>
 			<Chip
 				sx={{
@@ -25,7 +26,7 @@ export function BoxMaintenanceChip({maintenanceRequiredAt, minimized, t}: BoxMai
 				}}
 				color="warning"
 				icon={<HandymanIcon />}
-				label={!minimized ? t("maintenanceRequired"): undefined}
+				label={!minimized ? labels("maintenanceRequired") : undefined}
 			/>
 		</Tooltip>
 	);

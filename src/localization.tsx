@@ -64,7 +64,7 @@ type THasKeyFunc<T> = (key: string) => key is Leaves<T>;
  */
 type EFunc<T> = (key: Branches<T>, name: string) => string;
 
-type SFunc<T, P extends keyof T> = (prefix: P) => TFunc<T[P]>;
+type SFunc<T, P extends Branches<T>> = (prefix: P) => TFunc<TypeOfPath<T, P>>;
 
 /**
  * Helper type for defining a function that resolves labels of a component.
@@ -94,7 +94,7 @@ export interface Localization<T extends MessageObject> {
 	/**
 	 * Returns a t-function for the subset of keys under the specified prefix.
 	 */
-	s: SFunc<T, keyof T>;
+	s: SFunc<T, Branches<T>>;
 
 	/**
 	 * Returns the currently used language.
@@ -377,6 +377,15 @@ type Leaves<T, D extends number = MaxDepth> = [D] extends [never] ? never
  * Returns a union of all branch paths for a given type T
  */
 type Branches<T> = Exclude<Paths<T>, Leaves<T>>;
+
+/**
+ * Returns the type of the property at the specified path P for a given Type T
+ */
+type TypeOfPath<T, P extends string> = T extends object ? P extends keyof T ? T[P]
+	: P extends `${infer First}.${infer Rest}` ? First extends keyof T ? TypeOfPath<T[First], Rest>
+		: never
+	: never
+	: never;
 
 function getString<T extends MessageObject>(obj: T, key: string) {
 	return getKey(obj, key)?.toString();
