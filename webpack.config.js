@@ -78,6 +78,7 @@ module.exports = {
 			meta: {
 				viewport: "width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, shrink-to-fit=no",
 			},
+			// manifest: "manifest.json", <-- this would be supported, but it's not used in the demo
 		}),
 		new webpack.DefinePlugin({
 			VERSION: JSON.stringify(require("./package.json").version),

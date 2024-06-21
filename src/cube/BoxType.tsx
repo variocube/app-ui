@@ -16,7 +16,7 @@ interface BoxTypesProps extends StackProps {
 export function BoxTypes({boxTypes, ...stackProps}: BoxTypesProps) {
 	return (
 		<Stack direction="row" spacing={1} {...stackProps}>
-			{boxTypes.map((boxType) => <BoxType boxType={boxType} />)}
+			{boxTypes.map((boxType) => <BoxType key={boxType} boxType={boxType} />)}
 		</Stack>
 	);
 }

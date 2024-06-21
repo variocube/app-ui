@@ -1,6 +1,7 @@
 import {Autocomplete, Box, BoxProps, Container, Slider, Stack, TextField, Typography} from "@mui/material";
 import React, {useState} from "react";
 import {
+	BoxFeature,
 	BoxFeatures,
 	BoxMaintenanceChip,
 	BoxNumber,
@@ -28,11 +29,11 @@ const i18n = {
 		},
 		box: {
 			features: {
-				accessible: "Accessible",
-				charger: "Charger",
-				cooled: "Cooled",
-				dangerousGoods: "Dangerous Goods",
-				none: "None",
+				Accessible: "Accessible",
+				Charger: "Charger",
+				Cooled: "Cooled",
+				DangerousGoods: "Dangerous Goods",
+				None: "None",
 			},
 			maintenanceRequired: "Maintenance required",
 		},
@@ -58,11 +59,11 @@ const i18n = {
 		},
 		box: {
 			features: {
-				accessible: "Behindertengerecht",
-				charger: "Ladegerät",
-				cooled: "Gekühlt",
-				dangerousGoods: "Gefahrengut",
-				none: "Keine",
+				Accessible: "Behindertengerecht",
+				Charger: "Ladegerät",
+				Cooled: "Gekühlt",
+				DangerousGoods: "Gefahrengut",
+				None: "Keine",
 			},
 			maintenanceRequired: "Wartung erforderlich",
 		},
@@ -106,13 +107,28 @@ function CubeDemoLanguageSwitcher() {
 	);
 }
 
+const ALL_BOX_FEATURES: BoxFeature[] = ["Accessible", "Charger", "Cooled", "DangerousGoods"];
+
 function BoxFeaturesDemo(props: BoxProps) {
 	const {s} = useLocalization();
 	const [minimized, setMinimized] = useState(false);
-	const [cooled, setCooled] = useState(true);
-	const [accessible, setAccessible] = useState(true);
-	const [dangerousGoods, setDangerousGoods] = useState(true);
-	const [charger, setCharger] = useState(true);
+
+	const [features, setFeatures] = useState(ALL_BOX_FEATURES);
+
+	function setFeature(feature: BoxFeature) {
+		return (checked: boolean) => {
+			setFeatures(prev => {
+				const features = new Set(prev);
+				if (checked) {
+					features.add(feature);
+				} else {
+					features.delete(feature);
+				}
+				return [...features];
+			});
+		};
+	}
+
 	return (
 		<Box {...props}>
 			<Typography variant="h2" gutterBottom>
@@ -123,19 +139,20 @@ function BoxFeaturesDemo(props: BoxProps) {
 			<Demo source={source} id="box-features">
 				<DemoSource>
 					<BoxFeatures
-						cooled={cooled}
-						accessible={accessible}
-						dangerousGoods={dangerousGoods}
-						charger={charger}
+						features={features}
 						minimized={minimized}
 						labels={s("box.features")}
 					/>
 				</DemoSource>
 				<DemoControls>
-					<Switch value={cooled} onChange={setCooled} label="Cooled" />
-					<Switch value={accessible} onChange={setAccessible} label="Accessible" />
-					<Switch value={dangerousGoods} onChange={setDangerousGoods} label="Dangerous Goods" />
-					<Switch value={charger} onChange={setCharger} label="Charger" />
+					{ALL_BOX_FEATURES.map(feature => (
+						<Switch
+							key={feature}
+							value={features.includes(feature)}
+							onChange={setFeature(feature)}
+							label={feature}
+						/>
+					))}
 					<Switch value={minimized} onChange={setMinimized} label="Minimized" />
 				</DemoControls>
 			</Demo>

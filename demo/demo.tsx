@@ -1,4 +1,4 @@
-import {Box, Card, CardProps, Divider, Typography} from "@mui/material";
+import {Box, Card, CardProps, Divider} from "@mui/material";
 import React, {Fragment, PropsWithChildren, useMemo} from "react";
 import {PrismLight as SyntaxHighlighter} from "react-syntax-highlighter";
 import tsx from "react-syntax-highlighter/dist/esm/languages/prism/tsx";
@@ -19,18 +19,16 @@ export function Demo({id, source, children, ...cardProps}: PropsWithChildren<Dem
 	return (
 		<Card variant="outlined" {...cardProps}>
 			{children}
-			<Typography variant="body2">
-				<CodeBlock px={2} py={2}>
-					<SyntaxHighlighter
-						language="tsx"
-						useInlineStyles={true}
-						style={style}
-						customStyle={{background: "none", margin: 0}}
-					>
-						{demoSource || "// ERROR: Source could not be determined."}
-					</SyntaxHighlighter>
-				</CodeBlock>
-			</Typography>
+			<CodeBlock px={2} py={2} variant="body2">
+				<SyntaxHighlighter
+					language="tsx"
+					useInlineStyles={true}
+					style={style}
+					customStyle={{background: "none", margin: 0}}
+				>
+					{demoSource || "// ERROR: Source could not be determined."}
+				</SyntaxHighlighter>
+			</CodeBlock>
 		</Card>
 	);
 }

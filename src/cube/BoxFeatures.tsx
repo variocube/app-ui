@@ -8,60 +8,58 @@ import {amber, green, lightBlue, red} from "@mui/material/colors";
 import React from "react";
 import {Labels} from "../localization";
 
+export type BoxFeature = "Accessible" | "Cooled" | "DangerousGoods" | "Charger";
+
 interface BoxFeaturesProps {
-	accessible: boolean;
-	cooled: boolean;
-	dangerousGoods: boolean;
-	charger: boolean;
+	features: Array<BoxFeature>;
+	labels: Labels<BoxFeature | "None">;
 	minimized?: boolean;
 	renderEmpty?: boolean;
-	labels: Labels<"accessible" | "cooled" | "dangerousGoods" | "charger" | "none">;
 }
 
 export function BoxFeatures(props: BoxFeaturesProps) {
 	const {
-		accessible,
-		cooled,
-		dangerousGoods,
-		charger,
+		features,
 		renderEmpty,
 		minimized,
 		labels,
 	} = props;
 
-	if (renderEmpty && !accessible && !cooled && !dangerousGoods) {
-		return <span>{labels("none")}</span>;
+	if (renderEmpty && features.length == 0) {
+		return <span>{labels("None")}</span>;
 	}
 	return (
 		<Stack direction="row" spacing={1}>
-			{accessible && <Accessible label={labels("accessible")} minimized={minimized} />}
-			{cooled && <AcUnit label={labels("cooled")} minimized={minimized} />}
-			{dangerousGoods && <DangerousGood label={labels("dangerousGoods")} minimized={minimized} />}
-			{charger && <Charger label={labels("charger")} minimized={minimized} />}
+			{features.sort().map(feature => (
+				<FlagChip
+					key={feature}
+					label={labels(feature)}
+					color={COLORS[feature]}
+					Icon={ICONS[feature]}
+					minimized={minimized}
+				/>
+			))}
 		</Stack>
 	);
 }
 
+const COLORS: Record<BoxFeature, string> = {
+	Accessible: amber[800],
+	Cooled: lightBlue[400],
+	DangerousGoods: red[400],
+	Charger: green[400],
+};
+
+const ICONS: Record<BoxFeature, SvgIconComponent> = {
+	Accessible: AccessibleIcon,
+	Cooled: AcUnitIcon,
+	DangerousGoods: WarningAmberIcon,
+	Charger: ChargerIcon,
+};
+
 interface FlagProps {
 	minimized?: boolean;
 	label: string;
-}
-
-function Accessible({label, ...rest}: FlagProps) {
-	const color = amber[800];
-	return <FlagChip label={label} color={color} Icon={AccessibleIcon} {...rest} />;
-}
-
-function AcUnit({label, ...rest}: FlagProps) {
-	return <FlagChip label={label} color={lightBlue["400"]} Icon={AcUnitIcon} {...rest} />;
-}
-
-function DangerousGood({label, ...rest}: FlagProps) {
-	return <FlagChip label={label} color={red["400"]} Icon={WarningAmberIcon} {...rest} />;
-}
-
-function Charger({label, ...rest}: FlagProps) {
-	return <FlagChip label={label} color={green["400"]} Icon={ChargerIcon} {...rest} />;
 }
 
 interface FlagChipProps extends FlagProps {
