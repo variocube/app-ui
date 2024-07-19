@@ -1,10 +1,10 @@
 /** Describes a Spring `Page` */
 export interface SpringPage<T> {
 	content?: T[] | undefined;
-	totalElements: number;
-	totalPages: number;
-	size: number;
-	number: number;
+	totalElements?: number | undefined;
+	totalPages?: number | undefined;
+	size?: number | undefined;
+	number?: number | undefined;
 }
 
 /** Describes a Spring `Pageable` */

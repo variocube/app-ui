@@ -10,9 +10,9 @@ export function useSpringPage<T>(springPage: SpringPage<T> | undefined) {
 		if (springPage) {
 			setRows(springPage.content ?? []);
 			setPage({
-				totalElements: springPage.totalElements,
-				pageSize: springPage.size,
-				pageIndex: springPage.number,
+				totalElements: springPage.totalElements ?? 0,
+				pageSize: springPage.size ?? 0,
+				pageIndex: springPage.number ?? 0,
 			});
 		}
 	}, [springPage]);
