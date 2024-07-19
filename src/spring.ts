@@ -1,6 +1,6 @@
 /** Describes a Spring `Page` */
 export interface SpringPage<T> {
-	content: T[];
+	content?: T[] | undefined;
 	totalElements: number;
 	totalPages: number;
 	size: number;
