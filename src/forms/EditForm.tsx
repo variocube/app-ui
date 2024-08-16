@@ -1,9 +1,18 @@
-import {Button, Card, CardContent, CircularProgress, Stack, CardProps as MuiCardProps, CardContentProps as MuiCardContentProps} from "@mui/material";
-import {useFlag} from "../utils";
+import {
+	Button,
+	Card,
+	CardContent,
+	CardContentProps as MuiCardContentProps,
+	CardProps as MuiCardProps,
+	CircularProgress,
+	Stack,
+} from "@mui/material";
 import React, {PropsWithChildren, useMemo} from "react";
 import {useAsyncCallback} from "react-async-hook";
-import {CloseIcon, SaveIcon, SuccessIcon} from "../icons";
 import {ErrorAlert} from "../ErrorAlert";
+import {CloseIcon, SaveIcon, SuccessIcon} from "../icons";
+import {Labels} from "../localization";
+import {useFlag} from "../utils";
 
 interface EditFormProps {
 	loading: boolean;
@@ -11,9 +20,12 @@ interface EditFormProps {
 	onCancel?: () => void;
 	CardProps?: MuiCardProps;
 	CardContentProps?: MuiCardContentProps;
+	labels: Labels<"save" | "cancel">;
 }
 
-export function EditForm({children, loading, onSave, onCancel, CardProps, CardContentProps}: PropsWithChildren<EditFormProps>) {
+export function EditForm(
+	{children, loading, onSave, onCancel, CardProps, CardContentProps, labels}: PropsWithChildren<EditFormProps>,
+) {
 	const [saved, setSaved, clearSaved] = useFlag(false);
 
 	const {loading: saving, error, execute: save} = useAsyncCallback(
@@ -55,7 +67,7 @@ export function EditForm({children, loading, onSave, onCancel, CardProps, CardCo
 							startIcon={icon}
 							color={saved ? "success" : "primary"}
 						>
-							Save
+							{labels("save")}
 						</Button>
 						{onCancel && (
 							<Button
@@ -64,7 +76,7 @@ export function EditForm({children, loading, onSave, onCancel, CardProps, CardCo
 								startIcon={<CloseIcon />}
 								onClick={onCancel}
 							>
-								Cancel
+								{labels("cancel")}
 							</Button>
 						)}
 					</Stack>
