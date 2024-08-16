@@ -115,7 +115,7 @@ export function Accessibility(
 
 	return (
 		<Box maxWidth="md">
-			<EditForm loading={loading} onSave={handleSave}>
+			<EditForm loading={loading} onSave={handleSave} labels={t}>
 				<CardHeader
 					title={t("sites.accessibility.accessibleHours")}
 					subheader={t("sites.accessibility.accessibleHoursIntro")}
