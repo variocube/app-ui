@@ -259,7 +259,7 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
 		const t = useCallback((key: Leaves<T>, context?: Record<string, any>) => {
 			if (messages) {
 				const localized = getString(messages, key) ?? handleMissing(key);
-				if (localized) {
+				if (localized && context) {
 					return Mustache.render(localized, context);
 				}
 				return localized;
