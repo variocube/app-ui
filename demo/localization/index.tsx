@@ -1,10 +1,13 @@
 import {
 	Box,
+	BoxProps,
 	Card,
 	CardContent,
 	CardHeader,
 	Container,
+	FormControl,
 	FormControlLabel,
+	FormLabel,
 	Radio,
 	RadioGroup,
 	Stack,
@@ -16,26 +19,26 @@ import {
 	Typography,
 } from "@mui/material";
 import * as React from "react";
-import {useCallback} from "react";
+import {useCallback, useState} from "react";
 import {
 	Code,
 	CompactFormat,
 	createLocalizationContext,
 	CurrencyFormat,
 	DecimalFormat,
-	Instant,
-	Now, PageTitle,
-	PlainDate,
-	PlainDateTime,
-	PlainTime,
+	Now,
+	PageTitle,
 	RelativeTemporalFormat,
 	RelativeTemporalFormatProps,
 	TemporalFormat,
-	TemporalFormatProps,
 	TemporalRangeFormat,
-	TemporalRangeFormatProps,
-	ZonedDateTime,
 } from "../../src";
+import {SwitchableTemporalFormat} from "../../src/formats/SwitchableTemporalFormat";
+import {DateStyle, TimeStyle} from "../../src/formats/types";
+import {Demo, DemoControls, DemoSource} from "../demo";
+
+// @ts-ignore
+import source from "./index.tsx?source";
 
 const {StorageLocalizationProvider, useLocalization} = createLocalizationContext<typeof import("./en.json")>({
 	load: language => import(`./${language}.json`),
@@ -53,39 +56,40 @@ export function Localization() {
 		<Container>
 			<PageTitle title="Localization" gutterBottom />
 
-			<Box my={4}>
-				<Typography variant="h2" gutterBottom>Translations</Typography>
+			<Stack spacing={8}>
+				<Box>
+					<Typography variant="h2" gutterBottom>Translations</Typography>
 
-				<StorageLocalizationProvider overrides={overrides}>
-					<TranslationDemo />
-				</StorageLocalizationProvider>
-			</Box>
+					<StorageLocalizationProvider overrides={overrides}>
+						<TranslationDemo />
+					</StorageLocalizationProvider>
+				</Box>
+				<Box>
+					<Typography variant="h2" gutterBottom>Translations Has Key</Typography>
 
-			<Box my={4}>
-				<Typography variant="h2" gutterBottom>Translations Has Key</Typography>
+					<StorageLocalizationProvider overrides={overrides}>
+						<TranslationHasKeyDemo />
+					</StorageLocalizationProvider>
+				</Box>
+				<Box>
+					<Typography variant="h2" gutterBottom>Number formats</Typography>
+					<Typography variant="body1" gutterBottom>
+						Display numbers according to the user's locale settings.
+					</Typography>
 
-				<StorageLocalizationProvider overrides={overrides}>
-					<TranslationHasKeyDemo />
-				</StorageLocalizationProvider>
-			</Box>
-
-			<Box my={4}>
-				<Typography variant="h2" gutterBottom>Number formats</Typography>
-				<Typography variant="body1" gutterBottom>
-					Display numbers according to the user's locale settings.
-				</Typography>
-
-				<NumberDemo />
-			</Box>
-
-			<Box my={4}>
-				<Typography variant="h2" gutterBottom>Date & time formats</Typography>
-				<Typography variant="body1" gutterBottom>
-					Display dates & times according to the user's locale settings.
-				</Typography>
-
-				<DateTimeDemo />
-			</Box>
+					<NumberDemo />
+				</Box>
+				<Box>
+					<Typography variant="h2" gutterBottom>Date & time formats</Typography>
+					<Typography variant="body1" gutterBottom>
+						Display dates & times according to the user's locale settings.
+					</Typography>
+				</Box>
+				<TemporalFormatDemo />
+				<RelativeTemporalFormatDemo />
+				<SwitchableTemporalFormatDemo />
+				<TemporalRangeFormatDemo />
+			</Stack>
 		</Container>
 	);
 }
@@ -297,117 +301,275 @@ function NumberDemo() {
 	);
 }
 
-function DateTimeDemo() {
-	const temporals: TemporalFormatProps[] = [
-		{value: PlainDate.from("2022-06-21")},
-		{value: PlainDate.from("2022-06-21"), dateStyle: "full"},
-		{value: PlainTime.from({hour: 14, minute: 22})},
-		{value: PlainTime.from({hour: 14, minute: 22}), timeStyle: "full"},
-		{value: PlainDateTime.from("2022-06-21T14:22")},
-		{value: ZonedDateTime.from("2022-06-21T14:22:11[MET]")},
-		{value: ZonedDateTime.from("2022-06-21T14:22:11[MET]"), dateStyle: "medium", timeStyle: "long"},
-		{value: Instant.from("2022-06-21T14:22:11Z")},
-		{value: Instant.from("2022-06-21T14:22:11Z"), dateStyle: "full", timeStyle: "full"},
-	];
-
-	const durations: RelativeTemporalFormatProps[] = [
-		{value: Now.plainDateISO().subtract({years: 2, days: 45})},
-		{value: Now.plainDateISO().subtract({days: -1}), numeric: "auto"},
-		{value: Now.plainDateTimeISO().add({weeks: 4, minutes: 3}), style: "narrow"},
-		{value: Now.plainDateTimeISO().subtract({seconds: 2}), style: "narrow"},
-		{value: Now.zonedDateTimeISO().subtract({days: 3})},
-		{value: Now.instant().subtract({milliseconds: 493284})},
-		{value: Now.instant().add({hours: 17249})},
-	];
-
-	const ranges: TemporalRangeFormatProps[] = [
-		{from: Now.plainDateISO(), until: Now.plainDateISO().add({days: 3})},
-		{from: Now.plainDateTimeISO().subtract({hours: 3}), until: Now.plainDateTimeISO().add({minutes: 22})},
-		{from: ZonedDateTime.from("2022-06-28T22:52:00[MET]"), until: ZonedDateTime.from("2022-06-29T16:52:00[MET]")},
-		{from: Instant.from("2022-06-28T23:00:00Z"), until: Instant.from("2022-06-28T23:00:00Z")},
-	];
+function TemporalFormatDemo(props: BoxProps) {
+	const [dateStyle, setDateStyle] = useState<DateStyle>();
+	const [timeStyle, setTimeStyle] = useState<TimeStyle>();
 
 	return (
-		<Stack spacing={2}>
-			<Card>
-				<CardHeader title="TemporalFormat" />
-				<Table>
-					<TableHead>
-						<TableRow>
-							<TableCell>Value</TableCell>
-							<TableCell>dateStyle</TableCell>
-							<TableCell>timeStyle</TableCell>
-							<TableCell>Result</TableCell>
-						</TableRow>
-					</TableHead>
-					<TableBody>
-						{temporals.map((props, index) => (
-							<TableRow key={index}>
-								<TableCell>{props.value?.toString()}</TableCell>
-								<TableCell>{props.dateStyle || "(undefined)"}</TableCell>
-								<TableCell>{props.timeStyle || "(undefined)"}</TableCell>
-								<TableCell>
-									<TemporalFormat {...props} />
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</Card>
+		<Box {...props}>
+			<Typography variant="h2" gutterBottom>
+				<Code>TemporalFormat</Code>
+			</Typography>
+			<Typography variant="subtitle1" gutterBottom>
+				Displays a <Code>Temporal</Code>.
+			</Typography>
 
-			<Card>
-				<CardHeader title="RelativeTemporalFormat" />
-				<Table>
-					<TableHead>
-						<TableRow>
-							<TableCell>Value</TableCell>
-							<TableCell>numeric</TableCell>
-							<TableCell>style</TableCell>
-							<TableCell>Result</TableCell>
-						</TableRow>
-					</TableHead>
-					<TableBody>
-						{durations.map((props, index) => (
-							<TableRow key={index}>
-								<TableCell>{props.value?.toString()}</TableCell>
-								<TableCell>{props.numeric || "(undefined)"}</TableCell>
-								<TableCell>{props.style || "(undefined)"}</TableCell>
-								<TableCell>
-									<RelativeTemporalFormat {...props} />
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</Card>
+			<Demo source={source} id="temporal-format">
+				<DemoSource>
+					<Stack spacing={2} direction="row">
+						<Box>
+							<TemporalFormat
+								value={Now.instant()}
+								dateStyle={dateStyle}
+								timeStyle={timeStyle}
+							/>
+						</Box>
+						<Box>
+							<TemporalFormat
+								value={Now.plainDateTimeISO().subtract({days: 2})}
+								dateStyle={dateStyle}
+								timeStyle={timeStyle}
+							/>
+						</Box>
+						<Box>
+							<TemporalFormat
+								value={Now.plainDateISO().subtract({years: 4})}
+								dateStyle={dateStyle}
+								timeStyle={timeStyle}
+							/>
+						</Box>
+					</Stack>
+				</DemoSource>
+				<DemoControls>
+					<DateStyleControl value={dateStyle} onChange={setDateStyle} />
+					<TimeStyleControl value={timeStyle} onChange={setTimeStyle} />
+				</DemoControls>
+			</Demo>
+		</Box>
+	);
+}
 
-			<Card>
-				<CardHeader title="TemporalRangeFormat" />
-				<Table>
-					<TableHead>
-						<TableRow>
-							<TableCell>from</TableCell>
-							<TableCell>until</TableCell>
-							<TableCell>dateStyle</TableCell>
-							<TableCell>timeStyle</TableCell>
-							<TableCell>Result</TableCell>
-						</TableRow>
-					</TableHead>
-					<TableBody>
-						{ranges.map((props, index) => (
-							<TableRow key={index}>
-								<TableCell>{props.from?.toString()}</TableCell>
-								<TableCell>{props.until?.toString()}</TableCell>
-								<TableCell>{props.dateStyle || "(undefined)"}</TableCell>
-								<TableCell>{props.timeStyle || "(undefined)"}</TableCell>
-								<TableCell>
-									<TemporalRangeFormat {...props} />
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</Card>
-		</Stack>
+function RelativeTemporalFormatDemo(props: BoxProps) {
+	const [numeric, setNumeric] = useState<RelativeTemporalFormatProps["numeric"]>();
+	const [style, setStyle] = useState<RelativeTemporalFormatProps["style"]>();
+
+	return (
+		<Box {...props}>
+			<Typography variant="h2" gutterBottom>
+				<Code>RelativeTemporalFormat</Code>
+			</Typography>
+			<Typography variant="subtitle1" gutterBottom>
+				Displays a <Code>Temporal</Code> relative to the current instant in time.
+			</Typography>
+
+			<Demo source={source} id="temporal-format">
+				<DemoSource>
+					<Stack spacing={2} direction="row">
+						<Box>
+							<RelativeTemporalFormat
+								value={Now.instant()}
+								numeric={numeric}
+								style={style}
+							/>
+						</Box>
+						<Box>
+							<RelativeTemporalFormat
+								value={Now.plainDateTimeISO().subtract({minutes: 1, seconds: 10})}
+								numeric={numeric}
+								style={style}
+							/>
+						</Box>
+						<Box>
+							<RelativeTemporalFormat
+								value={Now.plainDateTimeISO().subtract({days: 2})}
+								numeric={numeric}
+								style={style}
+							/>
+						</Box>
+						<Box>
+							<RelativeTemporalFormat
+								value={Now.plainDateISO().subtract({years: 4})}
+								numeric={numeric}
+								style={style}
+							/>
+						</Box>
+					</Stack>
+				</DemoSource>
+				<DemoControls>
+					<StyleControl value={style} onChange={setStyle} />
+					<NumericControl value={numeric} onChange={setNumeric} />
+				</DemoControls>
+			</Demo>
+		</Box>
+	);
+}
+
+function TemporalRangeFormatDemo(props: BoxProps) {
+	const [dateStyle, setDateStyle] = useState<DateStyle>();
+	const [timeStyle, setTimeStyle] = useState<TimeStyle>();
+
+	return (
+		<Box {...props}>
+			<Typography variant="h2" gutterBottom>
+				<Code>TemporalRangeFormat</Code>
+			</Typography>
+			<Typography variant="subtitle1" gutterBottom>
+				Displays a <Code>Temporal</Code> range.
+			</Typography>
+
+			<Demo source={source} id="temporal-range-format">
+				<DemoSource>
+					<Stack spacing={2} direction="row">
+						<Box>
+							<TemporalRangeFormat
+								from={Now.instant()}
+								until={Now.instant().add({hours: 2})}
+								dateStyle={dateStyle}
+								timeStyle={timeStyle}
+							/>
+						</Box>
+						<Box>
+							<TemporalRangeFormat
+								from={Now.plainDateTimeISO().subtract({days: 2})}
+								until={Now.plainDateTimeISO().subtract({days: 1})}
+								dateStyle={dateStyle}
+								timeStyle={timeStyle}
+							/>
+						</Box>
+						<Box>
+							<TemporalRangeFormat
+								from={Now.plainDateISO().subtract({years: 4})}
+								until={Now.plainDateISO().subtract({years: 2})}
+								dateStyle={dateStyle}
+								timeStyle={timeStyle}
+							/>
+						</Box>
+					</Stack>
+				</DemoSource>
+				<DemoControls>
+					<DateStyleControl value={dateStyle} onChange={setDateStyle} />
+					<TimeStyleControl value={timeStyle} onChange={setTimeStyle} />
+				</DemoControls>
+			</Demo>
+		</Box>
+	);
+}
+
+function SwitchableTemporalFormatDemo(props: BoxProps) {
+	return (
+		<Box {...props}>
+			<Typography variant="h2" gutterBottom>
+				<Code>SwitchableTemporalFormat</Code>
+			</Typography>
+			<Typography variant="subtitle1" gutterBottom>
+				Displays a <Code>Temporal</Code>{" "}
+				either in relative or absolute format. Allows to switch formats by clicking on the value.
+			</Typography>
+
+			<Demo source={source} id="switchable-temporal-format">
+				<DemoSource>
+					<Stack spacing={2} direction="row">
+						<SwitchableTemporalFormat
+							value={Now.instant()}
+						/>
+						<SwitchableTemporalFormat
+							value={Now.instant().subtract({hours: 3, minutes: 55})}
+						/>
+						<SwitchableTemporalFormat
+							value={Now.plainDateISO().add({years: 2, months: 4})}
+						/>
+					</Stack>
+				</DemoSource>
+			</Demo>
+		</Box>
+	);
+}
+
+interface DateStyleControlProps {
+	value: DateStyle | undefined;
+	onChange: (dateStyle: DateStyle | undefined) => any;
+}
+
+function DateStyleControl({value, onChange}: DateStyleControlProps) {
+	return (
+		<FormControl>
+			<FormLabel>dateStyle</FormLabel>
+			<RadioGroup
+				value={value || ""}
+				onChange={(_, value) => onChange(value as DateStyle || undefined)}
+			>
+				<FormControlLabel control={<Radio value="" />} label="undefined" />
+				<FormControlLabel control={<Radio value="full" />} label="full" />
+				<FormControlLabel control={<Radio value="long" />} label="long" />
+				<FormControlLabel control={<Radio value="medium" />} label="medium" />
+				<FormControlLabel control={<Radio value="short" />} label="short" />
+			</RadioGroup>
+		</FormControl>
+	);
+}
+
+interface TimeStyleControlProps {
+	value: TimeStyle | undefined;
+	onChange: (timeStyle: TimeStyle | undefined) => any;
+}
+
+function TimeStyleControl({value, onChange}: TimeStyleControlProps) {
+	return (
+		<FormControl>
+			<FormLabel>timeStyle</FormLabel>
+			<RadioGroup
+				value={value || ""}
+				onChange={(_, value) => onChange(value as TimeStyle || undefined)}
+			>
+				<FormControlLabel control={<Radio value="" />} label="undefined" />
+				<FormControlLabel control={<Radio value="full" />} label="full" />
+				<FormControlLabel control={<Radio value="long" />} label="long" />
+				<FormControlLabel control={<Radio value="medium" />} label="medium" />
+				<FormControlLabel control={<Radio value="short" />} label="short" />
+			</RadioGroup>
+		</FormControl>
+	);
+}
+
+interface StyleControlProps {
+	value: RelativeTemporalFormatProps["style"] | undefined;
+	onChange: (numeric: RelativeTemporalFormatProps["style"] | undefined) => any;
+}
+
+function StyleControl({value, onChange}: StyleControlProps) {
+	return (
+		<FormControl>
+			<FormLabel>style</FormLabel>
+			<RadioGroup
+				value={value || ""}
+				onChange={(_, value) => onChange(value as RelativeTemporalFormatProps["style"] || undefined)}
+			>
+				<FormControlLabel control={<Radio value="" />} label="undefined" />
+				<FormControlLabel control={<Radio value="long" />} label="long" />
+				<FormControlLabel control={<Radio value="short" />} label="short" />
+				<FormControlLabel control={<Radio value="narrow" />} label="narrow" />
+			</RadioGroup>
+		</FormControl>
+	);
+}
+
+interface NumericControlProps {
+	value: RelativeTemporalFormatProps["numeric"] | undefined;
+	onChange: (numeric: RelativeTemporalFormatProps["numeric"] | undefined) => any;
+}
+
+function NumericControl({value, onChange}: NumericControlProps) {
+	return (
+		<FormControl>
+			<FormLabel>numeric</FormLabel>
+			<RadioGroup
+				value={value || ""}
+				onChange={(_, value) => onChange(value as RelativeTemporalFormatProps["numeric"] || undefined)}
+			>
+				<FormControlLabel control={<Radio value="" />} label="undefined" />
+				<FormControlLabel control={<Radio value="always" />} label="always" />
+				<FormControlLabel control={<Radio value="auto" />} label="auto" />
+			</RadioGroup>
+		</FormControl>
 	);
 }
