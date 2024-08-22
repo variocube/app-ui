@@ -417,16 +417,6 @@ export const isInAccesssibleTime = (
 	}
 	const from = toZonedDateTime(getStartOfAccessibleToday(accessibility));
 	const until = toZonedDateTime(getEndOfAccessibleToday(accessibility));
-	return from.epochSeconds <= now.epochSeconds && now.epochSeconds <= until.epochSeconds;
-};
-
-export const isInAccessibleTimeGeneral = (plainDateTime: PlainDateTime, accessibility?: SiteAccessibility) => {
-	const zoned = plainDateTime.toZonedDateTime("Europe/Vienna");
-	const date = new Date(zoned.epochMilliseconds);
-	if (!accessibility || accessibility.alwaysAccessible) {
-		return true;
-	}
-	const from = toZonedDateTimeGeneral(getStartOfAccessible(accessibility, date), plainDateTime);
-	const until = toZonedDateTimeGeneral(getEndOfAccessible(accessibility, date), plainDateTime);
-	return from.epochSeconds <= zoned.epochSeconds && zoned.epochSeconds <= until.epochSeconds;
+	// only compare opening times not date
+	return ((PlainTime.compare(PlainTime.from(now), PlainTime.from(from)) == 1) && (PlainTime.compare(PlainTime.from(now), PlainTime.from(until)) == -1))
 };
