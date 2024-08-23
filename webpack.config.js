@@ -14,7 +14,7 @@ module.exports = {
 	output: {
 		filename: "[name].[contenthash].js",
 		path: __dirname + "/build",
-		publicPath: "/",
+		publicPath: "",
 	},
 
 	mode: "development",
