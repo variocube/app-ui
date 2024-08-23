@@ -4,6 +4,7 @@ import {
 	DynamicForm,
 	Edit,
 	Error,
+	FilterList,
 	Help,
 	Language,
 	Palette,
@@ -25,7 +26,7 @@ import {
 	ListItemIcon,
 	ListItemText,
 	Paper,
-	Typography
+	Typography,
 } from "@mui/material";
 import * as React from "react";
 import {useState} from "react";
@@ -46,19 +47,20 @@ import {
 	UserNav,
 	VCThemeProvider,
 } from "../src";
+import {AuditDemo} from "./audit";
+import {BrandingProvider} from "./branding";
 import {ConfirmDemo} from "./confirm";
 import {ContentTableDemo} from "./content-table";
+import {CubeDemo} from "./cube";
 import {DataTableDemo} from "./data-table";
 import {Pickers} from "./date-pickers";
 import {DemoError} from "./error";
+import {FilterDemoPage} from "./filter";
 import {Forms} from "./forms";
 import {Inputs} from "./inputs";
 import {Localization} from "./localization";
 import {TabsDemo} from "./tabs";
 import {Theme} from "./theme";
-import {CubeDemo} from "./cube";
-import {AuditDemo} from "./audit";
-import {BrandingProvider} from "./branding";
 
 declare const VERSION: string;
 
@@ -81,8 +83,18 @@ function Demo() {
 					<Route path="help" element={<HelpDemo />} />
 					<Route path="confirm" element={<ConfirmDemo />} />
 					<Route path="audit" element={<AuditDemo />} />
-					<Route path="not-found" element={<NotFound errorMsg="404: Not Found" backToHomeMsg="Back to Home" pathMsg="We could not find the following path: " />} />
+					<Route
+						path="not-found"
+						element={
+							<NotFound
+								errorMsg="404: Not Found"
+								backToHomeMsg="Back to Home"
+								pathMsg="We could not find the following path: "
+							/>
+						}
+					/>
 					<Route path="cube" element={<CubeDemo />} />
+					<Route path="filter" element={<FilterDemoPage />} />
 				</Route>
 			</Routes>
 		</BrowserRouter>
@@ -159,8 +171,9 @@ const MenuItems: MenuItemProps[] = [
 	{text: "Help", to: "/help", icon: Help},
 	{text: "Confirm", to: "/confirm", icon: Psychology},
 	{text: "Audit", to: "/audit", icon: AuditIcon},
-	{text: "Not found", to:"/not-found", icon: Error},
-	{text: "Cube", to:"/cube", icon: Widgets},
+	{text: "Not found", to: "/not-found", icon: Error},
+	{text: "Cube", to: "/cube", icon: Widgets},
+	{text: "Filter", to: "/filter", icon: FilterList},
 ];
 
 function SideNavListItem({icon: Icon, text, to}: MenuItemProps) {
@@ -231,15 +244,21 @@ function ContainerDemo() {
 }
 
 function HelpDemo() {
-
 	const localStorageVar = "appUiLastSeenVersion";
 	const changeLogUrl = "https://docs.variocube.com/logistics/Logistics_Changelog";
 	const dialogTitle = "New Version";
 
 	const dialogContent: React.ReactNode = (
 		<DialogContent>
-			<Typography>{`This is a newer Version of the application (${VERSION}). The last version you used was ${localStorage.getItem(localStorageVar ? localStorageVar : "")}.`}</Typography>
-			<Typography>Please go to the <MuiLink href={changeLogUrl} target="_blank">Change Log Page</MuiLink> to see the latest updates.</Typography>
+			<Typography>
+				{`This is a newer Version of the application (${VERSION}). The last version you used was ${
+					localStorage.getItem(localStorageVar ? localStorageVar : "")
+				}.`}
+			</Typography>
+			<Typography>
+				Please go to the <MuiLink href={changeLogUrl} target="_blank">Change Log Page</MuiLink>{" "}
+				to see the latest updates.
+			</Typography>
 		</DialogContent>
 	);
 
@@ -251,7 +270,8 @@ function HelpDemo() {
 				currentVersion={VERSION}
 				dialogTitle={dialogTitle}
 				dialogContent={dialogContent}
-				changeLogUrl={changeLogUrl}>
+				changeLogUrl={changeLogUrl}
+			>
 				<ContainerLayout>
 					<Grid container spacing={3}>
 						<Grid item xs={12}>
@@ -267,11 +287,19 @@ function HelpDemo() {
 										</Typography>
 										<Typography variant="body1">
 											Test Tenant_Settings#Building_Cube_Mappings, de language
-											<HelpButton helpPage="Tenant_Settings" helpAnchor={"Building_Cube_Mappings"} language={""} />
+											<HelpButton
+												helpPage="Tenant_Settings"
+												helpAnchor={"Building_Cube_Mappings"}
+												language={""}
+											/>
 										</Typography>
 										<Typography variant="body1">
 											Test Delivery_Create#Manual_handover_required, empty language
-											<HelpButton helpPage="Delivery_Create" helpAnchor={"Manual_Handover_Required"} language={""} />
+											<HelpButton
+												helpPage="Delivery_Create"
+												helpAnchor={"Manual_Handover_Required"}
+												language={""}
+											/>
 										</Typography>
 									</Grid>
 								</Grid>
