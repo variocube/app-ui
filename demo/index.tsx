@@ -64,11 +64,13 @@ import {Theme} from "./theme";
 
 declare const VERSION: string;
 
+const rootPath = location.hostname == "variocube.github.io" ? "/app-ui" : "/";
+
 function Demo() {
 	return (
 		<BrowserRouter>
 			<Routes>
-				<Route path="/" element={<App />}>
+				<Route path={rootPath} element={<App />}>
 					<Route index element={<Start />} />
 					<Route path="theme" element={<Theme />} />
 					<Route path="localization" element={<Localization />} />
@@ -158,22 +160,22 @@ interface MenuItemProps {
 }
 
 const MenuItems: MenuItemProps[] = [
-	{text: "Theme", to: "/theme", icon: Palette},
-	{text: "Localization", to: "/localization", icon: Language},
-	{text: "Date & time pickers", to: "/date-pickers", icon: CalendarMonth},
-	{text: "Content table", to: "/content-table", icon: ViewList},
-	{text: "Data table", to: "/data-table", icon: ViewList},
-	{text: "Forms", to: "/forms", icon: DynamicForm},
-	{text: "Inputs", to: "/inputs", icon: Edit},
-	{text: "Error", to: "/error", icon: Error},
-	{text: "Container", to: "/container", icon: AspectRatio},
-	{text: "Tabs", to: "/tabs", icon: Tab},
-	{text: "Help", to: "/help", icon: Help},
-	{text: "Confirm", to: "/confirm", icon: Psychology},
-	{text: "Audit", to: "/audit", icon: AuditIcon},
-	{text: "Not found", to: "/not-found", icon: Error},
-	{text: "Cube", to: "/cube", icon: Widgets},
-	{text: "Filter", to: "/filter", icon: FilterList},
+	{text: "Theme", to: `theme`, icon: Palette},
+	{text: "Localization", to: "localization", icon: Language},
+	{text: "Date & time pickers", to: "date-pickers", icon: CalendarMonth},
+	{text: "Content table", to: "content-table", icon: ViewList},
+	{text: "Data table", to: "data-table", icon: ViewList},
+	{text: "Forms", to: "forms", icon: DynamicForm},
+	{text: "Inputs", to: "inputs", icon: Edit},
+	{text: "Error", to: "error", icon: Error},
+	{text: "Container", to: "container", icon: AspectRatio},
+	{text: "Tabs", to: "tabs", icon: Tab},
+	{text: "Help", to: "help", icon: Help},
+	{text: "Confirm", to: "confirm", icon: Psychology},
+	{text: "Audit", to: "audit", icon: AuditIcon},
+	{text: "Not found", to: "not-found", icon: Error},
+	{text: "Cube", to: "cube", icon: Widgets},
+	{text: "Filter", to: "filter", icon: FilterList},
 ];
 
 function SideNavListItem({icon: Icon, text, to}: MenuItemProps) {
