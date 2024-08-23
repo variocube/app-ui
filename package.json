@@ -8,7 +8,8 @@
     "dev": "webpack serve --progress",
     "clean": "rimraf esm/",
     "build": "npm run clean && tsc",
-    "test": "npx jest"
+    "test": "npx jest",
+    "build:demo": "webpack"
   },
   "files": [
     "esm/**/*",
