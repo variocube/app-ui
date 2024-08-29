@@ -12,18 +12,23 @@ interface RadioGroupProps<T extends string> extends Omit<MuiRadioGroupProps, "va
 	label?: ReactNode;
 	value: T | undefined;
 	onChange: (value: T) => any;
-	options: Record<T, ReactNode>;
+	options: ReadonlyArray<T>;
+	renderLabel?: (option: T) => ReactNode;
 }
 
 export function RadioGroup<T extends string>(props: RadioGroupProps<T>) {
-	const {label, value, onChange, options, ...radioGroupProps} = props;
+	const {label, value, onChange, options, renderLabel, ...radioGroupProps} = props;
 
 	return (
 		<FormControl>
 			{label && <FormLabel>{label}</FormLabel>}
 			<MuiRadioGroup value={value} onChange={(_, value) => onChange(value as T)} {...radioGroupProps}>
-				{Object.entries(options).map(([value, label]) => (
-					<FormControlLabel key={value} control={<Radio value={value} />} label={label} />
+				{options.map(option => (
+					<FormControlLabel
+						key={option}
+						control={<Radio value={option} />}
+						label={renderLabel ? renderLabel(option) : option}
+					/>
 				))}
 			</MuiRadioGroup>
 		</FormControl>

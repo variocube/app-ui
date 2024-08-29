@@ -1,4 +1,3 @@
-import {Apple} from "@mui/icons-material";
 import {
 	Alert,
 	Box,
@@ -8,7 +7,6 @@ import {
 	CardActions,
 	CardContent,
 	CardHeader,
-	Chip,
 	Container,
 	Grid,
 	MenuItem,
@@ -27,15 +25,15 @@ import {
 	NumberField,
 	PageTitle,
 	PhonePrefixSelect,
-	RadioGroup,
 	Selector,
 	TextField,
 } from "../../src";
 import {EmailSenderField} from "../../src/Input/EmailSenderField";
-import {Demo, DemoControls, DemoSource} from "../demo";
+import {Demo, DemoSource} from "../demo";
 
 // @ts-ignore
 import source from "./index.tsx?source";
+import {RadioGroupDemo} from "./RadioGroupDemo";
 
 export function Inputs() {
 	return (
@@ -223,42 +221,6 @@ function CheckboxDemo() {
 						<Checkbox label="Checkbox" value={value} onChange={setValue} />
 					</DemoSource>
 				</Box>
-			</Demo>
-		</Box>
-	);
-}
-
-function RadioGroupDemo() {
-	const [value, setValue] = useState<"none" | "banana" | "apple" | "orange">();
-	const [row, setRow] = useState(false);
-	return (
-		<Box>
-			<Typography variant="h2" gutterBottom>
-				<Code>RadioGroup</Code>
-			</Typography>
-			<Typography variant="subtitle1" gutterBottom>
-				Simplifies handling a Mui <Code>RadioGroup</Code>.
-			</Typography>
-			<Demo source={source} id="radio-group">
-				<Box p={2}>
-					<DemoSource for="#radio-group">
-						<RadioGroup
-							label="Your favorite fruit"
-							value={value}
-							onChange={setValue}
-							row={row}
-							options={{
-								none: "None",
-								banana: "Banana",
-								apple: <Chip icon={<Apple />} label="Apple" />,
-								orange: "Orange",
-							}}
-						/>
-					</DemoSource>
-				</Box>
-				<DemoControls>
-					<Checkbox label="row" value={row} onChange={setRow} />
-				</DemoControls>
 			</Demo>
 		</Box>
 	);
