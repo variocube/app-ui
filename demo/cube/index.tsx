@@ -137,13 +137,15 @@ function BoxFeaturesDemo(props: BoxProps) {
 			<Typography variant="subtitle1" gutterBottom>Displays features of a box.</Typography>
 
 			<Demo source={source} id="box-features">
-				<DemoSource>
-					<BoxFeatures
-						features={features}
-						minimized={minimized}
-						labels={s("box.features")}
-					/>
-				</DemoSource>
+				<Box p={2}>
+					<DemoSource for="#box-features">
+						<BoxFeatures
+							features={features}
+							minimized={minimized}
+							labels={s("box.features")}
+						/>
+					</DemoSource>
+				</Box>
 				<DemoControls>
 					{ALL_BOX_FEATURES.map(feature => (
 						<Switch
@@ -173,8 +175,8 @@ export function CubeConnectedChipDemo(props: BoxProps) {
 			</Typography>
 
 			<Demo source={source} id="cube-connected-chip">
-				<DemoSource>
-					<Stack direction="row" spacing={1}>
+				<Stack direction="row" spacing={1} p={2}>
+					<DemoSource for="#cube-connected-chip">
 						<CubeConnectedChip
 							labels={s("cube")}
 							connected={connected}
@@ -184,8 +186,8 @@ export function CubeConnectedChipDemo(props: BoxProps) {
 							labels={s("cube")}
 							connected={connected}
 						/>
-					</Stack>
-				</DemoSource>
+					</DemoSource>
+				</Stack>
 				<DemoControls>
 					<Switch value={connected} onChange={setConnected} label="Connected" />
 				</DemoControls>
@@ -203,15 +205,17 @@ function UtilizationBarDemo(props: BoxProps) {
 			</Typography>
 			<Typography variant="subtitle1" gutterBottom>Displays the utilization of a cube.</Typography>
 			<Demo id="utilization-bar" source={source}>
-				<DemoSource>
-					<UtilizationBar
-						occupied={15}
-						available={32}
-						disabled={8}
-						total={55}
-						labels={s("utilization")}
-					/>
-				</DemoSource>
+				<Box p={2}>
+					<DemoSource for="#utilization-bar">
+						<UtilizationBar
+							occupied={15}
+							available={32}
+							disabled={8}
+							total={55}
+							labels={s("utilization")}
+						/>
+					</DemoSource>
+				</Box>
 			</Demo>
 		</Box>
 	);
@@ -229,14 +233,14 @@ function LockStatusChipDemo(props: BoxProps) {
 			</Typography>
 			<Typography variant="subtitle1" gutterBottom>Displays a lock status.</Typography>
 			<Demo id="lock-status-chip" source={source}>
-				<DemoSource>
-					<Stack direction="row" spacing={1}>
+				<Stack direction="row" spacing={1} p={2}>
+					<DemoSource for="#lock-status-chip">
 						<LockStatusChip labels={labels} status="Open" minimized={minimized} />
 						<LockStatusChip labels={labels} status="Closed" minimized={minimized} />
 						<LockStatusChip labels={labels} status="Blocked" minimized={minimized} />
 						<LockStatusChip labels={labels} status="Breakin" minimized={minimized} />
-					</Stack>
-				</DemoSource>
+					</DemoSource>
+				</Stack>
 				<DemoControls>
 					<Switch value={minimized} onChange={setMinimized} label="Minimized" />
 				</DemoControls>
@@ -254,9 +258,11 @@ function BoxNumberDemo(props: BoxProps) {
 			</Typography>
 			<Typography variant="subtitle1" gutterBottom>Displays a box number.</Typography>
 			<Demo id="box-number" source={source}>
-				<DemoSource>
-					<BoxNumber number={boxNumber} />
-				</DemoSource>
+				<Box p={2}>
+					<DemoSource for="#box-number">
+						<BoxNumber number={boxNumber} />
+					</DemoSource>
+				</Box>
 				<DemoControls>
 					<Slider
 						value={boxNumber}
@@ -279,9 +285,11 @@ function BoxTypesDemo(props: BoxProps) {
 			</Typography>
 			<Typography variant="subtitle1" gutterBottom>Displays the types of a box.</Typography>
 			<Demo id="box-types" source={source}>
-				<DemoSource>
-					<BoxTypes boxTypes={boxTypes} />
-				</DemoSource>
+				<Box p={2}>
+					<DemoSource for="#box-types">
+						<BoxTypes boxTypes={boxTypes} />
+					</DemoSource>
+				</Box>
 				<DemoControls>
 					<Autocomplete
 						value={boxTypes}
@@ -314,13 +322,15 @@ function BoxMaintenanceChipDemo(props: BoxProps) {
 			</Typography>
 			<Typography variant="subtitle1" gutterBottom>Displays the maintenance status of a box.</Typography>
 			<Demo id="box-maintenance-chip" source={source}>
-				<DemoSource>
-					<BoxMaintenanceChip
-						maintenanceRequiredAt={maintenanceRequiredAt}
-						minimized={minimized}
-						labels={s("box")}
-					/>
-				</DemoSource>
+				<Box p={2}>
+					<DemoSource for="#box-maintenance-chip">
+						<BoxMaintenanceChip
+							maintenanceRequiredAt={maintenanceRequiredAt}
+							minimized={minimized}
+							labels={s("box")}
+						/>
+					</DemoSource>
+				</Box>
 				<DemoControls>
 					<Switch
 						label="Maintenance required"

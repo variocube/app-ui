@@ -30,10 +30,10 @@ import {
 	PageTitle,
 	RelativeTemporalFormat,
 	RelativeTemporalFormatProps,
+	SwitchableTemporalFormat,
 	TemporalFormat,
 	TemporalRangeFormat,
 } from "../../src";
-import {SwitchableTemporalFormat} from "../../src/formats/SwitchableTemporalFormat";
 import {DateStyle, TimeStyle} from "../../src/formats/types";
 import {Demo, DemoControls, DemoSource} from "../demo";
 
@@ -315,31 +315,36 @@ function TemporalFormatDemo(props: BoxProps) {
 			</Typography>
 
 			<Demo source={source} id="temporal-format">
-				<DemoSource>
-					<Stack spacing={2} direction="row">
-						<Box>
+				<Stack spacing={2} direction="row" p={2}>
+					<Box>
+						<DemoSource for="#temporal-format">
 							<TemporalFormat
 								value={Now.instant()}
 								dateStyle={dateStyle}
 								timeStyle={timeStyle}
 							/>
-						</Box>
-						<Box>
+						</DemoSource>
+					</Box>
+					<Box>
+						<DemoSource for="#temporal-format">
 							<TemporalFormat
 								value={Now.plainDateTimeISO().subtract({days: 2})}
 								dateStyle={dateStyle}
 								timeStyle={timeStyle}
 							/>
-						</Box>
-						<Box>
+						</DemoSource>
+					</Box>
+					<Box>
+						<DemoSource for="#temporal-format">
 							<TemporalFormat
 								value={Now.plainDateISO().subtract({years: 4})}
 								dateStyle={dateStyle}
 								timeStyle={timeStyle}
 							/>
-						</Box>
-					</Stack>
-				</DemoSource>
+						</DemoSource>
+					</Box>
+				</Stack>
+
 				<DemoControls>
 					<DateStyleControl value={dateStyle} onChange={setDateStyle} />
 					<TimeStyleControl value={timeStyle} onChange={setTimeStyle} />
@@ -362,39 +367,46 @@ function RelativeTemporalFormatDemo(props: BoxProps) {
 				Displays a <Code>Temporal</Code> relative to the current instant in time.
 			</Typography>
 
-			<Demo source={source} id="temporal-format">
-				<DemoSource>
-					<Stack spacing={2} direction="row">
-						<Box>
+			<Demo source={source} id="relative-temporal-format">
+				<Stack spacing={2} direction="row" p={2}>
+					<Box>
+						<DemoSource for="#relative-temporal-format">
 							<RelativeTemporalFormat
 								value={Now.instant()}
 								numeric={numeric}
 								style={style}
 							/>
-						</Box>
-						<Box>
+						</DemoSource>
+					</Box>
+					<Box>
+						<DemoSource for="#relative-temporal-format">
 							<RelativeTemporalFormat
 								value={Now.plainDateTimeISO().subtract({minutes: 1, seconds: 10})}
 								numeric={numeric}
 								style={style}
 							/>
-						</Box>
-						<Box>
+						</DemoSource>
+					</Box>
+					<Box>
+						<DemoSource for="#relative-temporal-format">
 							<RelativeTemporalFormat
 								value={Now.plainDateTimeISO().subtract({days: 2})}
 								numeric={numeric}
 								style={style}
 							/>
-						</Box>
-						<Box>
+						</DemoSource>
+					</Box>
+					<Box>
+						<DemoSource for="#relative-temporal-format">
 							<RelativeTemporalFormat
 								value={Now.plainDateISO().subtract({years: 4})}
 								numeric={numeric}
 								style={style}
 							/>
-						</Box>
-					</Stack>
-				</DemoSource>
+						</DemoSource>
+					</Box>
+				</Stack>
+
 				<DemoControls>
 					<StyleControl value={style} onChange={setStyle} />
 					<NumericControl value={numeric} onChange={setNumeric} />
@@ -418,34 +430,38 @@ function TemporalRangeFormatDemo(props: BoxProps) {
 			</Typography>
 
 			<Demo source={source} id="temporal-range-format">
-				<DemoSource>
-					<Stack spacing={2} direction="row">
-						<Box>
+				<Stack spacing={2} direction="row" p={2}>
+					<Box>
+						<DemoSource for="#temporal-range-format">
 							<TemporalRangeFormat
 								from={Now.instant()}
 								until={Now.instant().add({hours: 2})}
 								dateStyle={dateStyle}
 								timeStyle={timeStyle}
 							/>
-						</Box>
-						<Box>
+						</DemoSource>
+					</Box>
+					<Box>
+						<DemoSource for="#temporal-range-format">
 							<TemporalRangeFormat
 								from={Now.plainDateTimeISO().subtract({days: 2})}
 								until={Now.plainDateTimeISO().subtract({days: 1})}
 								dateStyle={dateStyle}
 								timeStyle={timeStyle}
 							/>
-						</Box>
-						<Box>
+						</DemoSource>
+					</Box>
+					<Box>
+						<DemoSource for="#temporal-range-format">
 							<TemporalRangeFormat
 								from={Now.plainDateISO().subtract({years: 4})}
 								until={Now.plainDateISO().subtract({years: 2})}
 								dateStyle={dateStyle}
 								timeStyle={timeStyle}
 							/>
-						</Box>
-					</Stack>
-				</DemoSource>
+						</DemoSource>
+					</Box>
+				</Stack>
 				<DemoControls>
 					<DateStyleControl value={dateStyle} onChange={setDateStyle} />
 					<TimeStyleControl value={timeStyle} onChange={setTimeStyle} />
@@ -467,8 +483,8 @@ function SwitchableTemporalFormatDemo(props: BoxProps) {
 			</Typography>
 
 			<Demo source={source} id="switchable-temporal-format">
-				<DemoSource>
-					<Stack spacing={2} direction="row">
+				<Stack spacing={2} direction="row" p={2}>
+					<DemoSource for="#switchable-temporal-format">
 						<SwitchableTemporalFormat
 							value={Now.instant()}
 						/>
@@ -478,8 +494,8 @@ function SwitchableTemporalFormatDemo(props: BoxProps) {
 						<SwitchableTemporalFormat
 							value={Now.plainDateISO().add({years: 2, months: 4})}
 						/>
-					</Stack>
-				</DemoSource>
+					</DemoSource>
+				</Stack>
 			</Demo>
 		</Box>
 	);

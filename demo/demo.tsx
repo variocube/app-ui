@@ -33,12 +33,8 @@ export function Demo({id, source, children, ...cardProps}: PropsWithChildren<Dem
 	);
 }
 
-export function DemoSource({children}: PropsWithChildren<{}>) {
-	return (
-		<Box p={2}>
-			{children}
-		</Box>
-	);
+export function DemoSource({children}: PropsWithChildren<{ for: string }>) {
+	return <Fragment>{children}</Fragment>;
 }
 
 export function DemoControls({children}: PropsWithChildren<{}>) {
@@ -84,32 +80,36 @@ function mapStyle(colors: ReturnType<typeof useCodeColors>) {
 }
 
 function getDemoSource(source: string, id: string) {
-	const idIndex = source.indexOf(id);
-	if (idIndex >= 0) {
-		const sourceStartIndex = source.indexOf("<DemoSource>", idIndex);
-		if (sourceStartIndex >= 0) {
-			const sourceCloseIndex = source.indexOf("</DemoSource>", sourceStartIndex);
-			if (sourceCloseIndex >= 0) {
-				const lines = splitLines(source.substring(sourceStartIndex + "<DemoSource>".length, sourceCloseIndex));
-				// remove empty lines at beginning
-				while (!lines[0].trim().length) {
-					lines.splice(0, 1);
-				}
-				// remove empty lines at end
-				while (!lines[lines.length - 1].trim().length) {
-					lines.splice(lines.length - 1, 1);
-				}
-				// remove exhaustive indentation
-				const match = lines[0].match(/^\s+/);
-				if (match) {
-					const length = match[0].length;
-					return lines.map(line => line.substring(length)).join("\n");
-				} else {
-					return lines.join("\n");
-				}
-			}
-		}
+	// sorry for this:
+	const regexp = RegExp(`<DemoSource.*?for=.#${id}.>(.*?)</DemoSource>`, "gsm");
+	const sources = [];
+
+	let match = regexp.exec(source);
+	while (match) {
+		sources.push(match[1]);
+		match = regexp.exec(source);
 	}
+
+	return sources.flatMap(source => {
+		const lines = splitLines(source);
+
+		// remove empty lines at beginning
+		while (!lines[0].trim().length) {
+			lines.splice(0, 1);
+		}
+		// remove empty lines at end
+		while (!lines[lines.length - 1].trim().length) {
+			lines.splice(lines.length - 1, 1);
+		}
+		// remove exhaustive indentation
+		const match = lines[0].match(/^\s+/);
+		if (match) {
+			const length = match[0].length;
+			return lines.map(line => line.substring(length));
+		} else {
+			return lines;
+		}
+	}).join("\n");
 }
 
 function splitLines(str: string) {

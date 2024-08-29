@@ -32,25 +32,27 @@ function FilterDemo(props: BoxProps) {
 				Displays an input for filtering.
 			</Typography>
 			<Demo source={source} id="filter">
-				<DemoSource>
-					<Filter
-						label="Filter"
-						fullWidth={fullWidth}
-						enableSearch={enableSearch}
-						onSearch={setSearch}
-						labels={t}
-						active={[
-							option1 && <Chip label={"Filter Option 1"} onDelete={() => setOption1(false)} />,
-							option2 && <Chip label={"Filter Option 2"} onDelete={() => setOption2(false)} />,
-							search && <Chip label={`Search: ${search}`} onDelete={() => setSearch("")} />,
-						]}
-					>
-						<CardContent>
-							<Checkbox label="Filter Option 1" value={option1} onChange={setOption1} />
-							<Checkbox label="Filter Option 2" value={option2} onChange={setOption2} />
-						</CardContent>
-					</Filter>
-				</DemoSource>
+				<Box p={2}>
+					<DemoSource for="#filter">
+						<Filter
+							label="Filter"
+							fullWidth={fullWidth}
+							enableSearch={enableSearch}
+							onSearch={setSearch}
+							labels={t}
+							active={[
+								option1 && <Chip label={"Filter Option 1"} onDelete={() => setOption1(false)} />,
+								option2 && <Chip label={"Filter Option 2"} onDelete={() => setOption2(false)} />,
+								search && <Chip label={`Search: ${search}`} onDelete={() => setSearch("")} />,
+							]}
+						>
+							<CardContent>
+								<Checkbox label="Filter Option 1" value={option1} onChange={setOption1} />
+								<Checkbox label="Filter Option 2" value={option2} onChange={setOption2} />
+							</CardContent>
+						</Filter>
+					</DemoSource>
+				</Box>
 				<DemoControls>
 					<Checkbox label="enableSearch" value={enableSearch} onChange={setEnableSearch} />
 					<Checkbox label="fullWidth" value={fullWidth} onChange={setFullWidth} />

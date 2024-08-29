@@ -34,8 +34,8 @@ export function ConfirmButtonDemo(props: BoxProps) {
 			</Typography>
 
 			<Demo source={source} id="confirm-button">
-				<DemoSource>
-					<Stack direction="row" spacing={1}>
+				<Stack direction="row" spacing={1} p={2}>
+					<DemoSource for="#confirm-button">
 						<ConfirmButton
 							title="Do the dangerous thing"
 							cancel="Cancel"
@@ -78,8 +78,8 @@ export function ConfirmButtonDemo(props: BoxProps) {
 								required
 							/>
 						</ConfirmButton>
-					</Stack>
-				</DemoSource>
+					</DemoSource>
+				</Stack>
 			</Demo>
 		</Box>
 	);
@@ -96,7 +96,7 @@ export function ConfirmMenuItemDemo(props: BoxProps) {
 			</Typography>
 
 			<Demo source={source} id="confirm-menu-item">
-				<DemoSource>
+				<DemoSource for="#confirm-menu-item">
 					<List>
 						<MenuItem>A menu item</MenuItem>
 						<ConfirmMenuItem
@@ -127,7 +127,7 @@ export function ConfirmIconButtonDemo(props: BoxProps) {
 			</Typography>
 
 			<Demo source={source} id="confirm-icon-button">
-				<DemoSource>
+				<DemoSource for="#confirm-icon-button">
 					<ConfirmIconButton
 						icon={<Delete />}
 						title={"Delete"}
