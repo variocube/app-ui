@@ -267,7 +267,7 @@ function HelpDemo() {
 	return (
 		<ContainerSettingsContextProvider>
 			<HelpSettingsContextProvider
-				baseUrl="https://docs.variocube.com/logistics/"
+				baseUrl="https://docs.variocube.com/safecube/"
 				localStorageVar={localStorageVar}
 				currentVersion={VERSION}
 				dialogTitle={dialogTitle}
@@ -284,14 +284,19 @@ function HelpDemo() {
 									</Grid>
 									<Grid item xs={12}>
 										<Typography variant="body1">
-											Test Tenant_Settings#Sites, empty language
-											<HelpButton helpPage="Tenant_Settings" helpAnchor={"Sites"} language={""} />
+											Translation_Test#Heading, en language
+											<HelpButton helpPage="Translation_Test" helpAnchor={"Heading_Safecube_Changed"} language={""} showEmpty={true} />
 										</Typography>
 										<Typography variant="body1">
-											Test Tenant_Settings#Building_Cube_Mappings, de language
+											Standort_Anlegen#Standort_Aktivieren, de language
+											<HelpButton helpPage="Create_Site" helpAnchor={"Standort_aktivieren"} language={"de"} showEmpty={true} />
+										</Typography>
+										<Typography variant="body1">
+											Standort_Anlegen#Standort_Typ, en language
 											<HelpButton
-												helpPage="Tenant_Settings"
-												helpAnchor={"Building_Cube_Mappings"}
+												helpPage="Create_Site"
+												helpAnchor={"Standort_Typ"}
+												showEmpty={true}
 												language={""}
 											/>
 										</Typography>
