@@ -53,6 +53,7 @@ function FilterDemo(props: BoxProps) {
 								option2 && <Chip label={"Filter Option 2"} onDelete={() => setOption2(false)} />,
 								search && <Chip label={`Search: ${search}`} onDelete={() => setSearch("")} />,
 							]}
+							onFilterClick={() => console.log('Open filter')}
 						>
 							<CardContent>
 								<Checkbox label="Filter Option 1" value={option1} onChange={setOption1} />

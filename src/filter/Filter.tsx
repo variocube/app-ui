@@ -14,10 +14,11 @@ export interface FilterProps {
 	fullWidth?: boolean;
 	variant?: TextFieldProps["variant"];
 	labels: Labels<"none" | "search" | "reset">;
+	onFilterClick?: () => void;
 }
 
 export function Filter(props: PropsWithChildren<FilterProps>) {
-	const {label, active, enableSearch, onSearch, onClear, fullWidth, variant, labels, children} = props;
+	const {label, active, enableSearch, onSearch, onClear, fullWidth, variant, labels, onFilterClick, children} = props;
 
 	const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 	const [open, setOpen, clearOpen, toggleOpen] = useFlag(false);
@@ -33,6 +34,12 @@ export function Filter(props: PropsWithChildren<FilterProps>) {
 		}
 	}
 
+	function handleSetOpen() {
+		setOpen();
+		if (onFilterClick) onFilterClick();
+	}
+
+
 	const hasActiveFilter = Boolean(active?.filter(node => Boolean(node)).length);
 
 	return (
@@ -40,7 +47,7 @@ export function Filter(props: PropsWithChildren<FilterProps>) {
 			<TextField
 				variant={variant}
 				label={label}
-				onClick={enableSearch ? undefined : setOpen}
+				onClick={enableSearch ? undefined : handleSetOpen}
 				value={value}
 				onChange={setValue}
 				onKeyDown={handleKeyDown}
@@ -48,7 +55,7 @@ export function Filter(props: PropsWithChildren<FilterProps>) {
 				InputProps={{
 					startAdornment: (
 						<Stack direction="row" spacing={1} alignItems="center" sx={{mr: 2}}>
-							<IconButton edge="start" onClick={enableSearch ? setOpen : undefined}>
+							<IconButton edge="start" onClick={enableSearch ? handleSetOpen : undefined}>
 								<FilterList />
 							</IconButton>
 							{active}
@@ -61,7 +68,7 @@ export function Filter(props: PropsWithChildren<FilterProps>) {
 									variant="outlined"
 									label={labels("none")}
 									clickable
-									onClick={enableSearch ? setOpen : undefined}
+									onClick={enableSearch ? handleSetOpen : undefined}
 								/>
 							)}
 							{hasActiveFilter && onClear && (
@@ -79,21 +86,23 @@ export function Filter(props: PropsWithChildren<FilterProps>) {
 					placeholder: enableSearch ? labels("search") : undefined,
 				}}
 			/>
-			<Popover
-				open={open}
-				anchorEl={anchorEl}
-				onClose={clearOpen}
-				anchorOrigin={{
-					horizontal: "left",
-					vertical: "bottom",
-				}}
-			>
-				<ClickAwayListener onClickAway={clearOpen}>
-					<Box width={anchorEl?.clientWidth}>
-						{children}
-					</Box>
-				</ClickAwayListener>
-			</Popover>
+			{children && (
+				<Popover
+					open={open}
+					anchorEl={anchorEl}
+					onClose={clearOpen}
+					anchorOrigin={{
+						horizontal: "left",
+						vertical: "bottom",
+					}}
+				>
+					<ClickAwayListener onClickAway={clearOpen}>
+						<Box width={anchorEl?.clientWidth}>
+							{children}
+						</Box>
+					</ClickAwayListener>
+				</Popover>
+			)}
 		</Fragment>
 	);
 }
