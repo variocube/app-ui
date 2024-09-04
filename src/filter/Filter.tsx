@@ -1,4 +1,4 @@
-import {ExpandLess, ExpandMore, FilterList} from "@mui/icons-material";
+import {Clear, ExpandLess, ExpandMore, FilterList} from "@mui/icons-material";
 import {Box, Chip, ClickAwayListener, IconButton, Popover, Stack} from "@mui/material";
 import React, {Fragment, KeyboardEvent, PropsWithChildren, ReactNode, useState} from "react";
 import {TextField, TextFieldProps} from "../Input";
@@ -10,13 +10,14 @@ export interface FilterProps {
 	active?: ReactNode[];
 	enableSearch?: boolean;
 	onSearch?: (search: string) => any;
+	onClear?: () => any;
 	fullWidth?: boolean;
 	variant?: TextFieldProps["variant"];
-	labels: Labels<"none" | "search">;
+	labels: Labels<"none" | "search" | "reset">;
 }
 
 export function Filter(props: PropsWithChildren<FilterProps>) {
-	const {label, active, enableSearch, onSearch, fullWidth, variant, labels, children} = props;
+	const {label, active, enableSearch, onSearch, onClear, fullWidth, variant, labels, children} = props;
 
 	const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 	const [open, setOpen, clearOpen, toggleOpen] = useFlag(false);
@@ -31,6 +32,8 @@ export function Filter(props: PropsWithChildren<FilterProps>) {
 			}
 		}
 	}
+
+	const hasActiveFilter = Boolean(active?.filter(node => Boolean(node)).length);
 
 	return (
 		<Fragment>
@@ -53,13 +56,18 @@ export function Filter(props: PropsWithChildren<FilterProps>) {
 					),
 					endAdornment: (
 						<Stack direction={"row"} spacing={1} alignItems="center">
-							{active?.filter(node => Boolean(node)).length == 0 && (
+							{!hasActiveFilter && (
 								<Chip
 									variant="outlined"
 									label={labels("none")}
 									clickable
 									onClick={enableSearch ? setOpen : undefined}
 								/>
+							)}
+							{hasActiveFilter && onClear && (
+								<IconButton onClick={onClear} title={labels("reset")}>
+									<Clear/>
+								</IconButton>
 							)}
 							<IconButton onClick={toggleOpen} edge="end">
 								{open ? <ExpandLess /> : <ExpandMore />}

@@ -23,6 +23,13 @@ function FilterDemo(props: BoxProps) {
 	const [search, setSearch] = useState("");
 	const [option1, setOption1] = useState(false);
 	const [option2, setOption2] = useState(false);
+
+	function handleClear() {
+		setSearch("");
+		setOption1(false);
+		setOption2(false);
+	}
+
 	return (
 		<Box {...props}>
 			<Typography variant="h2" gutterBottom>
@@ -39,6 +46,7 @@ function FilterDemo(props: BoxProps) {
 							fullWidth={fullWidth}
 							enableSearch={enableSearch}
 							onSearch={setSearch}
+							onClear={handleClear}
 							labels={t}
 							active={[
 								option1 && <Chip label={"Filter Option 1"} onDelete={() => setOption1(false)} />,
@@ -62,4 +70,4 @@ function FilterDemo(props: BoxProps) {
 	);
 }
 
-const t = createSimpleTFunc({none: "No filter set", search: "Search"});
+const t = createSimpleTFunc({none: "No filter set", search: "Search", reset: "Reset"});
