@@ -33,11 +33,12 @@ module.exports = {
 				test: /\.ts(x?)$/,
 				exclude: /node_modules/,
 				resourceQuery: {not: [/source/]},
-				use: [
-					{
-						loader: "ts-loader",
-					},
-				],
+				loader: "ts-loader",
+				options: {
+					compilerOptions: {
+						declaration: false,
+					}
+				}
 			},
 			{
 				test: /\.woff(2?)$/,
