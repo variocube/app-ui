@@ -6,12 +6,14 @@ interface PhonePrefixSelect {
 	label: string;
 	value: string|null;
 	onChange: (code: string|null) => void;
+	disabled?: boolean;
 }
 
-export function PhonePrefixSelect({label, value, onChange}: PhonePrefixSelect) {
+export function PhonePrefixSelect({label, value, onChange, disabled = false}: PhonePrefixSelect) {
 
 	return (
 		<Autocomplete
+			disabled={disabled}
 			multiple={false}
 			value={findCountryByPhoneCode(value)}
 			onChange={(_, country) => onChange(country?.phone || null)}
