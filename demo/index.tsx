@@ -268,6 +268,7 @@ function HelpDemo() {
 		<ContainerSettingsContextProvider>
 			<HelpSettingsContextProvider
 				baseUrl="https://docs.variocube.com/safecube/"
+				apiUrl="https://docs.variocube.com/variocube/safecube/admin/api.php"
 				localStorageVar={localStorageVar}
 				currentVersion={VERSION}
 				dialogTitle={dialogTitle}
@@ -285,11 +286,21 @@ function HelpDemo() {
 									<Grid item xs={12}>
 										<Typography variant="body1">
 											Translation_Test#Heading, en language
-											<HelpButton helpPage="Translation_Test" helpAnchor={"Heading_Safecube_Changed"} language={""} showEmpty={true} />
+											<HelpButton
+												helpPage="Translation_Test"
+												helpAnchor={"Heading_Safecube_Changed"}
+												language={""}
+												showEmpty={true}
+											/>
 										</Typography>
 										<Typography variant="body1">
 											Standort_Anlegen#Standort_Aktivieren, de language
-											<HelpButton helpPage="Create_Site" helpAnchor={"Standort_aktivieren"} language={"de"} showEmpty={true} />
+											<HelpButton
+												helpPage="Create_Site"
+												helpAnchor={"Standort_aktivieren"}
+												language={"de"}
+												showEmpty={true}
+											/>
 										</Typography>
 										<Typography variant="body1">
 											Standort_Anlegen#Standort_Typ, en language
