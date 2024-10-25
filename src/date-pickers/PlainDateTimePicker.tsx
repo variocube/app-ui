@@ -12,6 +12,9 @@ interface PlainDateTimePickerProps {
     disabled?: boolean;
     required?: boolean;
 
+	disablePast?: boolean;
+	minDateTime?: PlainDateTime;
+	maxDateTime?: PlainDateTime;
 	renderDay?: (day: PlainDateTime, selectedDays: PlainDateTime[]) => JSX.Element;
 
     /**
@@ -25,6 +28,9 @@ export function PlainDateTimePicker(props: PlainDateTimePickerProps & UseRenderI
         onChange,
         label,
         disabled,
+		disablePast,
+		minDateTime,
+		maxDateTime,
 		renderDay,
         locale: suppliedLocale,
         ...renderInputProps
@@ -42,6 +48,9 @@ export function PlainDateTimePicker(props: PlainDateTimePickerProps & UseRenderI
                 onChange={onChange}
                 disabled={disabled}
                 renderInput={renderInput}
+				disablePast={disablePast}
+				minDateTime={minDateTime}
+				maxDateTime={maxDateTime}
 				renderDay={renderDay !== undefined
 					? (day, selectedDays, pickersDayProps) => (
 						<PickersDay {...pickersDayProps}>
