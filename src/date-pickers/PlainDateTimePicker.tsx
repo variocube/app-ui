@@ -1,7 +1,7 @@
 import {PlainDateTime} from "../temporal";
 import {useLocale} from "./useLocale";
 import {useRenderInput, UseRenderInputProps} from "./useRenderInput";
-import {DateTimePicker, LocalizationProvider} from "@mui/x-date-pickers";
+import {DateTimePicker, LocalizationProvider, PickersDay} from "@mui/x-date-pickers";
 import * as React from "react";
 import {PlainDateTimeAdapter} from "./PlainDateTimeAdapter";
 
@@ -11,6 +11,8 @@ interface PlainDateTimePickerProps {
     label?: string;
     disabled?: boolean;
     required?: boolean;
+
+	renderDay?: (day: PlainDateTime, selectedDays: PlainDateTime[]) => JSX.Element;
 
     /**
      * Allows overriding the locale. Only use for testing.
@@ -23,6 +25,7 @@ export function PlainDateTimePicker(props: PlainDateTimePickerProps & UseRenderI
         onChange,
         label,
         disabled,
+		renderDay,
         locale: suppliedLocale,
         ...renderInputProps
     } = props;
@@ -39,6 +42,14 @@ export function PlainDateTimePicker(props: PlainDateTimePickerProps & UseRenderI
                 onChange={onChange}
                 disabled={disabled}
                 renderInput={renderInput}
+				renderDay={renderDay !== undefined
+					? (day, selectedDays, pickersDayProps) => (
+						<PickersDay {...pickersDayProps}>
+							{renderDay(day, selectedDays)}
+						</PickersDay>
+					)
+					: undefined
+				}
             />
         </LocalizationProvider>
     );

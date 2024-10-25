@@ -1,4 +1,15 @@
-import {Button, Card, CardActions, CardContent, CardHeader, Container, Link, Stack, Typography} from "@mui/material";
+import {
+	Badge,
+	Button,
+	Card,
+	CardActions,
+	CardContent,
+	CardHeader,
+	Container,
+	Link,
+	Stack,
+	Typography
+} from "@mui/material";
 import * as React from "react";
 import {useState} from "react";
 import {
@@ -11,6 +22,8 @@ import {
     PlainTimePicker,
     TimezoneSelect
 } from "../../src";
+import BlockIcon from '@mui/icons-material/Block';
+import Tooltip from "@mui/material/Tooltip";
 
 export function Pickers() {
     return (
@@ -40,6 +53,7 @@ export function Pickers() {
 
 export function DatePicker() {
     const [value, setValue] = useState<PlainDate | null>(null);
+	const invalidDays = [4, 13, 18, 22, 30];
     return (
         <Card>
             <CardHeader title="Date picker"/>
@@ -48,6 +62,29 @@ export function DatePicker() {
                     label="Date picker"
                     value={value}
                     onChange={setValue}
+                />
+                <PlainDatePicker
+                    label="Custom render day"
+                    value={value}
+                    onChange={day => {
+						if (!day) setValue(null);
+						else {
+							setValue(prev => !invalidDays.includes(day.day) ? day : prev);
+						}
+					}}
+					renderDay={(day) => {
+						return invalidDays.includes(day.day)
+							? (
+								(
+									<Tooltip title="Not available">
+										<Badge badgeContent={<BlockIcon sx={{ fontSize: '15px', position: 'relative', top: -1, right: -2 }} color="error" />}>
+											<Typography variant="body2" color="textSecondary">{day.day}</Typography>
+										</Badge>
+									</Tooltip>
+								)
+							)
+							: <span>{day.day}</span>
+					}}
                 />
             </CardContent>
         </Card>
