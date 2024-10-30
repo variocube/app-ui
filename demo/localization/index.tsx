@@ -328,6 +328,15 @@ function TemporalFormatDemo(props: BoxProps) {
 					<Box>
 						<DemoSource for="#temporal-format">
 							<TemporalFormat
+								value={Now.zonedDateTimeISO().add({minutes: 42})}
+								dateStyle={dateStyle}
+								timeStyle={timeStyle}
+							/>
+						</DemoSource>
+					</Box>
+					<Box>
+						<DemoSource for="#temporal-format">
+							<TemporalFormat
 								value={Now.plainDateTimeISO().subtract({days: 2})}
 								dateStyle={dateStyle}
 								timeStyle={timeStyle}

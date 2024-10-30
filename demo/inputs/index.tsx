@@ -30,10 +30,11 @@ import {
 } from "../../src";
 import {EmailSenderField} from "../../src/Input/EmailSenderField";
 import {Demo, DemoSource} from "../demo";
+import {RadioGroupDemo} from "./RadioGroupDemo";
+import {UrlUploadDemo} from "./UrlUploadDemo";
 
 // @ts-ignore
 import source from "./index.tsx?source";
-import {RadioGroupDemo} from "./RadioGroupDemo";
 
 export function Inputs() {
 	return (
@@ -44,6 +45,7 @@ export function Inputs() {
 				<TextFieldDemo />
 				<CheckboxDemo />
 				<RadioGroupDemo />
+				<UrlUploadDemo />
 
 				<Box>
 					<Typography variant="h2" gutterBottom>Selector</Typography>
