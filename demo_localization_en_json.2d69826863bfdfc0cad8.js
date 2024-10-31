@@ -15,7 +15,7 @@
   \***********************************/
 /***/ ((module) => {
 
-module.exports = JSON.parse('{"greeting":"Hello {{name}}!","nested":{"foo":"bar","deep":{"foo":"bar"}},"state":{"pending":"pending","succeeded":"succeeded","failed":"failed"},"overriddenInDe":"This is a default text."}');
+module.exports = /*#__PURE__*/JSON.parse('{"greeting":"Hello {{name}}!","nested":{"foo":"bar","deep":{"foo":"bar"}},"state":{"pending":"pending","succeeded":"succeeded","failed":"failed"},"overriddenInDe":"This is a default text."}');
 
 /***/ })
 

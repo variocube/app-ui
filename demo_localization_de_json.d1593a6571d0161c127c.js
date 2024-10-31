@@ -15,7 +15,7 @@
   \***********************************/
 /***/ ((module) => {
 
-module.exports = JSON.parse('{"greeting":"Hallo {{name}}!","nested":{"foo":"Bar (auf Deutsch)","deep":{"foo":"Bar (auf Deutsch)"}},"state":{"pending":"in Verarbeitung","succeeded":"erfolgreich","failed":"fehlgeschlagen"},"overriddenInDe":"Das ist ein Standardtext."}');
+module.exports = /*#__PURE__*/JSON.parse('{"greeting":"Hallo {{name}}!","nested":{"foo":"Bar (auf Deutsch)","deep":{"foo":"Bar (auf Deutsch)"}},"state":{"pending":"in Verarbeitung","succeeded":"erfolgreich","failed":"fehlgeschlagen"},"overriddenInDe":"Das ist ein Standardtext."}');
 
 /***/ })
 
