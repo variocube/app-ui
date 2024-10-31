@@ -13,6 +13,7 @@ interface UrlUploadFieldProps extends TextFieldProps {
 export function UrlUploadField(props: UrlUploadFieldProps) {
 	const {
 		upload: uploadFunc,
+		type = "url",
 		accept,
 		value,
 	} = props;
@@ -71,6 +72,7 @@ export function UrlUploadField(props: UrlUploadFieldProps) {
 			<TextField
 				{...props}
 				value={value}
+				type={type}
 				InputProps={{
 					...props.InputProps,
 					startAdornment: upload ? startAdornment : undefined,
