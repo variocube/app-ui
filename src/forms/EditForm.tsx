@@ -4,15 +4,14 @@ import {
 	CardContent,
 	CardContentProps as MuiCardContentProps,
 	CardProps as MuiCardProps,
-	CircularProgress,
 	Stack,
 } from "@mui/material";
-import React, {PropsWithChildren, useMemo} from "react";
-import {useAsyncCallback} from "react-async-hook";
+import React, {PropsWithChildren} from "react";
 import {ErrorAlert} from "../ErrorAlert";
-import {CloseIcon, SaveIcon, SuccessIcon} from "../icons";
+import {CloseIcon} from "../icons";
 import {Labels} from "../localization";
-import {useFlag} from "../utils";
+import {SubmitButton} from "./SubmitButton";
+import {useFormSubmit} from "./useFormSubmit";
 
 interface EditFormProps {
 	loading: boolean;
@@ -26,32 +25,15 @@ interface EditFormProps {
 export function EditForm(
 	{children, loading, onSave, onCancel, CardProps, CardContentProps, labels}: PropsWithChildren<EditFormProps>,
 ) {
-	const [saved, setSaved, clearSaved] = useFlag(false);
+	const {onSubmit, onChange, submitted, submitting, error} = useFormSubmit({
+		onSubmit: onSave,
+	});
 
-	const {loading: saving, error, execute: save} = useAsyncCallback(
-		async (e: React.FormEvent<HTMLFormElement>) => {
-			e.preventDefault();
-			clearSaved();
-			await onSave();
-			setSaved();
-		},
-	);
-
-	const pending = loading || saving;
-
-	const icon = useMemo(() => {
-		if (pending) {
-			return <CircularProgress size={16} sx={{mx: 0.25}} />;
-		}
-		if (saved) {
-			return <SuccessIcon fontSize="small" />;
-		}
-		return <SaveIcon />;
-	}, [pending, saved]);
+	const pending = loading || submitting;
 
 	return (
 		<Card {...CardProps}>
-			<form onSubmit={save} onChange={clearSaved}>
+			<form onSubmit={onSubmit} onChange={onChange}>
 				{children}
 				{error && (
 					<CardContent {...CardContentProps}>
@@ -60,15 +42,14 @@ export function EditForm(
 				)}
 				<CardContent {...CardContentProps}>
 					<Stack direction="row" spacing={2}>
-						<Button
-							type="submit"
+						<SubmitButton
 							variant="outlined"
 							disabled={pending}
-							startIcon={icon}
-							color={saved ? "success" : "primary"}
+							submitted={submitted}
+							submitting={submitting}
 						>
 							{labels("save")}
-						</Button>
+						</SubmitButton>
 						{onCancel && (
 							<Button
 								variant="outlined"
