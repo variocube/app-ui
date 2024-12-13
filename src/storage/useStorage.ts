@@ -20,15 +20,15 @@ export function useStorage<T>(key: string, defaultValue: T): [T, (newValue: T) =
 		return () => storage.removeChangeListener(key, updateStateFromStorage);
 	}, [key, updateStateFromStorage]);
 
-	useEffect(() => {
-		storage.write(key, value == defaultValueSerialized ? undefined : value);
-	}, [key, value, defaultValueSerialized]);
-
 	const typedValue = useMemo(() => JSON.parse(value), [value]);
 
 	const setTypedValue = useCallback((newValue: T) => {
 		const value = JSON.stringify(newValue);
-		storage.write(key, value == defaultValueSerialized ? undefined : value);
+		if (value != defaultValueSerialized) {
+			storage.write(key, value);
+		} else {
+			storage.delete(key);
+		}
 	}, [key, defaultValueSerialized]);
 
 	return [typedValue, setTypedValue];
