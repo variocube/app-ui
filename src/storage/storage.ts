@@ -58,8 +58,10 @@ class StorageWrapper {
 	}
 
 	delete(key: string) {
+		const oldValue = this.read(key);
 		try {
 			this.storageArea.removeItem(key);
+			this.notifyChangeListener(key, oldValue, undefined);
 		} catch (error) {
 			// ignore error
 		}
