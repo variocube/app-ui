@@ -50,10 +50,16 @@ async function checkOkay(response: Response) {
 async function tryExtractErrorMessage(response: Response) {
 	try {
 		const error = await response.json();
-		if (error && error.error && error.message) {
+		if (error?.error && error.message) {
 			return {
 				message: error.error as string,
 				details: error.message as string,
+			};
+		}
+		if (error?.title && error.detail) {
+			return {
+				message: error.title as string,
+				details: error.details as string,
 			};
 		}
 	} catch (parseError) {
