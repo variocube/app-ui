@@ -31,6 +31,7 @@ import {
 import {EmailSenderField} from "../../src/Input/EmailSenderField";
 import {Demo, DemoSource} from "../demo";
 import {RadioGroupDemo} from "./RadioGroupDemo";
+import {SelectDemo} from "./SelectDemo";
 import {UrlUploadDemo} from "./UrlUploadDemo";
 
 // @ts-ignore
@@ -45,6 +46,7 @@ export function Inputs() {
 				<TextFieldDemo />
 				<CheckboxDemo />
 				<RadioGroupDemo />
+				<SelectDemo />
 				<UrlUploadDemo />
 
 				<Box>
