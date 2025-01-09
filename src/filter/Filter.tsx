@@ -1,6 +1,6 @@
 import {Clear, ExpandLess, ExpandMore, FilterList} from "@mui/icons-material";
-import {Box, Chip, ClickAwayListener, IconButton, Popover, Stack} from "@mui/material";
-import React, {Fragment, KeyboardEvent, PropsWithChildren, ReactNode, useState} from "react";
+import {Box, Chip, Collapse, IconButton, Paper, Stack} from "@mui/material";
+import React, {KeyboardEvent, PropsWithChildren, ReactNode, useEffect, useState} from "react";
 import {TextField, TextFieldProps} from "../Input";
 import {Labels} from "../localization";
 import {useFlag} from "../utils";
@@ -11,17 +11,44 @@ export interface FilterProps {
 	enableSearch?: boolean;
 	onSearch?: (search: string) => any;
 	onClear?: () => any;
-	fullWidth?: boolean;
 	variant?: TextFieldProps["variant"];
 	labels: Labels<"none" | "search" | "reset">;
+
+	/**
+	 * Whether the `children` are placed in a paper (default: true).
+	 */
+	paper?: boolean;
+
+	/**
+	 * Called when the filter is opened.
+	 *
+	 * @deprecated use `onChangeOpen` instead.
+	 */
 	onFilterClick?: () => void;
+
+	/**
+	 * Called when the open state of the filter changes.
+	 * @param open Whether the filter is opened.
+	 */
+	onChangeOpen?: (open: boolean) => void;
 }
 
 export function Filter(props: PropsWithChildren<FilterProps>) {
-	const {label, active, enableSearch, onSearch, onClear, fullWidth, variant, labels, onFilterClick, children} = props;
+	const {
+		label,
+		active,
+		enableSearch,
+		onSearch,
+		onClear,
+		variant,
+		labels,
+		paper = true,
+		onFilterClick,
+		onChangeOpen,
+		children,
+	} = props;
 
-	const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-	const [open, setOpen, clearOpen, toggleOpen] = useFlag(false);
+	const [open, setOpen, , toggleOpen] = useFlag(false);
 
 	const [value, setValue] = useState("");
 
@@ -34,28 +61,34 @@ export function Filter(props: PropsWithChildren<FilterProps>) {
 		}
 	}
 
-	function handleSetOpen() {
-		setOpen();
-		if (onFilterClick) onFilterClick();
-	}
+	useEffect(() => {
+		if (open && onFilterClick) {
+			onFilterClick();
+		}
+	}, [onFilterClick, open]);
 
+	useEffect(() => {
+		if (onChangeOpen) {
+			onChangeOpen(open);
+		}
+	}, [onChangeOpen, open]);
 
 	const hasActiveFilter = Boolean(active?.filter(node => Boolean(node)).length);
 
 	return (
-		<Fragment>
+		<Box>
 			<TextField
 				variant={variant}
 				label={label}
-				onClick={enableSearch ? undefined : handleSetOpen}
+				onClick={enableSearch ? undefined : toggleOpen}
 				value={value}
 				onChange={setValue}
 				onKeyDown={handleKeyDown}
-				fullWidth={fullWidth}
+				fullWidth
 				InputProps={{
 					startAdornment: (
 						<Stack direction="row" spacing={1} alignItems="center" sx={{mr: 2}}>
-							<IconButton edge="start" onClick={enableSearch ? handleSetOpen : undefined}>
+							<IconButton edge="start" onClick={enableSearch ? toggleOpen : undefined}>
 								<FilterList />
 							</IconButton>
 							{active}
@@ -68,41 +101,34 @@ export function Filter(props: PropsWithChildren<FilterProps>) {
 									variant="outlined"
 									label={labels("none")}
 									clickable
-									onClick={enableSearch ? handleSetOpen : undefined}
+									onClick={enableSearch ? setOpen : undefined}
 								/>
 							)}
 							{hasActiveFilter && onClear && (
 								<IconButton onClick={onClear} title={labels("reset")}>
-									<Clear/>
+									<Clear />
 								</IconButton>
 							)}
-							<IconButton onClick={toggleOpen} edge="end">
+							<IconButton onClick={enableSearch ? toggleOpen : undefined} edge="end">
 								{open ? <ExpandLess /> : <ExpandMore />}
 							</IconButton>
 						</Stack>
 					),
 					readOnly: !enableSearch,
-					ref: setAnchorEl,
 					placeholder: enableSearch ? labels("search") : undefined,
 				}}
 			/>
 			{children && (
-				<Popover
-					open={open}
-					anchorEl={anchorEl}
-					onClose={clearOpen}
-					anchorOrigin={{
-						horizontal: "left",
-						vertical: "bottom",
-					}}
-				>
-					<ClickAwayListener onClickAway={clearOpen}>
-						<Box width={anchorEl?.clientWidth}>
-							{children}
-						</Box>
-					</ClickAwayListener>
-				</Popover>
+				<Collapse in={open} mountOnEnter unmountOnExit>
+					{paper
+						? (
+							<Paper elevation={2}>
+								{children}
+							</Paper>
+						)
+						: children}
+				</Collapse>
 			)}
-		</Fragment>
+		</Box>
 	);
 }
