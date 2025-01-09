@@ -15,6 +15,14 @@ export interface FilterProps {
 	labels: Labels<"none" | "search" | "reset">;
 
 	/**
+	 * Whether the filter input takes up the full width of the container. This is now always true.
+	 * If you need a smaller width, place this control in a smaller container.
+	 *
+	 * @deprecated This is now ignored and always true. Remove this property.
+	 */
+	fullWidth?: boolean;
+
+	/**
 	 * Whether the `children` are placed in a paper (default: true).
 	 */
 	paper?: boolean;
