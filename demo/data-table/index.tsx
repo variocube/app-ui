@@ -32,6 +32,7 @@ export function DataTableDemo() {
 				<SimpleDataTable />
 				<EmptyDataTable />
 				<SortableDataTable />
+				<SelectableDataTable />
 				<PagingDataTable />
 				<ToolbarDataTable />
 				<ColumnSettings />
@@ -144,6 +145,30 @@ export function EmptyDataTable() {
 					{label: "Taste", field: "taste"},
 				]}
 				rows={[]}
+			/>
+		</Box>
+	);
+}
+
+export function SelectableDataTable() {
+	const [selected, setSelected] = useState<Fruit[]>([]);
+
+	return (
+		<Box>
+			<Typography variant="h2" gutterBottom>
+				Selectable data table
+			</Typography>
+			<DataTable
+				columns={[
+					{label: "ID", field: "id"},
+					{label: "Name", field: "name"},
+					{label: "Color", field: "color"},
+					{label: "Taste", field: "taste"},
+					{label: "Description", field: "description"},
+				]}
+				rows={fruits}
+				selected={selected}
+				onSelectedChange={setSelected}
 			/>
 		</Box>
 	);
