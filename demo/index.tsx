@@ -1,4 +1,5 @@
 import {
+	Article,
 	AspectRatio,
 	CalendarMonth,
 	DynamicForm,
@@ -61,6 +62,7 @@ import {Inputs} from "./inputs";
 import {Localization} from "./localization";
 import {TabsDemo} from "./tabs";
 import {Theme} from "./theme";
+import {ViewDemoPage} from "./view";
 
 declare const VERSION: string;
 
@@ -97,6 +99,7 @@ function Demo() {
 					/>
 					<Route path="cube" element={<CubeDemo />} />
 					<Route path="filter" element={<FilterDemoPage />} />
+					<Route path="view" element={<ViewDemoPage />} />
 				</Route>
 			</Routes>
 		</BrowserRouter>
@@ -176,6 +179,7 @@ const MenuItems: MenuItemProps[] = [
 	{text: "Not found", to: "not-found", icon: Error},
 	{text: "Cube", to: "cube", icon: Widgets},
 	{text: "Filter", to: "filter", icon: FilterList},
+	{text: "View", to: "view", icon: Article},
 ];
 
 function SideNavListItem({icon: Icon, text, to}: MenuItemProps) {
@@ -254,7 +258,7 @@ function HelpDemo() {
 		<DialogContent>
 			<Typography>
 				{`This is a newer Version of the application (${VERSION}). The last version you used was ${
-					localStorage.getItem(localStorageVar ? localStorageVar : "")
+					localStorage.getItem(localStorageVar)
 				}.`}
 			</Typography>
 			<Typography>

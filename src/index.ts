@@ -30,3 +30,4 @@ export * from "./tabs";
 export * from "./temporal";
 export * from "./utils";
 export * from "./VCThemeProvider";
+export * from "./view";
