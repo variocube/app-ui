@@ -53,6 +53,7 @@ export function EditForm(
 						{onCancel && (
 							<Button
 								variant="outlined"
+								color="inherit"
 								disabled={pending}
 								startIcon={<CloseIcon />}
 								onClick={onCancel}
