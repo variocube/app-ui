@@ -13,5 +13,5 @@ export function PageTitle({title, ...rest}: Readonly<PageTitleProps>) {
 		setPageTitle(title);
 	}, [title]);
 
-	return <Typography variant="h1" component="h1" {...rest}>{title}</Typography>;
+	return <Typography variant="h1" component="h1" title="title" {...rest}>{title}</Typography>;
 }

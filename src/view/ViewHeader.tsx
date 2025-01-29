@@ -16,7 +16,7 @@ export function ViewHeader(props: PropsWithChildren<ViewHeaderProps>) {
 			<Grid container spacing={2} justifyContent="space-between" alignItems="center">
 				<Grid item xs>
 					<Stack direction="row" spacing={2} alignItems="center">
-						<PageTitle title={title} />
+						<PageTitle title={title} overflow="hidden" textOverflow="ellipsis" />
 						{titleAdornment}
 					</Stack>
 					<Typography variant="subtitle1">
