@@ -2,7 +2,7 @@ import {MenuItem} from "@mui/material";
 import React, {ReactNode} from "react";
 import {TextField, TextFieldProps} from "./TextField";
 
-interface SelectProps<T extends string> extends Omit<TextFieldProps, "value" | "onChange" | "children"> {
+interface SelectProps<T extends string | number> extends Omit<TextFieldProps, "value" | "onChange" | "children"> {
 	label?: ReactNode;
 	value: T | undefined;
 	onChange: (value: T) => any;
