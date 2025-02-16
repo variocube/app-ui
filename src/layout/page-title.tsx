@@ -6,12 +6,12 @@ interface PageTitleProps extends Omit<TypographyProps, "children" | "ref"> {
 	title?: string;
 }
 
-export function PageTitle({title, ...rest}: Readonly<PageTitleProps>) {
+export function PageTitle({title, variant = "h1", ...rest}: Readonly<PageTitleProps>) {
 	const {setPageTitle} = useLayoutContext();
 
 	useEffect(() => {
 		setPageTitle(title);
 	}, [title]);
 
-	return <Typography variant="h1" component="h1" title="title" {...rest}>{title}</Typography>;
+	return <Typography variant={variant} component="h1" title="title" {...rest}>{title}</Typography>;
 }
