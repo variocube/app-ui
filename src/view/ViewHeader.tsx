@@ -1,22 +1,23 @@
-import {Box, Grid, Stack, Typography} from "@mui/material";
+import {Box, Grid, Stack, Typography, TypographyProps} from "@mui/material";
 import React, {PropsWithChildren} from "react";
 import {PageTitle} from "../layout";
 
 export interface ViewHeaderProps {
 	title?: string;
+	titleVariant?: TypographyProps["variant"];
 	titleAdornment?: React.ReactNode;
 	subTitle?: React.ReactNode;
 	actions?: React.ReactNode;
 }
 
 export function ViewHeader(props: PropsWithChildren<ViewHeaderProps>) {
-	const {title, titleAdornment, subTitle, actions} = props;
+	const {title, titleVariant, titleAdornment, subTitle, actions} = props;
 	return (
 		<Box>
 			<Grid container spacing={2} justifyContent="space-between" alignItems="center">
 				<Grid item xs>
 					<Stack direction="row" spacing={2} alignItems="center">
-						<PageTitle title={title} overflow="hidden" textOverflow="ellipsis" />
+						<PageTitle title={title} variant={titleVariant} overflow="hidden" textOverflow="ellipsis" />
 						{titleAdornment}
 					</Stack>
 					<Typography variant="subtitle1">
