@@ -1,5 +1,5 @@
 import {Clear, ExpandLess, ExpandMore, FilterList} from "@mui/icons-material";
-import {Box, Chip, Collapse, IconButton, Paper, Stack} from "@mui/material";
+import {Box, Chip, Collapse, FormControl, IconButton, InputLabel, Paper, Stack, styled} from "@mui/material";
 import React, {KeyboardEvent, PropsWithChildren, ReactNode, useEffect, useState} from "react";
 import {TextField, TextFieldProps} from "../Input";
 import {Labels} from "../localization";
@@ -11,6 +11,7 @@ export interface FilterProps {
 	enableSearch?: boolean;
 	onSearch?: (search: string) => any;
 	onClear?: () => any;
+
 	variant?: TextFieldProps["variant"];
 	labels: Labels<"none" | "search" | "reset">;
 
@@ -40,6 +41,14 @@ export interface FilterProps {
 	 */
 	onChangeOpen?: (open: boolean) => void;
 }
+
+export const OutlinedContainer = styled(Box)(({theme}) => ({
+	display: "flex",
+	alignItems: "center",
+	padding: theme.spacing(1),
+	borderRadius: theme.shape.borderRadius,
+	border: `1px solid ${theme.palette.divider}`,
+}));
 
 export function Filter(props: PropsWithChildren<FilterProps>) {
 	const {
@@ -85,25 +94,67 @@ export function Filter(props: PropsWithChildren<FilterProps>) {
 
 	return (
 		<Box>
-			<TextField
-				variant={variant}
-				label={label}
-				onClick={enableSearch ? undefined : toggleOpen}
-				value={value}
-				onChange={setValue}
-				onKeyDown={handleKeyDown}
-				fullWidth
-				InputProps={{
-					startAdornment: (
-						<Stack direction="row" spacing={1} alignItems="center" sx={{mr: 2}}>
-							<IconButton edge="start" onClick={enableSearch ? toggleOpen : undefined}>
+			<FormControl variant={variant} fullWidth onClick={enableSearch ? undefined : toggleOpen}>
+				{label && (
+					<InputLabel shrink>
+						{label}
+					</InputLabel>
+				)}
+
+				<OutlinedContainer>
+					<Stack
+						sx={{
+							flexDirection: {
+								xs: "column",
+								sm: "row",
+							},
+							alignItems: "center",
+							width: "100%",
+						}}
+						spacing={1}
+						useFlexGap
+					>
+						{children && (
+							<IconButton
+								onClick={enableSearch ? toggleOpen : undefined}
+								sx={{
+									display: {
+										xs: "none",
+										sm: "inline-flex",
+									},
+								}}
+							>
 								<FilterList />
 							</IconButton>
+						)}
+
+						<Stack
+							direction="row"
+							alignItems="center"
+							sx={{
+								justifyContent: {
+									xs: "center",
+									sm: "flex-start",
+								},
+							}}
+							flexWrap="wrap"
+							spacing={1}
+							useFlexGap
+							flex={1}
+						>
 							{active}
+							{enableSearch && (
+								<TextField
+									value={value}
+									onChange={setValue}
+									onKeyDown={handleKeyDown}
+									variant={"standard"}
+									placeholder={enableSearch ? labels("search") : undefined}
+								/>
+							)}
 						</Stack>
-					),
-					endAdornment: (
-						<Stack direction={"row"} spacing={1} alignItems="center">
+
+						<Stack direction="row" spacing={1} alignItems="center">
 							{!hasActiveFilter && (
 								<Chip
 									variant="outlined"
@@ -117,15 +168,16 @@ export function Filter(props: PropsWithChildren<FilterProps>) {
 									<Clear />
 								</IconButton>
 							)}
-							<IconButton onClick={enableSearch ? toggleOpen : undefined} edge="end">
-								{open ? <ExpandLess /> : <ExpandMore />}
-							</IconButton>
+							{children && (
+								<IconButton onClick={enableSearch ? toggleOpen : undefined} edge="end">
+									{open ? <ExpandLess /> : <ExpandMore />}
+								</IconButton>
+							)}
 						</Stack>
-					),
-					readOnly: !enableSearch,
-					placeholder: enableSearch ? labels("search") : undefined,
-				}}
-			/>
+					</Stack>
+				</OutlinedContainer>
+			</FormControl>
+
 			{children && (
 				<Collapse in={open} mountOnEnter unmountOnExit>
 					{paper
