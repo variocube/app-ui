@@ -1,5 +1,5 @@
 import {Apple} from "@mui/icons-material";
-import {Box, Chip, Stack, Typography} from "@mui/material";
+import {Box, Button, Chip, Stack, Typography} from "@mui/material";
 import React, {useState} from "react";
 import {Checkbox, Code, createSimpleTFunc, RadioGroup} from "../../src";
 import {Demo, DemoControls, DemoSource} from "../demo";
@@ -24,6 +24,7 @@ export function RadioGroupDemo() {
 	const [value, setValue] = useState<Fruit>();
 	const [value2, setValue2] = useState<"none" | Fruit>();
 	const [row, setRow] = useState(false);
+	const [required, setRequired] = useState(false);
 	return (
 		<Box>
 			<Typography variant="h2" gutterBottom>
@@ -33,13 +34,20 @@ export function RadioGroupDemo() {
 				Simplifies handling a Mui <Code>RadioGroup</Code>.
 			</Typography>
 			<Demo source={source} id="radio-group">
-				<Stack spacing={2} direction={row ? "column" : "row"} p={2}>
+				<Stack
+					spacing={2}
+					direction={row ? "column" : "row"}
+					p={2}
+					component="form"
+					onSubmit={e => e.preventDefault()}
+				>
 					<DemoSource for="#radio-group">
 						<RadioGroup
 							label="Your favorite fruit"
 							value={value}
 							onChange={setValue}
 							row={row}
+							required={required}
 							options={fruits}
 							renderLabel={s("fruits")}
 						/>
@@ -48,6 +56,7 @@ export function RadioGroupDemo() {
 							value={value2}
 							onChange={setValue2}
 							row={row}
+							required={required}
 							options={["none", ...fruits]}
 							renderLabel={option => ({
 								none: "I don't like fruits",
@@ -57,9 +66,11 @@ export function RadioGroupDemo() {
 							}[option])}
 						/>
 					</DemoSource>
+					{required && <Button type="submit">Submit</Button>}
 				</Stack>
 				<DemoControls>
 					<Checkbox label="row" value={row} onChange={setRow} />
+					<Checkbox label="required" value={required} onChange={setRequired} />
 				</DemoControls>
 			</Demo>
 		</Box>
