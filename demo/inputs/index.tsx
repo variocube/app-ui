@@ -195,6 +195,17 @@ function TextFieldDemo(props: BoxProps) {
 								</TextField>
 							</DemoSource>
 						</Grid>
+						<Grid item xs={12} sm={6} md={4}>
+							<DemoSource for="#text-field">
+								<TextField
+									label="Multiline (min 20 chars)"
+									required
+									multiline
+									fullWidth
+									validate={value => value.length < 20 ? "Enter minimum 20 chars." : undefined}
+								/>
+							</DemoSource>
+						</Grid>
 					</Grid>
 					<CardActions>
 						<Button color="primary" type="submit">
