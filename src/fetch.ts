@@ -59,7 +59,7 @@ async function tryExtractErrorMessage(response: Response) {
 		if (error?.title && error.detail) {
 			return {
 				message: error.title as string,
-				details: error.details as string,
+				details: error.detail as string,
 			};
 		}
 	} catch (parseError) {
