@@ -3,7 +3,7 @@ import React, {PropsWithChildren} from "react";
 import {PageTitle} from "../layout";
 
 export interface ViewHeaderProps {
-	title?: string;
+	title?: React.ReactNode;
 	titleVariant?: TypographyProps["variant"];
 	titleAdornment?: React.ReactNode;
 	subTitle?: React.ReactNode;
