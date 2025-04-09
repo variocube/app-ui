@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useLayoutEffect, useMemo, useState} from "react";
 import {storage} from "./storage";
 
 export function useStorage<T>(key: string, defaultValue: T): [T, (newValue: T) => void] {
@@ -15,7 +15,7 @@ export function useStorage<T>(key: string, defaultValue: T): [T, (newValue: T) =
 		setValue(readStateFromStorage());
 	}, [readStateFromStorage]);
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		storage.addChangeListener(key, updateStateFromStorage);
 		return () => storage.removeChangeListener(key, updateStateFromStorage);
 	}, [key, updateStateFromStorage]);
