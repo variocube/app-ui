@@ -112,12 +112,14 @@ function getBodyRequestInit(body?: any) {
  * Uploads a file to the specified upload URL that is compatible with an Amazon S3 pre-signed PUT URL.
  * @param file The file to upload
  * @param uploadUrl The upload URL
+ * @param acl The x-amz-acl header value
  */
-export async function uploadFile(file: File, uploadUrl: string) {
+export async function uploadFile(file: File, uploadUrl: string, acl: 'private'|'public-read') {
 	const response = await fetch(uploadUrl, {
 		method: "put",
 		headers: {
 			"content-type": file.type,
+			"x-amz-acl": acl,
 		},
 		body: file,
 	});
