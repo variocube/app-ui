@@ -108,18 +108,22 @@ function getBodyRequestInit(body?: any) {
 	}
 }
 
+interface UploadFileRequest {
+	uploadUrl: string;
+	uploadHeaders: Record<string, string>;
+}
+
 /**
  * Uploads a file to the specified upload URL that is compatible with an Amazon S3 pre-signed PUT URL.
  * @param file The file to upload
- * @param uploadUrl The upload URL
- * @param acl The x-amz-acl header value
+ * @param request The upload file request
  */
-export async function uploadFile(file: File, uploadUrl: string, acl: 'private'|'public-read') {
-	const response = await fetch(uploadUrl, {
+export async function uploadFile(file: File, request: UploadFileRequest) {
+	const response = await fetch(request.uploadUrl, {
 		method: "put",
 		headers: {
 			"content-type": file.type,
-			"x-amz-acl": acl,
+			...request.uploadHeaders,
 		},
 		body: file,
 	});
