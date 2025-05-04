@@ -17,6 +17,8 @@ interface PlainDatePickerProps {
 	maxDate?: PlainDate;
 	renderDay?: (day: PlainDate, selectedDays: PlainDate[]) => JSX.Element;
 
+	defaultCalendarMonth?: PlainDate;
+
     /**
      * Allows overriding the locale. Only use for testing.
      */
@@ -34,6 +36,7 @@ export function PlainDatePicker(props: PlainDatePickerProps & UseRenderInputProp
 		minDate,
 		maxDate,
 		renderDay,
+		defaultCalendarMonth,
         locale: suppliedLocale,
         ...renderInputProps
     } = props;
@@ -52,6 +55,7 @@ export function PlainDatePicker(props: PlainDatePickerProps & UseRenderInputProp
                 disabled={disabled}
                 renderInput={renderInput}
 				disablePast={disablePast}
+				defaultCalendarMonth={defaultCalendarMonth}
 				minDate={minDate}
 				maxDate={maxDate}
 				renderDay={renderDay !== undefined
