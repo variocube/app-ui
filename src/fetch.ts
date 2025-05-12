@@ -1,8 +1,27 @@
+export interface ProblemJson {
+	title: string;
+	status: number;
+	type?: string;
+	instance?: string;
+	detail?: string;
+	[key: string]: any;
+}
+
 /** An error from the REST API. */
-export class ApiError extends Error {
-	constructor(readonly status: number, message: string, readonly details?: string) {
-		super(message);
+export class ApiError extends Error implements ProblemJson {
+	constructor(problemJson: ProblemJson) {
+		super(problemJson.title);
+		this.title = problemJson.title;
+		this.status = problemJson.status;
+		Object.assign(this, problemJson);
 	}
+
+	title: string;
+	status: number;
+	type?: string;
+	instance?: string;
+	detail?: string;
+	[key: string]: any;
 }
 
 /**
@@ -42,31 +61,39 @@ export type ApiFetcher = ReturnType<typeof createApiFetcher>;
 
 async function checkOkay(response: Response) {
 	if (!response.ok) {
-		const {message, details} = await tryExtractErrorMessage(response);
-		throw new ApiError(response.status, message, details);
+		throw await createApiError(response);
 	}
 }
 
-async function tryExtractErrorMessage(response: Response) {
+export async function createApiError(response: Response) {
 	try {
 		const error = await response.json();
-		if (error?.error && error.message) {
-			return {
-				message: error.error as string,
-				details: error.message as string,
-			};
+		// Assume a problem json, if title and status are present and of the correct type
+		if (typeof error.title == "string" && typeof error.status == "number") {
+			return new ApiError(error);
 		}
-		if (error?.title && error.detail) {
-			return {
-				message: error.title as string,
-				details: error.detail as string,
-			};
+		// Older version of Spring errors
+		if (typeof error.error == "string" && typeof error.message == "string") {
+			return new ApiError({
+				title: error.error as string,
+				status: response.status,
+				detail: error.message as string,
+			});
 		}
+		// As a fallback, just copy the response body to the error and use title and status
+		// from the response
+		return new ApiError({
+			...error,
+			title: response.statusText,
+			status: response.status,
+		})
 	} catch (parseError) {
+		// If parsing fails, fallback to generic error based on HTTP status
+		return new ApiError({
+			title: response.statusText,
+			status: response.status,
+		});
 	}
-	return {
-		message: response.statusText,
-	};
 }
 
 /**

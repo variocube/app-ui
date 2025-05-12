@@ -55,7 +55,7 @@ import {ContentTableDemo} from "./content-table";
 import {CubeDemo} from "./cube";
 import {DataTableDemo} from "./data-table";
 import {Pickers} from "./date-pickers";
-import {DemoError} from "./error";
+import {ErrorBoundaryDemo} from "./error-boundary";
 import {FilterDemoPage} from "./filter";
 import {Forms} from "./forms";
 import {Inputs} from "./inputs";
@@ -63,6 +63,8 @@ import {Localization} from "./localization";
 import {TabsDemo} from "./tabs";
 import {Theme} from "./theme";
 import {ViewDemoPage} from "./view";
+import {ErrorAlertDemo} from "./error-alert/ErrorAlertDemo";
+import AlertIcon from "@mui/icons-material/NotificationImportant";
 
 declare const VERSION: string;
 
@@ -81,7 +83,8 @@ function Demo() {
 					<Route path="data-table" element={<DataTableDemo />} />
 					<Route path="inputs" element={<Inputs />} />
 					<Route path="forms" element={<Forms />} />
-					<Route path="error" element={<DemoError />} />
+					<Route path="error" element={<ErrorBoundaryDemo />} />
+					<Route path="error-alert" element={<ErrorAlertDemo />} />
 					<Route path="tabs" element={<TabsDemo />} />
 					<Route path="container" element={<ContainerDemo />} />
 					<Route path="help" element={<HelpDemo />} />
@@ -171,6 +174,7 @@ const MenuItems: MenuItemProps[] = [
 	{text: "Forms", to: "forms", icon: DynamicForm},
 	{text: "Inputs", to: "inputs", icon: Edit},
 	{text: "Error", to: "error", icon: Error},
+	{text: "Error Alert", to: "error-alert", icon: AlertIcon},
 	{text: "Container", to: "container", icon: AspectRatio},
 	{text: "Tabs", to: "tabs", icon: Tab},
 	{text: "Help", to: "help", icon: Help},
