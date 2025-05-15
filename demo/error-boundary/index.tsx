@@ -2,7 +2,7 @@ import React, {useEffect} from "react";
 import {Container, Typography} from "@mui/material";
 import {ErrorBoundary} from "../../src";
 
-export function DemoError() {
+export function ErrorBoundaryDemo() {
 
     function getUser() {
         return {
