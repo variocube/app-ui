@@ -65,32 +65,39 @@ async function checkOkay(response: Response) {
 	}
 }
 
+function isProblemJson(error: any): error is ProblemJson {
+	return typeof error.title == "string" && typeof error.status == "number";
+}
+
+function isLegacySpringError(error: any): error is { error: string; message: string } {
+	return typeof error.error == "string" && typeof error.message == "string";
+}
+
 export async function createApiError(response: Response) {
+	const statusText = response.statusText || "Error";
 	try {
 		const error = await response.json();
-		// Assume a problem json, if title and status are present and of the correct type
-		if (typeof error.title == "string" && typeof error.status == "number") {
+		if (isProblemJson(error)) {
 			return new ApiError(error);
 		}
-		// Older version of Spring errors
-		if (typeof error.error == "string" && typeof error.message == "string") {
+		if (isLegacySpringError(error)) {
 			return new ApiError({
-				title: error.error as string,
+				title: error.error,
 				status: response.status,
-				detail: error.message as string,
+				detail: error.message,
 			});
 		}
 		// As a fallback, just copy the response body to the error and use title and status
 		// from the response
 		return new ApiError({
 			...error,
-			title: response.statusText,
+			title: statusText,
 			status: response.status,
-		})
+		});
 	} catch (parseError) {
 		// If parsing fails, fallback to generic error based on HTTP status
 		return new ApiError({
-			title: response.statusText,
+			title: statusText,
 			status: response.status,
 		});
 	}
