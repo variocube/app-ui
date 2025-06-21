@@ -8,6 +8,7 @@ import {
 	FilterList,
 	Help,
 	Language,
+	ListAlt,
 	Palette,
 	Psychology,
 	SvgIconComponent,
@@ -15,6 +16,7 @@ import {
 	ViewList,
 	Widgets,
 } from "@mui/icons-material";
+import AlertIcon from "@mui/icons-material/NotificationImportant";
 import {
 	Box,
 	Button,
@@ -55,16 +57,16 @@ import {ContentTableDemo} from "./content-table";
 import {CubeDemo} from "./cube";
 import {DataTableDemo} from "./data-table";
 import {Pickers} from "./date-pickers";
+import {ErrorAlertDemo} from "./error-alert/ErrorAlertDemo";
 import {ErrorBoundaryDemo} from "./error-boundary";
 import {FilterDemoPage} from "./filter";
 import {Forms} from "./forms";
 import {Inputs} from "./inputs";
+import {ListDemo} from "./list/ListDemo";
 import {Localization} from "./localization";
 import {TabsDemo} from "./tabs";
 import {Theme} from "./theme";
 import {ViewDemoPage} from "./view";
-import {ErrorAlertDemo} from "./error-alert/ErrorAlertDemo";
-import AlertIcon from "@mui/icons-material/NotificationImportant";
 
 declare const VERSION: string;
 
@@ -82,6 +84,7 @@ function Demo() {
 					<Route path="content-table" element={<ContentTableDemo />} />
 					<Route path="data-table" element={<DataTableDemo />} />
 					<Route path="inputs" element={<Inputs />} />
+					<Route path="list" element={<ListDemo />} />
 					<Route path="forms" element={<Forms />} />
 					<Route path="error" element={<ErrorBoundaryDemo />} />
 					<Route path="error-alert" element={<ErrorAlertDemo />} />
@@ -173,6 +176,7 @@ const MenuItems: MenuItemProps[] = [
 	{text: "Data table", to: "data-table", icon: ViewList},
 	{text: "Forms", to: "forms", icon: DynamicForm},
 	{text: "Inputs", to: "inputs", icon: Edit},
+	{text: "List", to: "list", icon: ListAlt},
 	{text: "Error", to: "error", icon: Error},
 	{text: "Error Alert", to: "error-alert", icon: AlertIcon},
 	{text: "Container", to: "container", icon: AspectRatio},

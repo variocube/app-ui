@@ -19,6 +19,7 @@ export * from "./icons";
 export * from "./Input";
 export * from "./LanguageSwitcher";
 export * from "./layout";
+export * from "./list";
 export * from "./localization";
 export * from "./logo";
 export * from "./logo";
