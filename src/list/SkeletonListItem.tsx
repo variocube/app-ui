@@ -13,6 +13,9 @@ export interface SkeletonListItemProps {
 
 	/** Whether the list item has a secondary action. */
 	action?: boolean;
+
+	/** Whether the list item has a divider. */
+	divider?: boolean;
 }
 
 export function SkeletonListItem(props: Readonly<SkeletonListItemProps>) {
@@ -21,10 +24,11 @@ export function SkeletonListItem(props: Readonly<SkeletonListItemProps>) {
 		primary = true,
 		secondary = 1,
 		action = false,
+		divider = false,
 	} = props;
 
 	return (
-		<ListItem>
+		<ListItem divider={divider}>
 			{icon && (
 				<ListItemIcon>
 					<Skeleton variant="circular" width={40} height={40} />
