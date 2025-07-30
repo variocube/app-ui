@@ -33,7 +33,7 @@
     "json-lexer": "^1.2.0",
     "react-async-hook": "^4.0.0",
     "roboto-fontface": "^0.10.0",
-    "semver": "^7.5.4"
+    "semver": "^7.7.2"
   },
   "devDependencies": {
     "@emotion/react": "^11.9.0",
@@ -48,6 +48,7 @@
     "@types/react-helmet": "^6.1.11",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@types/react-test-renderer": "^17.0.2",
+	"@types/semver":"^7.7.0",
     "dprint": "^0.46.3",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.5.0",

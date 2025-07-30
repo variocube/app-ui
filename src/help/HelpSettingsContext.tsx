@@ -11,8 +11,7 @@ import {
 	useMemo,
 	useState,
 } from "react";
-const semver = require("semver");
-const semverDiff = require("semver/functions/diff");
+import semver from "semver";
 
 interface HelpSettingsContextData {
 	baseUrl: string;
@@ -137,7 +136,7 @@ export function HelpSettingsContextProvider(
 			if (
 				lastSeenVersion
 				&& semver.lt(lastSeenVersion, currentVersion)
-				&& ["major", "minor"].includes(semverDiff(lastSeenVersion, currentVersion) as string)
+				&& ["major", "minor"].includes(semver.diff(lastSeenVersion, currentVersion) as string)
 			) {
 				setOpenDialog(true);
 			} else {
