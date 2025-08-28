@@ -156,8 +156,8 @@ export function Tabs(props: TabsProps) {
                                 const selected = value == itemValue;
 
                                 function handleClick(ev: SyntheticEvent) {
-                                    if (!selected && onChange) {
-                                        onChange(ev, i);
+									if (!selected && onChange) {
+                                        onChange(ev, itemValue);
                                     }
                                     if (onClick) {
                                         onClick(ev);

@@ -31,7 +31,10 @@ export function TabsDemo() {
                         { label: 'First', icon: <TabIcon/> },
                         { label: 'Second', icon: <TabIcon/> },
                         { label: 'Third', icon: <TabIcon/> },
-                        { label: 'Fourth', icon: <TabIcon/> }
+                        { label: 'Fourth', icon: <TabIcon/> },
+                        { label: 'Fifth', icon: <TabIcon/> },
+                        { label: 'Sith', icon: <TabIcon/> },
+                        { label: 'Seventh', icon: <TabIcon/> },
                     ]}
                 />
                 <Box sx={{display: "flex", justifyContent: "center", alignItems: "center", background: "rgba(128, 128, 128, 0.25)", height: 160}}>
