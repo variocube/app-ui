@@ -29,11 +29,12 @@ export class ApiError extends Error implements ProblemJson {
  * @param baseUrl The base URL of the API, i.e. https://api.cubeadmin.center
  * @param baseHeaders The base headers of each request, i.e. {Authorization: "Bearer XXXX"}
  */
-export function createApiFetcher(baseUrl: string, baseHeaders?: HeadersInit) {
+export function createApiFetcher(baseUrl: string, baseHeaders?: HeadersInit, baseHeadersModifier?: () => HeadersInit) {
 	async function fetch(path: string, options?: RequestInit) {
 		options = options || {};
 		options.headers = {
 			...baseHeaders,
+			...(baseHeadersModifier ? baseHeadersModifier() : {}),
 			...options.headers,
 		};
 		const response = await window.fetch(`${baseUrl}${path}`, options);
