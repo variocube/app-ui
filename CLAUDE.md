@@ -1,0 +1,237 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+`@variocube/app-ui` is a React/TypeScript component library providing common UI components for Variocube applications. It's published as an npm package with Material-UI 5.x as the foundation.
+
+**Key characteristics:**
+- React 17.x based component library
+- TypeScript with strict mode enabled
+- Material-UI (MUI) 5.x peer dependency
+- Emotion for CSS-in-JS styling
+- Published as ESM module with TypeScript definitions
+
+## Development Commands
+
+```bash
+# Development server (webpack dev server on port 3000)
+npm run dev
+
+# Build the library (TypeScript compilation to esm/)
+npm run build
+
+# Run tests (Jest with ts-jest)
+npm test
+
+# Build demo site (webpack production build)
+npm run build:demo
+
+# Clean build output
+npm run clean
+
+# Format code (dprint)
+npx dprint fmt
+```
+
+## Local Development and Testing
+
+To test changes locally in a consumer project:
+
+1. In this project: `npm pack` (creates `variocube-app-ui-1.0.0.tgz`)
+2. In consumer project: `npm install ../app-ui/variocube-app-ui-1.0.0.tgz`
+
+## Architecture
+
+### Component Library Structure
+
+The library follows a flat module structure with categorical organization:
+
+- **Core Infrastructure**: `VCThemeProvider`, `AppShell`, `layout`, `storage`
+- **Data Display**: `data-table`, `content-table`, `filter`, `tabs`, `list`
+- **Forms & Input**: `forms`, `Input/*` (TextField, NumberField, Select, Checkbox, etc.)
+- **Interactions**: `confirm/*` (ConfirmButton, ConfirmDialog, ConfirmMenuItem)
+- **Utilities**: `fetch`, `localization`, `formats`, `temporal`, `utils`
+- **UI Components**: `logo`, `icons`, `country`, `help`, `code`, `ErrorAlert`
+
+All exports are available from the main entry point (`src/index.ts`) for tree-shaking.
+
+### Key Architectural Patterns
+
+#### 1. Context + Hooks Pattern
+Global state managed through React Context with custom hooks:
+- **VCThemeProvider**: Theme mode (light/dark), custom branding, palette context
+  - Hook: `usePaletteMode()`, `useCustomLogo()`
+- **LocalizationProvider**: i18n with typed translation objects
+  - Hook: `useLocalization()`
+- **LayoutProvider**: Page title and app name management
+  - Hook: `useLayoutContext()`
+
+#### 2. Factory Pattern
+Configuration-based factory functions for creating instances:
+- **`createApiFetcher(baseUrl, baseHeaders, baseHeadersModifier?)`**: Returns API client with methods: `fetch`, `fetchJson`, `get`, `post`, `put`, `patch`, `del`
+  - Handles error parsing, query strings, file uploads
+  - Supports RFC 7807 Problem JSON format
+- **`createLocalizationContext(options)`**: Returns `LocalizationProvider`, `StorageLocalizationProvider`, `useLocalization`
+  - Deep TypeScript typing for translation objects
+  - Mustache template interpolation
+  - Storage-backed language persistence
+
+#### 3. Storage Abstraction
+Global singleton `storage` wrapper:
+- Auto-detects available storage: localStorage → sessionStorage → MemoryStorage
+- Event listener pattern for cross-tab synchronization
+- React hook: `useStorage<T>(key, defaultValue)`
+- Change listeners for reactive updates
+
+#### 4. Wrapper Components
+Many Input components wrap MUI components with enhancements:
+- `TextField`: Custom validation, lazy validation (after first interaction)
+- `Select`, `Checkbox`, `Switch`, `RadioGroup`: Type-safe MUI wrappers
+- `Confirm*` components: Wrap Button/IconButton/MenuItem with confirmation dialogs
+
+### Provider Chain and Integration
+
+Typical application structure:
+
+```
+VCThemeProvider (theme + branding)
+└── AppShell (layout structure)
+    └── LayoutProvider (page title management)
+        └── StorageLocalizationProvider (i18n with persistence)
+            └── Your app components
+```
+
+### Theming and Branding
+
+`VCThemeProvider` provides:
+- Light/dark mode with system preference detection
+- Custom primary/secondary colors (mode-specific)
+- Custom logo support (mode-specific URLs)
+- Roboto and JetBrains Mono font integration
+- Deep MUI theme merging with `deepmerge`
+
+### Type-Safe Localization
+
+The localization system uses recursive TypeScript types for deep object navigation:
+- Translation objects with nested structure
+- Dot-notation access (e.g., `t("common.actions.save")`)
+- Mustache template parameters
+- Context-based language switching with storage persistence
+
+### API Communication
+
+`createApiFetcher` factory creates type-safe API clients:
+- Base URL and headers configuration
+- Request builders: `createJsonRequest(method, body)`
+- Query string builder: `createQueryString(...args)`
+- Error parsing with Problem JSON support
+- File upload with multipart/form-data
+
+## Testing
+
+**Framework:** Jest with ts-jest preset
+**Environment:** Node
+**Test files:** Located alongside source files with `.spec.ts` extension
+
+```bash
+# Run all tests
+npm test
+
+# Run specific test
+npx jest src/fetch.spec.ts
+```
+
+## Code Formatting
+
+**Tool:** dprint (v0.46.3)
+
+**Configuration:**
+- Line width: 120 characters
+- Indentation: Tabs (4 spaces width for TypeScript)
+- Special case: i18n JSON files use 2-space indentation
+
+```bash
+# Format code
+npx dprint fmt
+
+# Check formatting
+npx dprint check
+```
+
+## Pull Request Guidelines
+
+Before submitting a PR, ensure:
+
+**Coder Checklist:**
+- Fix IDE warnings/errors where appropriate
+- Write unit/integration tests where applicable
+- Test issue resolution and that no regressions were introduced
+- Test edge cases and error handling
+- Verify build and tests succeed
+- Resolve conflicts with main branch
+
+**Code Quality:**
+- Code is easy to understand and follows best practices
+- Components follow existing patterns (wrapper, context+hooks, factory)
+- TypeScript types are properly defined
+- Error handling is appropriate
+
+## CI/CD Pipeline
+
+GitHub Actions workflow runs on push and PRs:
+1. `npm ci` - Clean install
+2. `npm run build` - TypeScript compilation
+3. `npm run test` - Jest tests
+4. `npm run build:demo` - Webpack demo build
+5. NPM publish on tags
+6. GitHub Pages deployment on tags
+
+## Dependencies
+
+**Peer Dependencies** (must be provided by consumer):
+- `react@17.x`
+- `@mui/material@5.x`, `@mui/icons-material@5.x`, `@mui/lab@>5.0.0-alpha`
+- `@mui/x-date-pickers@>5.0.0-beta`
+- `@emotion/react@11.x`, `@emotion/styled@11.x`
+- `mustache@4.x`
+
+**Key Dependencies:**
+- `@js-temporal/polyfill` - Temporal API for date/time handling
+- `deepmerge` - Theme configuration merging
+- `roboto-fontface`, `@fontsource/jetbrains-mono` - Local fonts
+- `error-stack-parser` - Error stack analysis
+- `react-async-hook` - Async operations
+
+## Splash Screen Integration
+
+To use the splash screen in consumer applications:
+
+1. Reference splash template in webpack config:
+```javascript
+new HtmlWebPackPlugin({
+  filename: "./index.html",
+  template: "./node_modules/@variocube/app-ui/src/splash/template.html",
+  title: "My splashy app",
+})
+```
+
+2. Use the `render` function from `@variocube/app-ui`:
+```javascript
+import {render} from "@variocube/app-ui";
+render(<App />);
+```
+
+## Font Loading
+
+For local Google Fonts:
+
+1. Add `VCThemeProvider` or `RobotoFont` component to your app
+2. Configure webpack loader for webfonts:
+```javascript
+{
+  test: /\.woff(2?)$/,
+  type: "asset/resource",
+}
+```
