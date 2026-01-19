@@ -132,7 +132,7 @@ The localization system uses recursive TypeScript types for deep object navigati
 ## Testing
 
 **Framework:** Jest with ts-jest preset
-**Environment:** Node
+**Environment:** Node 22
 **Test files:** Located alongside source files with `.spec.ts` extension
 
 ```bash
@@ -142,6 +142,20 @@ npm test
 # Run specific test
 npx jest src/fetch.spec.ts
 ```
+
+### Node Version Considerations
+
+**Node 22** includes updated ICU (International Components for Unicode) data that affects date/time formatting:
+
+- **German locale (de-AT):** Timezone formatting changed from `"GMT+2"` to `"MESZ"` (localized abbreviation)
+- **English locale (en-US):** Timezone formatting remains `"GMT+2"` (unchanged)
+
+If upgrading Node versions and tests fail with timezone mismatches, the expected values likely need updating to match the new ICU data output.
+
+### Known Test Warnings
+
+**MUI v5 + React 17 Compatibility:**
+Console warnings about `"Function components cannot be given refs"` from `ForwardRef(InputBase)` are expected and harmless. These come from MUI's internal components and don't affect functionality. The date picker components properly handle refs via `useRenderInput` hook.
 
 ## Code Formatting
 
@@ -219,6 +233,55 @@ The demo application uses **Vite** (v7+) with the following plugins:
 - Base path: `""` (empty for flexible deployment)
 - VERSION constant injected from package.json
 
+### Custom ?source Plugin Implementation
+
+The demo uses a custom Vite plugin to import source files as raw strings for code display:
+
+```typescript
+function sourcePlugin(): Plugin {
+  return {
+    name: "vite-plugin-source",
+    transform(_code, id) {
+      const [filepath, query] = id.split("?");
+      if (query === "source") {
+        const fs = require("fs");
+        const rawSource = fs.readFileSync(filepath, "utf-8");
+        return {
+          code: `export default ${JSON.stringify(rawSource)}`,
+          map: null,
+        };
+      }
+    },
+  };
+}
+```
+
+This allows demo files to import their own source code:
+```typescript
+import source from "./index.tsx?source";
+```
+
+## Important: ESM Module Exports
+
+**TypeScript interfaces and types MUST use `export type` in index files:**
+
+Vite uses native ESM, which doesn't export TypeScript interfaces as runtime values. Always separate type and value exports:
+
+```typescript
+// ❌ Wrong - causes "does not provide an export" errors
+export {TimeFrameType, FilterTimeFrame, TimeframePicker} from "./file";
+
+// ✅ Correct - separate type and value exports
+export {TimeFrameType, TimeframePicker} from "./file";
+export type {FilterTimeFrame} from "./file";
+```
+
+**Affected files in this codebase:**
+- `src/date-pickers/index.ts` - `FilterTimeFrame` is a type
+- `src/Paging/index.ts` - `Page`, `Pageable`, `PagingSettings`, `Paging` are types (only `PagingImpl` is a value)
+
+This issue only occurs with Vite/native ESM, not with webpack's bundler.
+
 ## Splash Screen Integration
 
 **For Webpack users:**
@@ -250,3 +313,34 @@ render(<App />);
 ## Font Loading
 
 For local Google Fonts, add `VCThemeProvider` or `RobotoFont` component to your app. Vite handles font asset loading automatically.
+
+## Troubleshooting
+
+### Dev Server Shows Splash Screen but Nothing Loads
+
+Check browser console for module export errors. Common causes:
+1. **TypeScript interfaces exported as values** - Use `export type` instead of `export` for interfaces/types
+2. **Missing dependencies** - Run `npm install` to ensure all packages are installed
+3. **Port conflicts** - Vite dev server runs on port 3000 by default
+
+### Production Build Output Location
+
+The demo build **must** output to `build/` directory for GitHub Pages deployment. This is configured in `vite.config.ts`:
+
+```typescript
+build: {
+  outDir: "build",
+  emptyOutDir: true,
+}
+```
+
+Do not change this without updating the GitHub Actions workflow (`.github/workflows/ci.yml`).
+
+### Vite vs Webpack Differences
+
+**Key differences when migrating from webpack:**
+- Native ESM requires proper type/value export separation
+- HTML template is at project root (`index.html`), not in `src/splash/`
+- Environment variables use `import.meta.env` instead of `process.env`
+- Asset imports use Vite's native asset handling (no webpack loaders needed)
+- Dev server uses different port (3000 vs webpack-dev-server's default 8080)
