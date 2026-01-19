@@ -106,7 +106,7 @@ describe("TemporalRangeFormat", () => {
             );
         });
         const value = element!.root.children[0];
-        expect(value).toBe("22.6.2022, 14:22:00 GMT+2 – 19:22:00 GMT+2");
+        expect(value).toBe("22.6.2022, 14:22:00 MESZ – 19:22:00 MESZ");
     });
 
     test("ZonedDateTime en-US", () => {

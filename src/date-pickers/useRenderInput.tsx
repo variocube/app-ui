@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useCallback} from "react";
+import {useCallback, useMemo} from "react";
 import {TextFieldProps} from "@mui/material/TextField/TextField";
 import {TextField} from "@mui/material";
 
@@ -7,14 +7,24 @@ export type UseRenderInputProps = Pick<TextFieldProps, "fullWidth" | "helperText
 
 export function useRenderInput(props: UseRenderInputProps) {
     const {fullWidth, helperText, size, required} = props;
+
+    // Create a stable forwardRef component
+    const RenderInputComponent = useMemo(
+        () => React.forwardRef<any, TextFieldProps>((props, ref) => (
+            <TextField
+                variant="outlined"
+                fullWidth={fullWidth}
+                helperText={helperText}
+                size={size}
+                required={required}
+                {...props}
+                inputRef={ref}
+            />
+        )),
+        [fullWidth, helperText, size, required]
+    );
+
     return useCallback((props: TextFieldProps) => (
-        <TextField
-            variant="outlined"
-            fullWidth={fullWidth}
-            helperText={helperText}
-            size={size}
-            required={required}
-            {...props}
-        />
-    ), [fullWidth, helperText, size]);
+        <RenderInputComponent {...props} />
+    ), [RenderInputComponent]);
 }
