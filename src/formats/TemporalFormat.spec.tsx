@@ -65,7 +65,7 @@ describe("TemporalFormat", () => {
             element = create(<TemporalFormat value={ZonedDateTime.from("2022-06-22T14:22[MET]")} locale="de-AT"/>);
         });
         const value = element!.root.children[0];
-        expect(value).toBe("22.6.2022, 14:22:00 GMT+2");
+        expect(value).toBe("22.6.2022, 14:22:00 MESZ");
     });
 
     test("ZonedDateTime en-US", () => {
