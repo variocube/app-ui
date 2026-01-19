@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ```bash
-# Development server (webpack dev server on port 3000)
+# Development server (Vite dev server on port 3000 with TypeScript type-checking)
 npm run dev
 
 # Build the library (TypeScript compilation to esm/)
@@ -25,7 +25,7 @@ npm run build
 # Run tests (Jest with ts-jest)
 npm test
 
-# Build demo site (webpack production build)
+# Build demo site (Vite production build)
 npm run build:demo
 
 # Clean build output
@@ -180,11 +180,11 @@ Before submitting a PR, ensure:
 
 ## CI/CD Pipeline
 
-GitHub Actions workflow runs on push and PRs:
+GitHub Actions workflow runs on push and PRs (Node 22):
 1. `npm ci` - Clean install
 2. `npm run build` - TypeScript compilation
 3. `npm run test` - Jest tests
-4. `npm run build:demo` - Webpack demo build
+4. `npm run build:demo` - Vite demo build
 5. NPM publish on tags
 6. GitHub Pages deployment on tags
 
@@ -204,11 +204,25 @@ GitHub Actions workflow runs on push and PRs:
 - `error-stack-parser` - Error stack analysis
 - `react-async-hook` - Async operations
 
+## Build System
+
+The demo application uses **Vite** (v7+) with the following plugins:
+- `@vitejs/plugin-react` - React support with Fast Refresh
+- `@variocube/vite-plugins` - Splash screen plugin
+- `vite-plugin-checker` - TypeScript type-checking during dev and build
+- Custom `?source` plugin - Imports files as raw strings for code display in demos
+
+**Key Vite Configuration** (`vite.config.ts`):
+- Entry: `index.html` → `demo/index.tsx`
+- Output directory: `build/` (for GitHub Pages)
+- Dev server port: 3000
+- Base path: `""` (empty for flexible deployment)
+- VERSION constant injected from package.json
+
 ## Splash Screen Integration
 
-To use the splash screen in consumer applications:
-
-1. Reference splash template in webpack config:
+**For Webpack users:**
+Reference splash template in webpack config:
 ```javascript
 new HtmlWebPackPlugin({
   filename: "./index.html",
@@ -217,7 +231,17 @@ new HtmlWebPackPlugin({
 })
 ```
 
-2. Use the `render` function from `@variocube/app-ui`:
+**For Vite users:**
+Use the splash plugin from `@variocube/vite-plugins`:
+```typescript
+import { splash } from "@variocube/vite-plugins";
+
+export default defineConfig({
+  plugins: [splash()],
+});
+```
+
+Then use the `render` function from `@variocube/app-ui`:
 ```javascript
 import {render} from "@variocube/app-ui";
 render(<App />);
@@ -225,13 +249,4 @@ render(<App />);
 
 ## Font Loading
 
-For local Google Fonts:
-
-1. Add `VCThemeProvider` or `RobotoFont` component to your app
-2. Configure webpack loader for webfonts:
-```javascript
-{
-  test: /\.woff(2?)$/,
-  type: "asset/resource",
-}
-```
+For local Google Fonts, add `VCThemeProvider` or `RobotoFont` component to your app. Vite handles font asset loading automatically.
