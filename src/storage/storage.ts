@@ -1,4 +1,5 @@
 import {MemoryStorage} from "./MemoryStorage";
+import {StorageType} from "./types";
 
 const TEST_KEY = "__check_storage_supported";
 
@@ -15,24 +16,42 @@ function isSupported(storage?: Storage) {
 	}
 }
 
-function findSupportedStorage() {
-	return [window.localStorage, window.sessionStorage].find(isSupported)
-		|| new MemoryStorage();
+function getStorageArea(type: StorageType): Storage {
+	const preferred = type === "local" ? window.localStorage : window.sessionStorage;
+	const fallback = type === "local" ? window.sessionStorage : window.localStorage;
+
+	if (isSupported(preferred)) return preferred;
+	if (isSupported(fallback)) return fallback;
+	return new MemoryStorage();
 }
 
 type StorageChangeListener = (oldValue?: string, newValue?: string) => void;
 
 class StorageWrapper {
 	private readonly listeners = new Map<string, Set<StorageChangeListener>>();
-	private readonly storageArea = findSupportedStorage();
+	private readonly storageAreas = new Map<StorageType, Storage>();
 
 	constructor() {
+		// Initialize both storage areas
+		this.storageAreas.set("local", getStorageArea("local"));
+		this.storageAreas.set("session", getStorageArea("session"));
+
 		window.addEventListener("storage", event => {
 			const {storageArea, key, oldValue, newValue} = event;
-			if (storageArea == this.storageArea && key && oldValue != newValue) {
-				this.notifyChangeListener(key, oldValue || undefined, newValue || undefined);
+			// Check against both storage areas
+			if (key && oldValue != newValue) {
+				for (const area of this.storageAreas.values()) {
+					if (storageArea === area) {
+						this.notifyChangeListener(key, oldValue || undefined, newValue || undefined);
+						break;
+					}
+				}
 			}
 		});
+	}
+
+	private getArea(type?: StorageType): Storage {
+		return this.storageAreas.get(type ?? "local")!;
 	}
 
 	addChangeListener(key: string, listener: StorageChangeListener) {
@@ -43,13 +62,14 @@ class StorageWrapper {
 		this.getOrCreateListeners(key).delete(listener);
 	}
 
-	write(key: string, value?: string) {
-		const oldValue = this.read(key);
+	write(key: string, value?: string, type?: StorageType) {
+		const oldValue = this.read(key, type);
+		const area = this.getArea(type);
 		try {
 			if (value !== undefined) {
-				this.storageArea.setItem(key, value);
+				area.setItem(key, value);
 			} else {
-				this.storageArea.removeItem(key);
+				area.removeItem(key);
 			}
 			this.notifyChangeListener(key, oldValue, value);
 		} catch (error) {
@@ -57,19 +77,21 @@ class StorageWrapper {
 		}
 	}
 
-	delete(key: string) {
-		const oldValue = this.read(key);
+	delete(key: string, type?: StorageType) {
+		const oldValue = this.read(key, type);
+		const area = this.getArea(type);
 		try {
-			this.storageArea.removeItem(key);
+			area.removeItem(key);
 			this.notifyChangeListener(key, oldValue, undefined);
 		} catch (error) {
 			// ignore error
 		}
 	}
 
-	read(key: string) {
+	read(key: string, type?: StorageType) {
+		const area = this.getArea(type);
 		try {
-			return this.storageArea.getItem(key);
+			return area.getItem(key);
 		} catch (error) {
 			// ignore error
 			return null;

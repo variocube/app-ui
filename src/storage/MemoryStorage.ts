@@ -1,21 +1,28 @@
+export class MemoryStorage implements Storage {
+	private readonly data = new Map<string, string>();
 
-export class MemoryStorage {
+	get length(): number {
+		return this.data.size;
+	}
 
-    private readonly data = new Map<string, string>();
+	key(index: number): string | null {
+		const keys = Array.from(this.data.keys());
+		return keys[index] ?? null;
+	}
 
-    getItem(key: string) {
-        return this.data.get(key);
-    }
+	getItem(key: string): string | null {
+		return this.data.get(key) ?? null;
+	}
 
-    setItem(key: string, value: string) {
-        return this.data.set(key, value);
-    }
+	setItem(key: string, value: string): void {
+		this.data.set(key, value);
+	}
 
-    removeItem(key: string) {
-        return this.data.delete(key);
-    }
+	removeItem(key: string): void {
+		this.data.delete(key);
+	}
 
-    clear() {
-        return this.data.clear();
-    }
+	clear(): void {
+		this.data.clear();
+	}
 }
