@@ -1,26 +1,37 @@
-import {useStorage} from "../storage";
 import {useCallback, useMemo} from "react";
-import {DataTableColumn} from "./DataTable";
+import {StorageType, useStorage} from "../storage";
 import {defined} from "../utils";
+import {DataTableColumn} from "./DataTable";
 
-export function useDataTableColumnStorage<T>(key: string, availableColumns: ReadonlyArray<DataTableColumn<T>>) {
+/**
+ * Hook for persisting DataTable column visibility to browser storage.
+ *
+ * @param key - Unique storage key for column settings
+ * @param availableColumns - All available columns for this DataTable
+ * @param storageType - Optional storage type ('local' or 'session'). Defaults to 'local'.
+ */
+export function useDataTableColumnStorage<T>(
+	key: string,
+	availableColumns: ReadonlyArray<DataTableColumn<T>>,
+	storageType?: StorageType,
+) {
+	const defaultColumns = useMemo(() =>
+		availableColumns
+			.filter(c => c.default)
+			.map(c => c.field), [availableColumns]);
 
-    const defaultColumns = useMemo(() => availableColumns
-        .filter(c => c.default)
-        .map(c => c.field), [availableColumns]);
+	const [storage, setStorage] = useStorage(key, defaultColumns, storageType);
 
-    const [storage, setStorage] = useStorage(key, defaultColumns);
+	const columns = storage
+		.map(c => availableColumns.find(a => a.field == c))
+		.filter(defined);
 
-    const columns = storage
-        .map(c => availableColumns.find(a => a.field == c))
-        .filter(defined);
+	const setColumns = useCallback((columns: ReadonlyArray<DataTableColumn<T>>) => {
+		setStorage(columns.map(c => c.field));
+	}, [setStorage]);
 
-    const setColumns = useCallback((columns: ReadonlyArray<DataTableColumn<T>>) => {
-        setStorage(columns.map(c => c.field));
-    }, []);
-
-    return {
-        columns,
-        setColumns
-    }
+	return {
+		columns,
+		setColumns,
+	};
 }
