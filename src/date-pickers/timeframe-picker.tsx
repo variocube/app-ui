@@ -1,6 +1,6 @@
-import {Now, PlainDate, tryParsePlainDate} from "../temporal";
-import React, {ChangeEvent, useEffect} from "react";
 import {Box, Grid, MenuItem, TextField} from "@mui/material";
+import React, {ChangeEvent, useEffect} from "react";
+import {Now, PlainDate, tryParsePlainDate} from "../temporal";
 import {PlainDatePicker} from "./PlainDatePicker";
 
 export enum TimeFrameType {
@@ -40,15 +40,15 @@ interface TimeFrameSelectProps {
 			Last3Months?: string;
 			LastYear?: string;
 			Custom?: string;
-		}
-	}
+		};
+	};
 }
 
 export function TimeframePicker({value, onChange, i18n}: TimeFrameSelectProps) {
 	const {
 		type,
 		from,
-		until
+		until,
 	} = value;
 
 	const fromPlainDate = tryParsePlainDate(from) ?? null;
@@ -93,7 +93,7 @@ export function TimeframePicker({value, onChange, i18n}: TimeFrameSelectProps) {
 		timeframeTitle: tTimeframeTitle,
 		from: tFrom,
 		until: tUntil,
-		types: tTypes = {}
+		types: tTypes = {},
 	} = i18n ?? {};
 
 	return (
@@ -104,7 +104,7 @@ export function TimeframePicker({value, onChange, i18n}: TimeFrameSelectProps) {
 						fullWidth
 						select
 						variant="outlined"
-						label={tTimeframeTitle ?? 'Timeframe'}
+						label={tTimeframeTitle ?? "Timeframe"}
 						value={type}
 						onChange={handleTypeChange}
 					>
@@ -115,7 +115,7 @@ export function TimeframePicker({value, onChange, i18n}: TimeFrameSelectProps) {
 				</Grid>
 				<Grid item md={4} xs={12}>
 					<PlainDatePicker
-						label={tFrom ?? 'From'}
+						label={tFrom ?? "From"}
 						value={fromPlainDate}
 						onChange={handleFromChange}
 						disabled={type != TimeFrameType.Custom}
@@ -124,7 +124,7 @@ export function TimeframePicker({value, onChange, i18n}: TimeFrameSelectProps) {
 				</Grid>
 				<Grid item md={4} xs={12}>
 					<PlainDatePicker
-						label={tUntil ?? 'Until'}
+						label={tUntil ?? "Until"}
 						value={untilPlainDate}
 						onChange={handleUntilChange}
 						disabled={type != TimeFrameType.Custom}
@@ -133,7 +133,7 @@ export function TimeframePicker({value, onChange, i18n}: TimeFrameSelectProps) {
 				</Grid>
 			</Grid>
 		</Box>
-	)
+	);
 }
 
 export function computeFromUntil(type: TimeFrameType, from?: PlainDate | null, until?: PlainDate | null) {
@@ -154,13 +154,13 @@ export function computeFromUntil(type: TimeFrameType, from?: PlainDate | null, u
 			return {
 				from: today,
 				until: today,
-			}
+			};
 
 		case TimeFrameType.Yesterday:
 			return {
 				from: yesterday,
 				until: yesterday,
-			}
+			};
 
 		case TimeFrameType.Last7Days:
 			return {
@@ -172,13 +172,13 @@ export function computeFromUntil(type: TimeFrameType, from?: PlainDate | null, u
 			return {
 				from: lastWeek.subtract({days: lastWeek.dayOfWeek - 1}),
 				until: lastWeek.add({days: 7 - lastWeek.dayOfWeek}),
-			}
+			};
 
 		case TimeFrameType.ThisMonth:
 			return {
 				from: today.with({day: 1}),
 				until: today.with({day: lastMonth.daysInMonth}),
-			}
+			};
 
 		case TimeFrameType.LastMonth:
 			return {
@@ -190,13 +190,12 @@ export function computeFromUntil(type: TimeFrameType, from?: PlainDate | null, u
 			return {
 				from: lastMonth.subtract({months: 3}).with({day: 1}),
 				until: lastMonth.with({day: lastMonth.daysInMonth}),
-			}
+			};
 
 		case TimeFrameType.LastYear:
 			return {
 				from: lastYear.with({day: 1, month: 1}),
 				until: lastYear.with({day: 31, month: 12}),
-			}
-
+			};
 	}
 }

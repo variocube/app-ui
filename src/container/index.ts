@@ -1,3 +1,8 @@
-export {ContainerSettingsContextProvider, useContainerSettingsContext, containerWidthToBreakPoint, nextWidth} from "./ContainerSettingsContext";
-export {ContainerLayout} from "./ContainerLayout";
-export {ContainerWidthControl} from "./ContainerWidthControl";
+export { ContainerLayout } from "./ContainerLayout";
+export {
+	ContainerSettingsContextProvider,
+	containerWidthToBreakPoint,
+	nextWidth,
+	useContainerSettingsContext,
+} from "./ContainerSettingsContext";
+export { ContainerWidthControl } from "./ContainerWidthControl";

@@ -20,8 +20,7 @@ function tryParseString<T>(value: string | undefined | null, parseFn: (value: st
 	if (value) {
 		try {
 			return parseFn(value);
-		}
-		catch (error) {
+		} catch (error) {
 			// ignore parse error
 		}
 	}

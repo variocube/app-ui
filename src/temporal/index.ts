@@ -1,2 +1,2 @@
-export * from "./polyfill";
 export * from "./parse";
+export * from "./polyfill";

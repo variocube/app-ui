@@ -1,6 +1,6 @@
-import {useCustomLogo} from "../VCThemeProvider";
-import React from "react";
 import {Box, BoxProps} from "@mui/material";
+import React from "react";
+import {useCustomLogo} from "../VCThemeProvider";
 import {VCLogo} from "./VCLogo";
 
 interface LogoProps extends Omit<BoxProps, "height"> {
@@ -8,7 +8,7 @@ interface LogoProps extends Omit<BoxProps, "height"> {
 }
 
 export function Logo(props: LogoProps) {
-	const {height= 52, ...rest} = props;
+	const {height = 52, ...rest} = props;
 	const customLogo = useCustomLogo();
 	if (customLogo) {
 		const {url, paddingX, paddingY} = customLogo;
@@ -23,12 +23,11 @@ export function Logo(props: LogoProps) {
 					width="auto"
 				/>
 			</Box>
-		)
-	}
-	else {
+		);
+	} else {
 		return (
 			<Box {...rest}>
-				<VCLogo height={height} width="auto"/>
+				<VCLogo height={height} width="auto" />
 			</Box>
 		);
 	}

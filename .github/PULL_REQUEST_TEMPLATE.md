@@ -1,10 +1,12 @@
 Refs issue-number-or-link
 
 Related PRs:
+
 - issue-number-or-link
 - issue-number-or-link
 
 Additional notes:
+
 - add some additional notes here
 
 ## Coder
@@ -21,16 +23,19 @@ Additional notes:
 ## Reviewer
 
 Code review:
+
 - [ ] The coder completed their checklist to a reasonable extent (relative to the complexity of the PR)
 - [ ] I have reviewed the code, and it is easy to understand and follows best practices.
 
 Testing:
+
 - [ ] I have tested that the issue is resolved
 - [ ] I have tested that no regressions were introduced (other features still work)
 - [ ] I have tested edge cases
 - [ ] I have tested error cases and errors are handled correctly
 
 Merging:
+
 - [ ] I have resolved any database version conflicts
 - [ ] The build and tests have succeeded
-- [ ] I have moved the issue to *Waiting Deployment*
+- [ ] I have moved the issue to _Waiting Deployment_

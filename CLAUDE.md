@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 `@variocube/app-ui` is a React/TypeScript component library providing common UI components for Variocube applications. It's published as an npm package with Material-UI 5.x as the foundation.
 
 **Key characteristics:**
+
 - React 17.x based component library
 - TypeScript with strict mode enabled
 - Material-UI (MUI) 5.x peer dependency
@@ -60,7 +61,9 @@ All exports are available from the main entry point (`src/index.ts`) for tree-sh
 ### Key Architectural Patterns
 
 #### 1. Context + Hooks Pattern
+
 Global state managed through React Context with custom hooks:
+
 - **VCThemeProvider**: Theme mode (light/dark), custom branding, palette context
   - Hook: `usePaletteMode()`, `useCustomLogo()`
 - **LocalizationProvider**: i18n with typed translation objects
@@ -69,7 +72,9 @@ Global state managed through React Context with custom hooks:
   - Hook: `useLayoutContext()`
 
 #### 2. Factory Pattern
+
 Configuration-based factory functions for creating instances:
+
 - **`createApiFetcher(baseUrl, baseHeaders, baseHeadersModifier?)`**: Returns API client with methods: `fetch`, `fetchJson`, `get`, `post`, `put`, `patch`, `del`
   - Handles error parsing, query strings, file uploads
   - Supports RFC 7807 Problem JSON format
@@ -79,14 +84,18 @@ Configuration-based factory functions for creating instances:
   - Storage-backed language persistence
 
 #### 3. Storage Abstraction
+
 Global singleton `storage` wrapper:
+
 - Auto-detects available storage: localStorage → sessionStorage → MemoryStorage
 - Event listener pattern for cross-tab synchronization
 - React hook: `useStorage<T>(key, defaultValue)`
 - Change listeners for reactive updates
 
 #### 4. Wrapper Components
+
 Many Input components wrap MUI components with enhancements:
+
 - `TextField`: Custom validation, lazy validation (after first interaction)
 - `Select`, `Checkbox`, `Switch`, `RadioGroup`: Type-safe MUI wrappers
 - `Confirm*` components: Wrap Button/IconButton/MenuItem with confirmation dialogs
@@ -106,6 +115,7 @@ VCThemeProvider (theme + branding)
 ### Theming and Branding
 
 `VCThemeProvider` provides:
+
 - Light/dark mode with system preference detection
 - Custom primary/secondary colors (mode-specific)
 - Custom logo support (mode-specific URLs)
@@ -115,6 +125,7 @@ VCThemeProvider (theme + branding)
 ### Type-Safe Localization
 
 The localization system uses recursive TypeScript types for deep object navigation:
+
 - Translation objects with nested structure
 - Dot-notation access (e.g., `t("common.actions.save")`)
 - Mustache template parameters
@@ -123,6 +134,7 @@ The localization system uses recursive TypeScript types for deep object navigati
 ### API Communication
 
 `createApiFetcher` factory creates type-safe API clients:
+
 - Base URL and headers configuration
 - Request builders: `createJsonRequest(method, body)`
 - Query string builder: `createQueryString(...args)`
@@ -162,6 +174,7 @@ Console warnings about `"Function components cannot be given refs"` from `Forwar
 **Tool:** dprint (v0.46.3)
 
 **Configuration:**
+
 - Line width: 120 characters
 - Indentation: Tabs (4 spaces width for TypeScript)
 - Special case: i18n JSON files use 2-space indentation
@@ -179,6 +192,7 @@ npx dprint check
 Before submitting a PR, ensure:
 
 **Coder Checklist:**
+
 - Fix IDE warnings/errors where appropriate
 - Write unit/integration tests where applicable
 - Test issue resolution and that no regressions were introduced
@@ -187,6 +201,7 @@ Before submitting a PR, ensure:
 - Resolve conflicts with main branch
 
 **Code Quality:**
+
 - Code is easy to understand and follows best practices
 - Components follow existing patterns (wrapper, context+hooks, factory)
 - TypeScript types are properly defined
@@ -195,6 +210,7 @@ Before submitting a PR, ensure:
 ## CI/CD Pipeline
 
 GitHub Actions workflow runs on push and PRs (Node 22):
+
 1. `npm ci` - Clean install
 2. `npm run build` - TypeScript compilation
 3. `npm run test` - Jest tests
@@ -205,6 +221,7 @@ GitHub Actions workflow runs on push and PRs (Node 22):
 ## Dependencies
 
 **Peer Dependencies** (must be provided by consumer):
+
 - `react@17.x`
 - `@mui/material@5.x`, `@mui/icons-material@5.x`, `@mui/lab@>5.0.0-alpha`
 - `@mui/x-date-pickers@>5.0.0-beta`
@@ -212,6 +229,7 @@ GitHub Actions workflow runs on push and PRs (Node 22):
 - `mustache@4.x`
 
 **Key Dependencies:**
+
 - `@js-temporal/polyfill` - Temporal API for date/time handling
 - `deepmerge` - Theme configuration merging
 - `roboto-fontface`, `@fontsource/jetbrains-mono` - Local fonts
@@ -221,12 +239,14 @@ GitHub Actions workflow runs on push and PRs (Node 22):
 ## Build System
 
 The demo application uses **Vite** (v7+) with the following plugins:
+
 - `@vitejs/plugin-react` - React support with Fast Refresh
 - `@variocube/vite-plugins` - Splash screen plugin
 - `vite-plugin-checker` - TypeScript type-checking during dev and build
 - Custom `?source` plugin - Imports files as raw strings for code display in demos
 
 **Key Vite Configuration** (`vite.config.ts`):
+
 - Entry: `index.html` → `demo/index.tsx`
 - Output directory: `build/` (for GitHub Pages)
 - Dev server port: 3000
@@ -239,24 +259,25 @@ The demo uses a custom Vite plugin to import source files as raw strings for cod
 
 ```typescript
 function sourcePlugin(): Plugin {
-  return {
-    name: "vite-plugin-source",
-    transform(_code, id) {
-      const [filepath, query] = id.split("?");
-      if (query === "source") {
-        const fs = require("fs");
-        const rawSource = fs.readFileSync(filepath, "utf-8");
-        return {
-          code: `export default ${JSON.stringify(rawSource)}`,
-          map: null,
-        };
-      }
-    },
-  };
+	return {
+		name: "vite-plugin-source",
+		transform(_code, id) {
+			const [filepath, query] = id.split("?");
+			if (query === "source") {
+				const fs = require("fs");
+				const rawSource = fs.readFileSync(filepath, "utf-8");
+				return {
+					code: `export default ${JSON.stringify(rawSource)}`,
+					map: null,
+				};
+			}
+		},
+	};
 }
 ```
 
 This allows demo files to import their own source code:
+
 ```typescript
 import source from "./index.tsx?source";
 ```
@@ -269,14 +290,15 @@ Vite uses native ESM, which doesn't export TypeScript interfaces as runtime valu
 
 ```typescript
 // ❌ Wrong - causes "does not provide an export" errors
-export {TimeFrameType, FilterTimeFrame, TimeframePicker} from "./file";
+export { FilterTimeFrame, TimeframePicker, TimeFrameType } from "./file";
 
 // ✅ Correct - separate type and value exports
-export {TimeFrameType, TimeframePicker} from "./file";
-export type {FilterTimeFrame} from "./file";
+export { TimeframePicker, TimeFrameType } from "./file";
+export type { FilterTimeFrame } from "./file";
 ```
 
 **Affected files in this codebase:**
+
 - `src/date-pickers/index.ts` - `FilterTimeFrame` is a type
 - `src/Paging/index.ts` - `Page`, `Pageable`, `PagingSettings`, `Paging` are types (only `PagingImpl` is a value)
 
@@ -286,25 +308,28 @@ This issue only occurs with Vite/native ESM, not with webpack's bundler.
 
 **For Webpack users:**
 Reference splash template in webpack config:
+
 ```javascript
 new HtmlWebPackPlugin({
-  filename: "./index.html",
-  template: "./node_modules/@variocube/app-ui/src/splash/template.html",
-  title: "My splashy app",
-})
+	filename: "./index.html",
+	template: "./node_modules/@variocube/app-ui/src/splash/template.html",
+	title: "My splashy app",
+});
 ```
 
 **For Vite users:**
 Use the splash plugin from `@variocube/vite-plugins`:
+
 ```typescript
-import { splash } from "@variocube/vite-plugins";
+import {splash} from "@variocube/vite-plugins";
 
 export default defineConfig({
-  plugins: [splash()],
+	plugins: [splash()],
 });
 ```
 
 Then use the `render` function from `@variocube/app-ui`:
+
 ```javascript
 import {render} from "@variocube/app-ui";
 render(<App />);
@@ -319,6 +344,7 @@ For local Google Fonts, add `VCThemeProvider` or `RobotoFont` component to your 
 ### Dev Server Shows Splash Screen but Nothing Loads
 
 Check browser console for module export errors. Common causes:
+
 1. **TypeScript interfaces exported as values** - Use `export type` instead of `export` for interfaces/types
 2. **Missing dependencies** - Run `npm install` to ensure all packages are installed
 3. **Port conflicts** - Vite dev server runs on port 3000 by default
@@ -339,6 +365,7 @@ Do not change this without updating the GitHub Actions workflow (`.github/workfl
 ### Vite vs Webpack Differences
 
 **Key differences when migrating from webpack:**
+
 - Native ESM requires proper type/value export separation
 - HTML template is at project root (`index.html`), not in `src/splash/`
 - Environment variables use `import.meta.env` instead of `process.env`

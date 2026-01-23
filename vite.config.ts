@@ -1,8 +1,8 @@
+import {splash} from "@variocube/vite-plugins";
 import react from "@vitejs/plugin-react";
-import { readFileSync } from "fs";
-import { defineConfig, Plugin } from "vite";
+import {readFileSync} from "fs";
+import {defineConfig, Plugin} from "vite";
 import checker from "vite-plugin-checker";
-import { splash } from "@variocube/vite-plugins";
 
 const packageJson = JSON.parse(readFileSync("./package.json", "utf-8"));
 

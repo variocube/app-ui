@@ -1,0 +1,5 @@
+# Commits to ignore in git blame
+# Configure with: git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# style: apply dprint formatting
+4fbb87134b1166eb37e8df1ec024e5d091432621

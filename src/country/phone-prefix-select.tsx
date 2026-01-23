@@ -1,16 +1,15 @@
 import {Autocomplete, Box, TextField} from "@mui/material";
-import {countries, countryToFlag, findCountryByPhoneCode} from "./countries";
 import React from "react";
+import {countries, countryToFlag, findCountryByPhoneCode} from "./countries";
 
 interface PhonePrefixSelect {
 	label: string;
-	value: string|null;
-	onChange: (code: string|null) => void;
+	value: string | null;
+	onChange: (code: string | null) => void;
 	disabled?: boolean;
 }
 
 export function PhonePrefixSelect({label, value, onChange, disabled = false}: PhonePrefixSelect) {
-
 	return (
 		<Autocomplete
 			disabled={disabled}
@@ -46,5 +45,5 @@ export function PhonePrefixSelect({label, value, onChange, disabled = false}: Ph
 				/>
 			)}
 		/>
-	)
+	);
 }

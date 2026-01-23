@@ -9,7 +9,6 @@ interface CountrySelectProps {
 }
 
 export function CountrySelect({value, onChange, label}: CountrySelectProps) {
-
 	return (
 		<Autocomplete
 			multiple={false}

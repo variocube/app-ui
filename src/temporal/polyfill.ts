@@ -4,17 +4,17 @@
  * switch to a conditional polyfill or using the browser built-ins.
  */
 
-import {Temporal, Intl, toTemporalInstant} from '@js-temporal/polyfill';
+import {Intl, Temporal, toTemporalInstant} from "@js-temporal/polyfill";
 
 export const {
-    Instant,
-    ZonedDateTime,
-    PlainDateTime,
-    PlainDate,
-    PlainTime,
-    Now,
-    Duration,
-    TimeZone
+	Instant,
+	ZonedDateTime,
+	PlainDateTime,
+	PlainDate,
+	PlainTime,
+	Now,
+	Duration,
+	TimeZone,
 } = Temporal;
 
 export type Instant = Temporal.Instant;
@@ -26,11 +26,11 @@ export type Duration = Temporal.Duration;
 export type TimeZone = Temporal.TimeZone;
 
 export const {
-    DateTimeFormat
+	DateTimeFormat,
 } = Intl;
 
 export type DateTimeFormat = Intl.DateTimeFormat;
 export type DateTimeFormatOptions = Intl.DateTimeFormatOptions;
 export type Formattable = Intl.Formattable;
 
-export {toTemporalInstant};
+export { toTemporalInstant };

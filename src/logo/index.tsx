@@ -1,4 +1,4 @@
-export * from "./VCLogoIcon";
-export * from "./VCLogo";
-export * from "./VCAppLogo";
 export * from "./Logo";
+export * from "./VCAppLogo";
+export * from "./VCLogo";
+export * from "./VCLogoIcon";

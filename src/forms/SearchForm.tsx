@@ -5,47 +5,46 @@ import {SearchIcon} from "../icons";
 import {TextField, TextFieldProps} from "../Input/TextField";
 
 export type SearchFormProps = Omit<TextFieldProps, "value" | "onChange" | "InputProps"> & {
-    search?: string;
-    onSearch: (search: string) => void;
-}
+	search?: string;
+	onSearch: (search: string) => void;
+};
 
 export function SearchForm(props: SearchFormProps) {
-    const {
-        search,
-        onSearch,
-        ...rest
-    } = props;
+	const {
+		search,
+		onSearch,
+		...rest
+	} = props;
 
+	const [value, setValue] = useState(search || "");
 
-    const [value, setValue] = useState(search || "");
+	useEffect(() => {
+		if (search) {
+			setValue(value);
+		}
+	}, [search]);
 
-    useEffect(() => {
-        if (search) {
-            setValue(value);
-        }
-    }, [search]);
+	function handleSubmit(e: FormEvent) {
+		e.preventDefault();
+		onSearch(value);
+	}
 
-    function handleSubmit(e: FormEvent) {
-        e.preventDefault();
-        onSearch(value);
-    }
-
-    return (
-        <form onSubmit={handleSubmit}>
-            <TextField
-                value={value}
-                onChange={setValue}
-                InputProps={{
-                    endAdornment: (
-                        <InputAdornment position="end">
-                            <IconButton type="submit" size="large">
-                                <SearchIcon/>
-                            </IconButton>
-                        </InputAdornment>
-                    )
-                }}
-                {...rest}
-            />
-        </form>
-    );
+	return (
+		<form onSubmit={handleSubmit}>
+			<TextField
+				value={value}
+				onChange={setValue}
+				InputProps={{
+					endAdornment: (
+						<InputAdornment position="end">
+							<IconButton type="submit" size="large">
+								<SearchIcon />
+							</IconButton>
+						</InputAdornment>
+					),
+				}}
+				{...rest}
+			/>
+		</form>
+	);
 }

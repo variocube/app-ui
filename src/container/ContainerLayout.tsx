@@ -1,9 +1,9 @@
-import React, {createElement, PropsWithChildren} from "react";
-import {Breakpoint} from "@mui/system";
 import {Box, Container} from "@mui/material";
-import {containerWidthToBreakPoint, useContainerSettingsContext} from "./ContainerSettingsContext";
-import {useHelpSettingsContext} from "../help/HelpSettingsContext";
+import {Breakpoint} from "@mui/system";
+import React, {createElement, PropsWithChildren} from "react";
 import {HelpDrawer} from "../help/HelpDrawer";
+import {useHelpSettingsContext} from "../help/HelpSettingsContext";
+import {containerWidthToBreakPoint, useContainerSettingsContext} from "./ContainerSettingsContext";
 
 interface ContainerLayoutProps extends PropsWithChildren<any> {
 	fixedWidth?: Breakpoint | false;
@@ -15,7 +15,7 @@ export function ContainerLayout({children, fixedWidth, margin, helpKey}: Contain
 	const {baseUrl} = useHelpSettingsContext();
 
 	let selectedWidth = fixedWidth;
-	if(!selectedWidth && width) {
+	if (!selectedWidth && width) {
 		selectedWidth = containerWidthToBreakPoint(width);
 	}
 
@@ -28,9 +28,8 @@ export function ContainerLayout({children, fixedWidth, margin, helpKey}: Contain
 				displayPrint="none"
 			>
 				{children}
-				{baseUrl &&
-					<HelpDrawer />
-				}
+				{baseUrl
+					&& <HelpDrawer />}
 			</Box>
 			<Box id="containerLayoutBoxPrint" display="none" displayPrint="block" style={{marginTop: "-32px"}}>
 				{children}

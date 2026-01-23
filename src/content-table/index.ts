@@ -1,1 +1,1 @@
-export *  from "./ContentTable";
+export * from "./ContentTable";

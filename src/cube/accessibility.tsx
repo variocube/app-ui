@@ -418,5 +418,6 @@ export const isInAccesssibleTime = (
 	const from = toZonedDateTime(getStartOfAccessibleToday(accessibility));
 	const until = toZonedDateTime(getEndOfAccessibleToday(accessibility));
 	// only compare opening times not date
-	return ((PlainTime.compare(PlainTime.from(now), PlainTime.from(from)) == 1) && (PlainTime.compare(PlainTime.from(now), PlainTime.from(until)) == -1))
+	return ((PlainTime.compare(PlainTime.from(now), PlainTime.from(from)) == 1)
+		&& (PlainTime.compare(PlainTime.from(now), PlainTime.from(until)) == -1));
 };

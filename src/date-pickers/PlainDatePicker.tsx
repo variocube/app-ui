@@ -2,15 +2,15 @@ import {DatePicker, LocalizationProvider, PickersDay} from "@mui/x-date-pickers"
 import * as React from "react";
 import {PlainDate} from "../temporal";
 import {PlainDateAdapter} from "./PlainDateAdapter";
-import {useRenderInput, UseRenderInputProps} from "./useRenderInput";
 import {useLocale} from "./useLocale";
+import {useRenderInput, UseRenderInputProps} from "./useRenderInput";
 
 interface PlainDatePickerProps {
-    value: PlainDate | null;
-    onChange: (value: PlainDate | null) => any;
-    label?: string;
-    disabled?: boolean;
-    required?: boolean;
+	value: PlainDate | null;
+	onChange: (value: PlainDate | null) => any;
+	label?: string;
+	disabled?: boolean;
+	required?: boolean;
 
 	disablePast?: boolean;
 	minDate?: PlainDate;
@@ -19,41 +19,40 @@ interface PlainDatePickerProps {
 
 	defaultCalendarMonth?: PlainDate;
 
-    /**
-     * Allows overriding the locale. Only use for testing.
-     */
-    locale?: string;
+	/**
+	 * Allows overriding the locale. Only use for testing.
+	 */
+	locale?: string;
 }
 
 export function PlainDatePicker(props: PlainDatePickerProps & UseRenderInputProps) {
-
-    const {
-        value,
-        onChange,
-        label,
-        disabled,
+	const {
+		value,
+		onChange,
+		label,
+		disabled,
 		disablePast,
 		minDate,
 		maxDate,
 		renderDay,
 		defaultCalendarMonth,
-        locale: suppliedLocale,
-        ...renderInputProps
-    } = props;
+		locale: suppliedLocale,
+		...renderInputProps
+	} = props;
 
-    const locale = useLocale(suppliedLocale);
+	const locale = useLocale(suppliedLocale);
 
-    const renderInput = useRenderInput(renderInputProps);
+	const renderInput = useRenderInput(renderInputProps);
 
-    return (
-        <LocalizationProvider dateAdapter={PlainDateAdapter} adapterLocale={locale}>
-            <DatePicker
-                label={label}
-                value={value}
-                disableMaskedInput
-                onChange={onChange}
-                disabled={disabled}
-                renderInput={renderInput}
+	return (
+		<LocalizationProvider dateAdapter={PlainDateAdapter} adapterLocale={locale}>
+			<DatePicker
+				label={label}
+				value={value}
+				disableMaskedInput
+				onChange={onChange}
+				disabled={disabled}
+				renderInput={renderInput}
 				disablePast={disablePast}
 				defaultCalendarMonth={defaultCalendarMonth}
 				minDate={minDate}
@@ -64,10 +63,8 @@ export function PlainDatePicker(props: PlainDatePickerProps & UseRenderInputProp
 							{renderDay(day, selectedDays)}
 						</PickersDay>
 					)
-					: undefined
-				}
-            />
-        </LocalizationProvider>
-    );
+					: undefined}
+			/>
+		</LocalizationProvider>
+	);
 }
-
