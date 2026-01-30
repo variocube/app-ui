@@ -22,6 +22,9 @@ export function useStorage<T>(key: string, defaultValue: T, storageType?: Storag
 	}, [key, updateStateFromStorage]);
 
 	const typedValue = useMemo(() => {
+		if (value === undefined) {
+			return defaultValue;
+		}
 		try {
 			return JSON.parse(value);
 		} catch (e) {
