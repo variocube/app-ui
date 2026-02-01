@@ -40,8 +40,10 @@ npx dprint fmt
 
 To test changes locally in a consumer project:
 
-1. In this project: `npm pack` (creates `variocube-app-ui-1.0.0.tgz`)
-2. In consumer project: `npm install ../app-ui/variocube-app-ui-1.0.0.tgz`
+1. In this project: `npm pack` (creates a `.tgz` file matching the current version)
+2. In consumer project: `npm install ../app-ui/variocube-app-ui-<version>.tgz`
+
+Live demo: https://variocube.github.io/app-ui
 
 ## Architecture
 
@@ -144,7 +146,8 @@ The localization system uses recursive TypeScript types for deep object navigati
 ## Testing
 
 **Framework:** Jest with ts-jest preset
-**Environment:** Node 22
+**Default environment:** Node (some tests override to jsdom via `/** @jest-environment jsdom */` pragma)
+**Node version:** 22 (specified in `.nvmrc`)
 **Test files:** Located alongside source files with `.spec.ts` extension
 
 ```bash
@@ -172,12 +175,13 @@ Console warnings about `"Function components cannot be given refs"` from `Forwar
 ## Code Formatting
 
 **Tool:** dprint (v0.46.3)
+**Config:** `dprint.json` (symlink to `.devtools/dprint.json` — shared across Variocube projects)
 
 **Configuration:**
 
 - Line width: 120 characters
 - Indentation: Tabs (4 spaces width for TypeScript)
-- Special case: i18n JSON files use 2-space indentation
+- JSON/Markdown: 2-space indentation (no tabs)
 
 ```bash
 # Format code
@@ -301,6 +305,7 @@ export type { FilterTimeFrame } from "./file";
 
 - `src/date-pickers/index.ts` - `FilterTimeFrame` is a type
 - `src/Paging/index.ts` - `Page`, `Pageable`, `PagingSettings`, `Paging` are types (only `PagingImpl` is a value)
+- `src/storage/index.ts` - `StorageType` is a type
 
 This issue only occurs with Vite/native ESM, not with webpack's bundler.
 
