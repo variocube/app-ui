@@ -23,15 +23,15 @@ export function useStorage<T>(key: string, defaultValue: T, storageType?: Storag
 
 	const typedValue = useMemo(() => {
 		if (value === undefined) {
-			return defaultValue;
+			return defaultValueSerialized !== undefined ? JSON.parse(defaultValueSerialized) : undefined;
 		}
 		try {
 			return JSON.parse(value);
 		} catch (e) {
 			console.warn(`Failed to parse storage value for key "${key}", falling back to default value.`, e);
-			return defaultValue;
+			return defaultValueSerialized !== undefined ? JSON.parse(defaultValueSerialized) : undefined;
 		}
-	}, [value, key, defaultValue]);
+	}, [value, key, defaultValueSerialized]);
 
 	const setTypedValue = useCallback((newValue: T) => {
 		const value = JSON.stringify(newValue);
