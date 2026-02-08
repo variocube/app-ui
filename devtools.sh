@@ -1,1 +1,1 @@
-./.devtools/devtools.sh
+.devtools/devtools.sh
