@@ -4,6 +4,8 @@ import MuiTab, {TabProps as MuiTabProps} from "@mui/material/Tab";
 import MuiTabs, {TabsProps as MuiTabsProps} from "@mui/material/Tabs";
 import React, {Fragment, SyntheticEvent, useCallback, useEffect, useRef, useState} from "react";
 
+const OVERFLOW_BUTTON_FALLBACK_WIDTH = 48;
+
 interface TabProps extends MuiTabProps<React.ElementType> {
 }
 
@@ -37,6 +39,7 @@ export function Tabs(props: TabsProps) {
 	} as TabProps));
 
 	const ref = useRef<HTMLDivElement>(null);
+	const stackRef = useRef<HTMLDivElement>(null);
 	const overflowButtonRef = useRef<HTMLButtonElement>(null);
 	const [dropdownEl, setDropdownEl] = useState<null | HTMLElement>(null);
 
@@ -47,16 +50,20 @@ export function Tabs(props: TabsProps) {
 	// Store measured tab widths from when all tabs are visible.
 	// Uses a ref so the ResizeObserver callback always sees the latest values.
 	const tabWidthsRef = useRef<number[]>([]);
+	// Guard to prevent re-entrant measurement loops when showing all tabs to measure hidden ones
+	const measuringRef = useRef(false);
 
+	// Dependencies: only refs (stable across renders), so [] is correct.
 	const computeOverflow = useCallback(() => {
 		if (!ref.current) return;
+		if (measuringRef.current) return;
 
-		const root = Array.from(ref.current.children).find(e => e.className.includes("tabRoot")) as
+		const root = Array.from(ref.current.children).find(e => e.classList.contains("tabRoot")) as
 			| HTMLElement
 			| undefined;
 		if (!root) return;
 
-		const list = Array.from(root.children).find(e => e.className.includes("tabList")) as HTMLElement | undefined;
+		const list = Array.from(root.children).find(e => e.classList.contains("tabList")) as HTMLElement | undefined;
 		if (!list) return;
 
 		// Measure tab widths from visible tabs and cache them.
@@ -77,8 +84,14 @@ export function Tabs(props: TabsProps) {
 
 		// If we don't have widths for all tabs yet (e.g. some were hidden before measurement),
 		// we can't make a correct decision. Show all tabs to allow measurement on next frame.
+		// Use measuringRef guard to prevent re-entrant loops from the ResizeObserver.
 		if (!hasAllWidths || widths.length < children.length) {
+			measuringRef.current = true;
 			setOverflowIndex(children.length);
+			requestAnimationFrame(() => {
+				measuringRef.current = false;
+				computeOverflow();
+			});
 			return;
 		}
 
@@ -87,8 +100,7 @@ export function Tabs(props: TabsProps) {
 		// Get the full available width from the parent Stack.
 		// When the overflow button is shown, the MuiTabs (flex: 1) shrinks to accommodate it.
 		// We need the Stack width to know the total available space.
-		const stack = root.closest(".MuiStack-root") as HTMLElement | undefined;
-		const fullWidth = stack ? stack.clientWidth : root.clientWidth;
+		const fullWidth = stackRef.current ? stackRef.current.clientWidth : root.clientWidth;
 
 		// Two-pass approach:
 		// 1. If all tabs fit in the full available width, no overflow needed
@@ -98,9 +110,11 @@ export function Tabs(props: TabsProps) {
 		}
 
 		// 2. Some tabs don't fit — reserve space for the overflow button and calculate
-		const overflowButtonWidth = overflowButtonRef.current
-			? overflowButtonRef.current.getBoundingClientRect().width + 8 // 8px for ml:1 margin
-			: 48; // fallback estimate
+		let overflowButtonWidth = OVERFLOW_BUTTON_FALLBACK_WIDTH;
+		if (overflowButtonRef.current) {
+			const margin = parseFloat(getComputedStyle(overflowButtonRef.current).marginLeft) || 0;
+			overflowButtonWidth = overflowButtonRef.current.getBoundingClientRect().width + margin;
+		}
 		const availableWidth = fullWidth - overflowButtonWidth;
 
 		let newOverflowIndex = 0;
@@ -121,7 +135,7 @@ export function Tabs(props: TabsProps) {
 	useEffect(() => {
 		if (!ref.current) return;
 
-		const root = Array.from(ref.current.children).find(e => e.className.includes("tabRoot")) as
+		const root = Array.from(ref.current.children).find(e => e.classList.contains("tabRoot")) as
 			| HTMLElement
 			| undefined;
 		if (!root) return;
@@ -140,6 +154,7 @@ export function Tabs(props: TabsProps) {
 
 	return (
 		<Stack
+			ref={stackRef}
 			flex={1}
 			direction="row"
 			alignItems="center"
