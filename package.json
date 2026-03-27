@@ -66,6 +66,10 @@
     "vite": "^7.1.7",
     "vite-plugin-checker": "^0.8.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/variocube/app-ui.git"
+  },
   "publishConfig": {
     "access": "public"
   }
