@@ -14,7 +14,18 @@ import {
 	TableSortLabel,
 	useTheme,
 } from "@mui/material";
-import React, {ChangeEvent, FC, Fragment, Key, ReactElement, ReactNode, useCallback, useEffect, useState} from "react";
+import React, {
+	ChangeEvent,
+	FC,
+	Fragment,
+	Key,
+	ReactElement,
+	ReactNode,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import {UndrawEmpty} from "../content-table/UndrawEmpty";
 import {ErrorAlert} from "../ErrorAlert";
 
@@ -140,6 +151,18 @@ export function DataTable<T>(props: Readonly<DataTableProps<T>>) {
 			}
 		}
 	}, [page, onPageChange]);
+
+	// reset page index to `0` when the sort field changes
+	// (direction-only toggles keep the user on the current page)
+	const previousSortField = useRef(sortField);
+	useEffect(() => {
+		if (previousSortField.current !== sortField) {
+			previousSortField.current = sortField;
+			if (page && onPageChange && page.pageIndex !== 0) {
+				onPageChange({...page, pageIndex: 0});
+			}
+		}
+	}, [sortField, page, onPageChange]);
 
 	// Reset selection when the rows change.
 	// In the future, we might add a mode where a selection can span across multiple pages
