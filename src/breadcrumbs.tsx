@@ -4,9 +4,10 @@ import React, {PropsWithChildren} from "react";
 import {ChevronRightIcon} from "./icons";
 
 export function Breadcrumbs({children}: PropsWithChildren<{}>) {
+	const hasChildren = React.Children.count(children) > 0;
 	return (
 		<MuiBreadcrumbs separator={<ChevronRightIcon fontSize="small" />}>
-			{children}
+			{hasChildren ? children : <Typography sx={{visibility: "hidden"}}>&nbsp;</Typography>}
 		</MuiBreadcrumbs>
 	);
 }
