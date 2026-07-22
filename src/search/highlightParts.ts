@@ -68,9 +68,27 @@ function fold(value: string): string {
 	return folded;
 }
 
+/**
+ * Non-decomposable Latin letters that NFD leaves intact, mapped to an ASCII base letter. Ligatures (æ, œ) and
+ * letters without a single-character ASCII equivalent (þ, ß) fold to their first/closest letter so that the
+ * folded string keeps the original length.
+ */
+const FOLD_MAP: Record<string, string> = {
+	"ø": "o",
+	"ł": "l",
+	"đ": "d",
+	"ð": "d",
+	"þ": "t",
+	"æ": "a",
+	"œ": "o",
+	"ß": "s",
+	"ı": "i",
+};
+
 function foldChar(char: string): string {
 	// NFD decomposes a precomposed character into its base character followed by combining marks; keeping only
 	// the first character strips the diacritic while preserving the string length.
 	const base = char.normalize("NFD").charAt(0) || char;
-	return base.toLowerCase().charAt(0) || char;
+	const lower = base.toLowerCase().charAt(0) || char;
+	return FOLD_MAP[lower] ?? lower;
 }

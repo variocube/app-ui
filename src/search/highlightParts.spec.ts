@@ -60,6 +60,36 @@ describe("splitHighlightParts", () => {
 		]);
 	});
 
+	test("folds non-decomposable Latin letters", () => {
+		expect(splitHighlightParts("Møller", "moller")).toEqual([
+			{text: "Møller", highlight: true},
+		]);
+		expect(splitHighlightParts("Sławomir Đorđević", "slawomir dordevic")).toEqual([
+			{text: "Sławomir", highlight: true},
+			{text: " ", highlight: false},
+			{text: "Đorđević", highlight: true},
+		]);
+		expect(splitHighlightParts("Guðrún Þóra", "gudrun tora")).toEqual([
+			{text: "Guðrún", highlight: true},
+			{text: " ", highlight: false},
+			{text: "Þóra", highlight: true},
+		]);
+	});
+
+	test("folds ligatures to their first letter, preserving text length", () => {
+		// æ/œ/ß have no length-preserving ASCII expansion; they fold to a single letter, so the folded
+		// query must use that same single letter for a match.
+		expect(splitHighlightParts("Kærgaard", "kargaard")).toEqual([
+			{text: "Kærgaard", highlight: true},
+		]);
+		expect(splitHighlightParts("Œuvre", "ouvre")).toEqual([
+			{text: "Œuvre", highlight: true},
+		]);
+		expect(splitHighlightParts("Straße", "strase")).toEqual([
+			{text: "Straße", highlight: true},
+		]);
+	});
+
 	test("matches only the first occurrence of a word", () => {
 		expect(splitHighlightParts("foo bar foo", "foo")).toEqual([
 			{text: "foo", highlight: true},

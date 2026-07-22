@@ -15,7 +15,7 @@ import {
 	useTheme,
 } from "@mui/material";
 import * as React from "react";
-import {Fragment, HTMLAttributes, ReactNode, SyntheticEvent, useMemo, useState} from "react";
+import {Fragment, HTMLAttributes, ReactNode, SyntheticEvent, useEffect, useMemo, useState} from "react";
 import {useAsync} from "react-async-hook";
 import {ErrorAlert} from "../ErrorAlert";
 import {CloseIcon, SearchIcon} from "../icons";
@@ -121,6 +121,10 @@ export function GlobalSearchDialog<T>(props: Readonly<GlobalSearchDialogProps<T>
 			),
 		[minQueryLength, debounceMs],
 	);
+
+	// Cancel a pending debounced call when the component unmounts (or when a changed minQueryLength/debounceMs
+	// recreates the debouncer), so a late timer never updates state on an unmounted component.
+	useEffect(() => () => debouncedSetFilter.clear(), [debouncedSetFilter]);
 
 	const handleInputChange = (event: SyntheticEvent, value: string, reason: string) => {
 		// Ignore the input reset MUI fires when an option is selected — we close anyway.
