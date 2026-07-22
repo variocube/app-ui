@@ -1,10 +1,10 @@
 import {Add, ChangeCircleOutlined, Remove} from "@mui/icons-material";
-import {Box, Chip, List, ListItem, ListItemIcon, ListItemText, Stack} from "@mui/material";
+import {Box, Chip, List, ListItem, ListItemIcon, ListItemText, Stack, Typography} from "@mui/material";
 import React, {Fragment} from "react";
 import {Code} from "../code/Code";
 import {CodeBlock} from "../code/CodeBlock";
 import {Json} from "../code/Json";
-import {AppAuditLogEntry, JsonPatch, JsonPatchItem} from "./types";
+import {AppAuditLogEntry, JsonPatch, JsonPatchItem, ReplacePatch} from "./types";
 
 export function AuditChanges({data, patch}: Pick<AppAuditLogEntry, "data" | "patch">) {
 	return (
@@ -33,20 +33,24 @@ export function AuditPatch({patch}: { patch: JsonPatch }) {
 						primary={
 							<Box pl={1}>
 								{item.op == "replace" && (
-									<Fragment>
-										<Box sx={{color: "success"}}>
-											<Value value={item.value} />
-										</Box>
-										<Box color="error">
-											<s>
-												<Value value={item.fromValue} />
-											</s>
-										</Box>
-									</Fragment>
+									isRedacted(item)
+										? <RedactedValue />
+										: (
+											<Fragment>
+												<Box sx={{color: "success"}}>
+													<Value value={item.value} />
+												</Box>
+												<Box color="error">
+													<s>
+														<Value value={item.fromValue} />
+													</s>
+												</Box>
+											</Fragment>
+										)
 								)}
 								{item.op == "add" && (
 									<div>
-										<Value value={item.value} />
+										{isRedacted(item) ? <RedactedValue /> : <Value value={item.value} />}
 									</div>
 								)}
 							</Box>
@@ -77,6 +81,23 @@ function getIcon(op: JsonPatchItem["op"]) {
 		default:
 			return;
 	}
+}
+
+/**
+ * Whether the patch item is a redacted change: privacy-aware audit writers emit
+ * field-level change markers without the literal before/after values for PII fields.
+ */
+function isRedacted(item: JsonPatchItem) {
+	return !("value" in item && item.value !== undefined)
+		&& !("fromValue" in item && (item as ReplacePatch).fromValue !== undefined);
+}
+
+function RedactedValue() {
+	return (
+		<Typography variant="body2" color="text.secondary" fontStyle="italic">
+			changed
+		</Typography>
+	);
 }
 
 function Value({value}: { value: any }) {
