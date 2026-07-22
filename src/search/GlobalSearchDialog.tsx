@@ -143,17 +143,26 @@ export function GlobalSearchDialog<T>(props: Readonly<GlobalSearchDialogProps<T>
 
 	const hasQuery = Boolean(filter && filter.length > 0);
 
+	// The result carries the filter that produced it: useAsync keeps the previous result (and only flips
+	// loading in an effect, after a render) when the filter changes, so without the identity check below the
+	// previous query's results would flash for a render after the debounce commits.
 	const {loading, error, result: searchResult} = useAsync(async () => {
 		if (filter && filter.length > 0) {
-			return await search(filter);
+			return {filter, results: await search(filter)};
 		}
 	}, [filter]);
 
-	// Only expose options once the committed filter matches the current input and the request has settled.
-	// Otherwise, because open stays true and filterOptions/autoHighlight are on, a quick Enter within the
-	// debounce window could select a stale, previous-query result.
+	// Only expose options once the committed filter matches the current input and the settled result belongs
+	// to that filter. Otherwise, because open stays true and filterOptions/autoHighlight are on, a quick Enter
+	// within the debounce window could select a stale, previous-query result — or stale options could flash.
 	const filterIsCurrent = Boolean(filter) && tokensEqual(filter!, tokenize(inputValue));
-	const options = filterIsCurrent && !loading ? (searchResult ?? []) : [];
+	const resultIsCurrent = searchResult !== undefined && searchResult.filter === filter;
+	const options = filterIsCurrent && !loading && resultIsCurrent ? searchResult.results : [];
+
+	// Report "searching" through the whole debounce + fetch window — not just while the request is in
+	// flight — so the popup never shows a premature "no results" (or stale options) between keystrokes.
+	const searching = inputValue.trim().length >= minQueryLength
+		&& (!filterIsCurrent || loading || (!resultIsCurrent && !error));
 
 	const handleClose = () => {
 		debouncedSetFilter.clear();
@@ -213,7 +222,7 @@ export function GlobalSearchDialog<T>(props: Readonly<GlobalSearchDialogProps<T>
 						filterOptions={options => options}
 						noOptionsText={noOptionsText}
 						loadingText={loadingText}
-						loading={loading}
+						loading={searching}
 						handleHomeEndKeys={false}
 						autoHighlight
 						slotProps={{
@@ -246,7 +255,7 @@ export function GlobalSearchDialog<T>(props: Readonly<GlobalSearchDialogProps<T>
 									),
 									endAdornment: (
 										<Fragment>
-											{loading ? <CircularProgress color="inherit" size={20} /> : null}
+											{searching ? <CircularProgress color="inherit" size={20} /> : null}
 											{inputValue && (
 												<IconButton
 													size="small"

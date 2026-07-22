@@ -35,7 +35,12 @@ describe("GlobalSearchDialog", () => {
 		jest.useRealTimers();
 	});
 
-	async function render() {
+	async function render(
+		renderOption: (props: React.HTMLAttributes<HTMLLIElement>, option: Result) => React.ReactNode = (
+			props,
+			option,
+		) => <li {...props} key={option.id}>{option.label}</li>,
+	) {
 		await act(async () => {
 			ReactDOM.render(
 				<GlobalSearchDialog<Result>
@@ -44,10 +49,12 @@ describe("GlobalSearchDialog", () => {
 					search={search}
 					onSelect={onSelect}
 					getOptionLabel={option => option.label}
-					renderOption={(props, option) => <li {...props} key={option.id}>{option.label}</li>}
+					renderOption={renderOption}
 					title="Search"
 					placeholder="Search"
 					clearLabel="clear"
+					loadingText="searching"
+					noOptionsText="no fruits found"
 				/>,
 				container,
 			);
@@ -132,6 +139,45 @@ describe("GlobalSearchDialog", () => {
 		// Typing on invalidates the shown options immediately, even before the debounce commits.
 		type("johnny");
 		expect(getOptionTexts()).toEqual([]);
+	});
+
+	test("shows the loading state and never flashes previous results while a new query is pending", async () => {
+		let resolveSecond!: (results: Result[]) => void;
+		search
+			.mockResolvedValueOnce([{id: "1", label: "Red Apple"}])
+			.mockImplementationOnce(() =>
+				new Promise<Result[]>(resolve => {
+					resolveSecond = resolve;
+				})
+			);
+		const renderedOptions: string[] = [];
+		await render((props, option) => {
+			renderedOptions.push(option.label);
+			return <li {...props} key={option.id}>{option.label}</li>;
+		});
+		type("red");
+		await advanceTimers(500);
+		expect(getOptionTexts()).toEqual(["Red Apple"]);
+
+		// Replace the query: from the keystroke until the new request settles, the previous query's results
+		// must never render again — not even for the render in which the debounce commits the new filter
+		// (useAsync still holds the previous result there), and the popup must report loading rather than
+		// a premature "no results".
+		renderedOptions.length = 0;
+		type("fruit");
+		expect(document.body.textContent).toContain("searching");
+		await advanceTimers(500);
+		expect(search).toHaveBeenLastCalledWith(["fruit"]);
+		expect(renderedOptions).toEqual([]);
+		expect(getOptionTexts()).toEqual([]);
+		expect(document.body.textContent).toContain("searching");
+
+		await act(async () => {
+			resolveSecond([]);
+		});
+		expect(renderedOptions).toEqual([]);
+		expect(getOptionTexts()).toEqual([]);
+		expect(document.body.textContent).toContain("no fruits found");
 	});
 
 	test("selecting an option calls onSelect and closes the dialog", async () => {
