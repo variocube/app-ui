@@ -11,6 +11,7 @@ import {
 	ListAlt,
 	Palette,
 	Psychology,
+	Search,
 	SvgIconComponent,
 	Tab,
 	ViewList,
@@ -64,6 +65,7 @@ import {Forms} from "./forms";
 import {Inputs} from "./inputs";
 import {ListDemo} from "./list/ListDemo";
 import {Localization} from "./localization";
+import {SearchDemo} from "./search";
 import {TabsDemo} from "./tabs";
 import {Theme} from "./theme";
 import {ViewDemoPage} from "./view";
@@ -105,6 +107,7 @@ function Demo() {
 					/>
 					<Route path="cube" element={<CubeDemo />} />
 					<Route path="filter" element={<FilterDemoPage />} />
+					<Route path="search" element={<SearchDemo />} />
 					<Route path="view" element={<ViewDemoPage />} />
 				</Route>
 			</Routes>
@@ -187,6 +190,7 @@ const MenuItems: MenuItemProps[] = [
 	{text: "Not found", to: "not-found", icon: Error},
 	{text: "Cube", to: "cube", icon: Widgets},
 	{text: "Filter", to: "filter", icon: FilterList},
+	{text: "Search", to: "search", icon: Search},
 	{text: "View", to: "view", icon: Article},
 ];
 
