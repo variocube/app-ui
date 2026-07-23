@@ -21,6 +21,19 @@ describe("DurationField", () => {
 		expect(amounts.map(input => input.props["aria-label"])).toEqual(["years", "months"]);
 	});
 
+	test("associates the label with the control group", () => {
+		let rendered: ReactTestRenderer;
+		act(() => {
+			rendered = create(
+				<DurationField label="Retention" value={null} onChange={() => {}} locale="en-US" />,
+			);
+		});
+		const group = rendered!.root.findByProps({role: "group"});
+		const label = rendered!.root.findByType("label");
+		expect(group.props["aria-labelledby"]).toBeTruthy();
+		expect(label.props.id).toBe(group.props["aria-labelledby"]);
+	});
+
 	test("renders the pairs of a value plus a trailing empty pair", () => {
 		let rendered: ReactTestRenderer;
 		act(() => {

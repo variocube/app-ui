@@ -1,5 +1,6 @@
 import {Box, FormControl, FormHelperText, Input, InputLabel, MenuItem, OutlinedInput, Select} from "@mui/material";
 import {InputBaseComponentProps} from "@mui/material/InputBase";
+import {unstable_useId as useId} from "@mui/material/utils";
 import * as React from "react";
 import {
 	createContext,
@@ -68,6 +69,7 @@ interface DurationFieldContextValue {
 	rows: DurationFieldRow[];
 	units: ReadonlyArray<DurationFieldUnit>;
 	locale: string;
+	labelId: string | undefined;
 	disabled: boolean;
 	firstInputRef: MutableRefObject<HTMLInputElement | null>;
 	onAmountChange: (index: number, text: string) => void;
@@ -99,13 +101,16 @@ export function DurationField(props: DurationFieldProps) {
 
 	const units = useMemo(() => sortUnits(unitsProp ?? DEFAULT_DURATION_FIELD_UNITS), [unitsProp]);
 	const locale = useMemo(() => localeProp ?? getSupportedFormatLocale("number"), [localeProp]);
+	const labelId = useId();
 
 	const [rows, setRows] = useState(() => buildRows(value, units));
 	const firstInputRef = useRef<HTMLInputElement | null>(null);
 
-	// rebuild rows when the value changes externally (i.e. differs from the entered rows)
 	const valueIso = value?.toString() ?? "";
 	useEffect(() => {
+		// Rebuild rows only when the value/units change externally, not on local edits.
+		// `rows` and `value` are read intentionally without subscribing to them.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 		if ((durationFromRows(rows)?.toString() ?? "") !== valueIso) {
 			setRows(buildRows(value, units));
 		}
@@ -136,6 +141,7 @@ export function DurationField(props: DurationFieldProps) {
 		rows,
 		units,
 		locale,
+		labelId: label ? labelId : undefined,
 		disabled: Boolean(disabled),
 		firstInputRef,
 		onAmountChange: handleAmountChange,
@@ -152,7 +158,7 @@ export function DurationField(props: DurationFieldProps) {
 				disabled={disabled}
 				size={size}
 			>
-				{label && <InputLabel shrink>{label}</InputLabel>}
+				{label && <InputLabel shrink id={labelId}>{label}</InputLabel>}
 				<OutlinedInput
 					notched={Boolean(label)}
 					label={label}
@@ -180,6 +186,8 @@ const DurationFieldInput = forwardRef<unknown, InputBaseComponentProps>(
 		return (
 			<Box
 				className={className}
+				role="group"
+				aria-labelledby={context.labelId}
 				onFocus={onFocus as React.FocusEventHandler<HTMLElement> | undefined}
 				onBlur={onBlur as React.FocusEventHandler<HTMLElement> | undefined}
 				sx={{
@@ -194,7 +202,7 @@ const DurationFieldInput = forwardRef<unknown, InputBaseComponentProps>(
 					},
 				}}
 			>
-				{context.rows.map((row, index) => <DurationFieldPair key={row.unit} row={row} index={index} />)}
+				{context.rows.map((row, index) => <DurationFieldPair key={index} row={row} index={index} />)}
 			</Box>
 		);
 	},

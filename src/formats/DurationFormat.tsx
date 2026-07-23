@@ -63,7 +63,7 @@ export function DurationFormat(props: DurationFormatProps) {
 			try {
 				return new DurationFormatConstructor(locale, {style}).format(toDurationRecord(value));
 			}
-			catch (error) {
+			catch {
 				// fall back to the manual format below
 			}
 		}
