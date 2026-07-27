@@ -47,6 +47,7 @@ function mergeRanges(ranges: Array<[number, number]>): Array<[number, number]> {
 	for (const [start, end] of sorted) {
 		const last = merged[merged.length - 1];
 		if (last && start <= last[1]) {
+			// Safe to mutate: the pushed tuples below are copies, not the caller's.
 			last[1] = Math.max(last[1], end);
 		}
 		else {
@@ -56,11 +57,18 @@ function mergeRanges(ranges: Array<[number, number]>): Array<[number, number]> {
 	return merged;
 }
 
+const NON_ASCII = /[^\x00-\x7F]/;
+
 /**
  * Case-folds and strips simple diacritics from a string, preserving its length so that indexes into the folded
  * string are valid indexes into the original string.
  */
 function fold(value: string): string {
+	// Fast path: pure ASCII has nothing to decompose, and its lowercasing is length-preserving. Worth it because
+	// the per-character path below calls normalize() for every character of every rendered option.
+	if (!NON_ASCII.test(value)) {
+		return value.toLowerCase();
+	}
 	let folded = "";
 	for (let i = 0; i < value.length; i++) {
 		folded += foldChar(value.charAt(i));

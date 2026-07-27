@@ -15,7 +15,7 @@ import {
 	useTheme,
 } from "@mui/material";
 import * as React from "react";
-import {Fragment, HTMLAttributes, ReactNode, SyntheticEvent, useEffect, useMemo, useState} from "react";
+import {Fragment, HTMLAttributes, ReactNode, SyntheticEvent, useCallback, useEffect, useMemo, useState} from "react";
 import {useAsync} from "react-async-hook";
 import {ErrorAlert} from "../ErrorAlert";
 import {CloseIcon, SearchIcon} from "../icons";
@@ -32,6 +32,9 @@ export interface GlobalSearchDialogProps<T> {
 	/**
 	 * Performs the search for the given whitespace-separated tokens. Invoked debounced and only when the
 	 * input has at least `minQueryLength` characters.
+	 *
+	 * The latest function is always used, but a search is only re-run when the input changes: if the function
+	 * closes over external state (e.g. a scope filter), changing that state does not refresh the results.
 	 */
 	search: (tokens: string[]) => Promise<T[]>;
 
@@ -62,21 +65,28 @@ export interface GlobalSearchDialogProps<T> {
 	/** Text shown while a search is in progress. */
 	loadingText?: ReactNode;
 
-	/** aria-label of the close button. */
+	/** aria-label of the close button. Defaults to "Close". */
 	closeLabel?: string;
 
-	/** aria-label of the back button (fullscreen mode). */
+	/** aria-label of the back button (fullscreen mode). Defaults to "Back". */
 	backLabel?: string;
 
-	/** aria-label of the clear button in the search input field. */
+	/** aria-label of the clear button in the search input field. Defaults to "Clear". */
 	clearLabel?: string;
 
-	/** Minimum input length before a search fires. Defaults to 2. */
+	/**
+	 * Minimum length of the whole trimmed input before a search fires. Defaults to 2. Note that this counts
+	 * characters of the input, not of the individual tokens: `"a b"` fires a search with two single-character
+	 * tokens.
+	 */
 	minQueryLength?: number;
 
 	/** Debounce delay in milliseconds before a search fires. Defaults to 500. */
 	debounceMs?: number;
 }
+
+/** Distinguishes the dialog titles of multiple instances for `aria-labelledby`. */
+let titleIdCounter = 0;
 
 /**
  * A global search dialog around a MUI Autocomplete with server-side filtering.
@@ -84,6 +94,10 @@ export interface GlobalSearchDialogProps<T> {
  * The component owns the app-agnostic plumbing: responsive dialog shell, input tokenization, debouncing,
  * minimum query length and a stale-result guard. The actual search, result rendering and selection handling
  * are provided via props.
+ *
+ * Requires `@mui/material` >= 5.11: the results list is positioned via the Autocomplete `slotProps`, which
+ * replaced `componentsProps` in that version. On older 5.x releases the prop is silently ignored and the
+ * results render in a detached floating popper.
  */
 export function GlobalSearchDialog<T>(props: Readonly<GlobalSearchDialogProps<T>>) {
 	const {
@@ -99,9 +113,9 @@ export function GlobalSearchDialog<T>(props: Readonly<GlobalSearchDialogProps<T>
 		helperText,
 		noOptionsText,
 		loadingText,
-		closeLabel,
-		backLabel,
-		clearLabel,
+		closeLabel = "Close",
+		backLabel = "Back",
+		clearLabel = "Clear",
 		minQueryLength = 2,
 		debounceMs = 500,
 	} = props;
@@ -110,6 +124,7 @@ export function GlobalSearchDialog<T>(props: Readonly<GlobalSearchDialogProps<T>
 	const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 	const [inputValue, setInputValue] = useState("");
 	const [filter, setFilter] = useState<string[]>();
+	const titleId = useMemo(() => `vc-global-search-title-${++titleIdCounter}`, []);
 
 	// Debounce only the search trigger; the input text updates immediately so typing stays responsive. Queries
 	// shorter than minQueryLength clear the filter instead of firing.
@@ -126,6 +141,21 @@ export function GlobalSearchDialog<T>(props: Readonly<GlobalSearchDialogProps<T>
 	// recreates the debouncer), so a late timer never updates state on an unmounted component.
 	useEffect(() => () => debouncedSetFilter.clear(), [debouncedSetFilter]);
 
+	const resetSearch = useCallback(() => {
+		debouncedSetFilter.clear();
+		setInputValue("");
+		setFilter(undefined);
+	}, [debouncedSetFilter]);
+
+	// Reset on the closed transition rather than only in handleClose, so that a consumer closing the dialog by
+	// flipping `open` (route change, "close all overlays", …) does not reopen it with the previous query and its
+	// results still in place.
+	useEffect(() => {
+		if (!open) {
+			resetSearch();
+		}
+	}, [open, resetSearch]);
+
 	const handleInputChange = (event: SyntheticEvent, value: string, reason: string) => {
 		// Ignore the input reset MUI fires when an option is selected — we close anyway.
 		if (reason === "reset") {
@@ -135,13 +165,10 @@ export function GlobalSearchDialog<T>(props: Readonly<GlobalSearchDialogProps<T>
 		debouncedSetFilter(value);
 	};
 
-	const handleClear = () => {
-		debouncedSetFilter.clear();
-		setInputValue("");
-		setFilter(undefined);
-	};
-
-	const hasQuery = Boolean(filter && filter.length > 0);
+	// The results popup is only open while the committed filter is backed by an input that is still long enough:
+	// after backspacing below minQueryLength the filter lingers for one debounce window, and showing the popup
+	// for it would render a premature "no results".
+	const hasQuery = Boolean(filter && filter.length > 0) && inputValue.trim().length >= minQueryLength;
 
 	// The result carries the filter that produced it: useAsync keeps the previous result (and only flips
 	// loading in an effect, after a render) when the filter changes, so without the identity check below the
@@ -164,10 +191,12 @@ export function GlobalSearchDialog<T>(props: Readonly<GlobalSearchDialogProps<T>
 	const searching = inputValue.trim().length >= minQueryLength
 		&& (!filterIsCurrent || loading || (!resultIsCurrent && !error));
 
+	// Only report the current query's error: useAsync keeps it until the next request actually starts, i.e. past
+	// the debounce, which would otherwise render a spinner and a stale error at the same time.
+	const currentError = filterIsCurrent ? error : undefined;
+
 	const handleClose = () => {
-		debouncedSetFilter.clear();
-		setInputValue("");
-		setFilter(undefined);
+		resetSearch();
 		onClose();
 	};
 
@@ -187,9 +216,21 @@ export function GlobalSearchDialog<T>(props: Readonly<GlobalSearchDialogProps<T>
 	};
 
 	return (
-		<Dialog open={open} onClose={handleClose} fullScreen={fullScreen} fullWidth maxWidth="sm">
+		<Dialog
+			open={open}
+			onClose={handleClose}
+			fullScreen={fullScreen}
+			fullWidth
+			maxWidth="sm"
+			// The DialogTitle wraps the title and the icon buttons, so label the dialog with the title text only
+			// instead of letting MUI derive the name from the whole header.
+			aria-labelledby={titleId}
+		>
 			<DialogTitle
 				component="div"
+				// Own id, so that MUI does not assign the aria-labelledby target above to this header element —
+				// which contains the icon buttons — instead of to the title text below.
+				id={`${titleId}-header`}
 				sx={{display: "flex", alignItems: "center", gap: 1}}
 			>
 				{fullScreen && (
@@ -197,7 +238,7 @@ export function GlobalSearchDialog<T>(props: Readonly<GlobalSearchDialogProps<T>
 						<ArrowBackIcon />
 					</IconButton>
 				)}
-				<Typography variant="h6" sx={{flex: 1}}>
+				<Typography id={titleId} variant="h6" sx={{flex: 1}}>
 					{title}
 				</Typography>
 				{!fullScreen && (
@@ -219,7 +260,7 @@ export function GlobalSearchDialog<T>(props: Readonly<GlobalSearchDialogProps<T>
 						options={options}
 						groupBy={groupBy}
 						getOptionLabel={getOptionLabel}
-						filterOptions={options => options}
+						filterOptions={serverOptions => serverOptions}
 						noOptionsText={noOptionsText}
 						loadingText={loadingText}
 						loading={searching}
@@ -259,7 +300,7 @@ export function GlobalSearchDialog<T>(props: Readonly<GlobalSearchDialogProps<T>
 											{inputValue && (
 												<IconButton
 													size="small"
-													onClick={handleClear}
+													onClick={resetSearch}
 													aria-label={clearLabel}
 												>
 													<CloseIcon fontSize="small" />
@@ -273,7 +314,7 @@ export function GlobalSearchDialog<T>(props: Readonly<GlobalSearchDialogProps<T>
 						)}
 						renderOption={renderOption}
 					/>
-					<ErrorAlert error={error} />
+					<ErrorAlert error={currentError} />
 				</Stack>
 			</DialogContent>
 		</Dialog>

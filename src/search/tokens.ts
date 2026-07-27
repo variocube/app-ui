@@ -2,7 +2,7 @@
  * Splits a search input into whitespace-separated tokens, dropping empty entries.
  */
 export function tokenize(value: string): string[] {
-	return value.split(/(\s+)/).filter(e => e.trim().length > 0);
+	return value.trim().split(/\s+/).filter(Boolean);
 }
 
 /**

@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {act, Simulate} from "react-dom/test-utils";
-import {GlobalSearchDialog} from "./GlobalSearchDialog";
+import {GlobalSearchDialog, GlobalSearchDialogProps} from "./GlobalSearchDialog";
 
 interface Result {
 	id: string;
@@ -35,12 +35,7 @@ describe("GlobalSearchDialog", () => {
 		jest.useRealTimers();
 	});
 
-	async function render(
-		renderOption: (props: React.HTMLAttributes<HTMLLIElement>, option: Result) => React.ReactNode = (
-			props,
-			option,
-		) => <li {...props} key={option.id}>{option.label}</li>,
-	) {
+	async function render(overrides: Partial<GlobalSearchDialogProps<Result>> = {}) {
 		await act(async () => {
 			ReactDOM.render(
 				<GlobalSearchDialog<Result>
@@ -49,12 +44,13 @@ describe("GlobalSearchDialog", () => {
 					search={search}
 					onSelect={onSelect}
 					getOptionLabel={option => option.label}
-					renderOption={renderOption}
+					renderOption={(props, option) => <li {...props} key={option.id}>{option.label}</li>}
 					title="Search"
 					placeholder="Search"
 					clearLabel="clear"
 					loadingText="searching"
 					noOptionsText="no fruits found"
+					{...overrides}
 				/>,
 				container,
 			);
@@ -91,6 +87,10 @@ describe("GlobalSearchDialog", () => {
 		return Array.from(document.querySelectorAll("[role=\"option\"]")).map(option => option.textContent);
 	}
 
+	function query(selector: string) {
+		return document.querySelector(selector);
+	}
+
 	test("does not search before the debounce delay has elapsed", async () => {
 		await render();
 		type("john");
@@ -107,6 +107,18 @@ describe("GlobalSearchDialog", () => {
 		type("j");
 		await advanceTimers(1000);
 		expect(search).not.toHaveBeenCalled();
+	});
+
+	test("honours a custom minQueryLength and debounceMs", async () => {
+		await render({minQueryLength: 3, debounceMs: 100});
+		type("jo");
+		await advanceTimers(1000);
+		expect(search).not.toHaveBeenCalled();
+		type("joh");
+		await advanceTimers(99);
+		expect(search).not.toHaveBeenCalled();
+		await advanceTimers(1);
+		expect(search).toHaveBeenCalledWith(["joh"]);
 	});
 
 	test("tokenizes the input on whitespace", async () => {
@@ -151,9 +163,11 @@ describe("GlobalSearchDialog", () => {
 				})
 			);
 		const renderedOptions: string[] = [];
-		await render((props, option) => {
-			renderedOptions.push(option.label);
-			return <li {...props} key={option.id}>{option.label}</li>;
+		await render({
+			renderOption: (props, option) => {
+				renderedOptions.push(option.label);
+				return <li {...props} key={option.id}>{option.label}</li>;
+			},
 		});
 		type("red");
 		await advanceTimers(500);
@@ -178,6 +192,66 @@ describe("GlobalSearchDialog", () => {
 		expect(renderedOptions).toEqual([]);
 		expect(getOptionTexts()).toEqual([]);
 		expect(document.body.textContent).toContain("no fruits found");
+	});
+
+	test("closes the results popup instead of showing 'no results' when the input drops below minQueryLength", async () => {
+		search.mockResolvedValue([{id: "1", label: "Red Apple"}]);
+		await render();
+		type("red");
+		await advanceTimers(500);
+		expect(getOptionTexts()).toEqual(["Red Apple"]);
+
+		// The committed filter still says "red" for a whole debounce window after this keystroke; the popup must
+		// not stay open with the stale filter's results (or a "no results" text) during it.
+		type("r");
+		expect(getOptionTexts()).toEqual([]);
+		expect(document.body.textContent).not.toContain("no fruits found");
+		await advanceTimers(500);
+		expect(getOptionTexts()).toEqual([]);
+		expect(document.body.textContent).not.toContain("no fruits found");
+		expect(search).toHaveBeenCalledTimes(1);
+	});
+
+	test("renders a failed search as an error and drops it once the next query starts", async () => {
+		search.mockRejectedValueOnce(new Error("boom"));
+		await render();
+		type("john");
+		await advanceTimers(500);
+		await flush();
+		expect(document.body.textContent).toContain("boom");
+
+		// A new keystroke invalidates the failed query: showing its error next to the spinner of the new,
+		// in-flight query would report a failure that no longer applies.
+		type("johnny");
+		expect(document.body.textContent).not.toContain("boom");
+		expect(document.body.textContent).toContain("searching");
+	});
+
+	test("resets input, filter and results when the dialog is closed via the open prop", async () => {
+		search.mockResolvedValue([{id: "1", label: "John Doe"}]);
+		await render();
+		type("john");
+		await advanceTimers(500);
+		expect(getInput().value).toBe("john");
+		expect(getOptionTexts()).toEqual(["John Doe"]);
+
+		await render({open: false});
+		await render({open: true});
+		expect(getInput().value).toBe("");
+		expect(getOptionTexts()).toEqual([]);
+		expect(search).toHaveBeenCalledTimes(1);
+	});
+
+	test("groups options with groupBy", async () => {
+		search.mockResolvedValue([
+			{id: "1", label: "Red Apple"},
+			{id: "2", label: "Carrot"},
+		]);
+		await render({groupBy: option => option.label === "Carrot" ? "Vegetables" : "Fruits"});
+		type("food");
+		await advanceTimers(500);
+		expect(Array.from(document.querySelectorAll(".MuiAutocomplete-groupLabel")).map(e => e.textContent))
+			.toEqual(["Fruits", "Vegetables"]);
 	});
 
 	test("selecting an option calls onSelect and closes the dialog", async () => {
@@ -222,6 +296,24 @@ describe("GlobalSearchDialog", () => {
 		await advanceTimers(1000);
 		expect(search).not.toHaveBeenCalled();
 		expect(getInput().value).toBe("");
+	});
+
+	test("labels the icon buttons in English when no labels are given", async () => {
+		await render({clearLabel: undefined});
+		type("john");
+		expect(query("[aria-label=\"Close\"]")).not.toBeNull();
+		expect(query("[aria-label=\"Clear\"]")).not.toBeNull();
+	});
+
+	test("names the dialog after its title only", async () => {
+		await render();
+		const labelledBy = query("[role=\"dialog\"]")?.getAttribute("aria-labelledby");
+		expect(labelledBy).toBeTruthy();
+		const titleElement = document.getElementById(labelledBy!);
+		expect(titleElement?.textContent).toBe("Search");
+		// The labelled element must be the title text, not the header around it: the accessible name of the
+		// dialog would otherwise absorb the "Back"/"Close" labels of the icon buttons.
+		expect(titleElement?.querySelector("button")).toBeNull();
 	});
 
 	test("unmounting cancels the pending debounce without a state update warning", async () => {

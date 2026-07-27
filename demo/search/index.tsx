@@ -107,9 +107,6 @@ export function GlobalSearchDialogDemo(props: BoxProps) {
 							helperText="Search by name or color, e.g. “berry” or “red”."
 							noOptionsText="No fruits found."
 							loadingText="Searching…"
-							closeLabel="Close"
-							backLabel="Back"
-							clearLabel="Clear"
 						/>
 					</DemoSource>
 					{selected && (

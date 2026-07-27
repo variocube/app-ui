@@ -1,3 +1,4 @@
+import {useTheme} from "@mui/material";
 import * as React from "react";
 import {Fragment} from "react";
 import {splitHighlightParts} from "./highlightParts";
@@ -16,6 +17,8 @@ export interface HighlightProps {
  * Intended for rendering search results, with the current search input passed as `highlight`.
  */
 export function Highlight({text, highlight}: Readonly<HighlightProps>) {
+	const theme = useTheme();
+
 	if (!text) {
 		return null;
 	}
@@ -23,16 +26,17 @@ export function Highlight({text, highlight}: Readonly<HighlightProps>) {
 	const parts = splitHighlightParts(text, highlight);
 	return (
 		<Fragment>
-			{parts.map((part, index) => (
-				<span
-					key={index}
-					style={{
-						fontWeight: part.highlight ? 700 : 400,
-					}}
-				>
-					{part.text}
-				</span>
-			))}
+			{parts.map((part, index) =>
+				part.highlight
+					? (
+						<span key={index} style={{fontWeight: theme.typography.fontWeightBold}}>
+							{part.text}
+						</span>
+					)
+					// Non-matching text needs no element of its own — the surrounding typography already
+					// provides the regular weight.
+					: <Fragment key={index}>{part.text}</Fragment>
+			)}
 		</Fragment>
 	);
 }
