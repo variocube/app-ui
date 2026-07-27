@@ -4,6 +4,8 @@ import {getSupportedFormatLocale} from "../getSupportedFormatLocale";
 import {Duration} from "../temporal";
 import {DateStyle, TimeStyle} from "./types";
 
+export type DurationFormatStyle = "long" | "short" | "narrow" | "digital";
+
 interface DurationFormatProps {
 	/**
 	 * The duration value to format.
@@ -11,12 +13,18 @@ interface DurationFormatProps {
 	value?: Duration | null | undefined;
 
 	/**
-	 * The style of the date format.
+	 * The style of the duration format, as supported by `Intl.DurationFormat`.
+	 * Defaults to `narrow`.
+	 */
+	style?: DurationFormatStyle;
+
+	/**
+	 * @deprecated Has no effect. Use `style` instead.
 	 */
 	dateStyle?: DateStyle | undefined;
 
 	/**
-	 * The style of the time format.
+	 * @deprecated Has no effect. Use `style` instead.
 	 */
 	timeStyle?: TimeStyle | undefined;
 
@@ -26,11 +34,19 @@ interface DurationFormatProps {
 	locale?: string;
 }
 
+interface IntlDurationFormat {
+	format(duration: Partial<Record<string, number>>): string;
+}
+
+type IntlDurationFormatConstructor = new(
+	locale?: string,
+	options?: { style?: DurationFormatStyle },
+) => IntlDurationFormat;
+
 export function DurationFormat(props: DurationFormatProps) {
 	const {
 		value,
-		dateStyle,
-		timeStyle,
+		style = "narrow",
 		locale: suppliedLocale,
 	} = props;
 
@@ -38,23 +54,38 @@ export function DurationFormat(props: DurationFormatProps) {
 		return null;
 	}
 
-	const options = useMemo(() => ({
-		dateStyle,
-		timeStyle,
-	}), [dateStyle, timeStyle]);
-
 	const locale = useMemo(() => suppliedLocale ?? getSupportedFormatLocale("dateTime"), [suppliedLocale]);
 
 	const strValue = useMemo(() => {
-		// TODO: this can only be supported once a polyfill or browser support for DurationFormat is available
-		// https://github.com/tc39/proposal-intl-duration-format/
-		// In the meantime, we format the duration in a simple neural format.
+		// resolved at render time, so the fallback also applies when the constructor is mocked away in tests
+		const DurationFormatConstructor = (Intl as any).DurationFormat as IntlDurationFormatConstructor | undefined;
+		if (DurationFormatConstructor) {
+			try {
+				return new DurationFormatConstructor(locale, {style}).format(toDurationRecord(value));
+			}
+			catch {
+				// fall back to the manual format below
+			}
+		}
 		return formatDuration(value);
-	}, [value, locale, options]);
+	}, [value, locale, style]);
 
 	return <Fragment>{strValue}</Fragment>;
 }
 
+function toDurationRecord(value: Duration) {
+	const record: Partial<Record<string, number>> = {};
+	for (const unit of ["years", "months", "weeks", "days", "hours", "minutes", "seconds", "milliseconds"] as const) {
+		if (value[unit] !== 0) {
+			record[unit] = value[unit];
+		}
+	}
+	return record;
+}
+
+/**
+ * Manual, non-localized duration format, used where `Intl.DurationFormat` is unavailable.
+ */
 function formatDuration(value: Duration) {
 	const parts = (["years", "months", "weeks", "days"] as const)
 		.map(prop => [prop, value[prop]] as const)

@@ -147,7 +147,7 @@ The localization system uses recursive TypeScript types for deep object navigati
 
 **Framework:** Jest with ts-jest preset
 **Default environment:** Node (some tests override to jsdom via `/** @jest-environment jsdom */` pragma)
-**Node version:** 22 (specified in `.nvmrc`)
+**Node version:** 24 (specified in `.nvmrc`)
 **Test files:** Located alongside source files with `.spec.ts` extension
 
 ```bash
@@ -160,12 +160,11 @@ npx jest src/fetch.spec.ts
 
 ### Node Version Considerations
 
-**Node 22** includes updated ICU (International Components for Unicode) data that affects date/time formatting:
+Each Node version ships its own ICU (International Components for Unicode) data, which affects date/time formatting. Examples of past changes:
 
-- **German locale (de-AT):** Timezone formatting changed from `"GMT+2"` to `"MESZ"` (localized abbreviation)
-- **English locale (en-US):** Timezone formatting remains `"GMT+2"` (unchanged)
+- **German locale (de-AT):** Timezone formatting changed from `"GMT+2"` to `"MESZ"` (localized abbreviation) in Node 22
 
-If upgrading Node versions and tests fail with timezone mismatches, the expected values likely need updating to match the new ICU data output.
+If upgrading Node versions and tests fail with formatting mismatches, the expected values likely need updating to match the new ICU data output. Some `Intl`-dependent tests (e.g. the `Intl.DurationFormat` cases in `DurationFormat.spec.tsx`) are skipped automatically on Node versions without the required API.
 
 ### Known Test Warnings
 
@@ -213,7 +212,7 @@ Before submitting a PR, ensure:
 
 ## CI/CD Pipeline
 
-GitHub Actions workflow runs on push and PRs (Node 22):
+GitHub Actions workflow runs on push and PRs (Node 24):
 
 1. `npm ci` - Clean install
 2. `npm run build` - TypeScript compilation

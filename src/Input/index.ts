@@ -1,5 +1,6 @@
 export * from "./ActionsMenu";
 export * from "./Checkbox";
+export * from "./DurationField";
 export * from "./NumberField";
 export * from "./RadioGroup";
 export * from "./Select";

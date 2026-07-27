@@ -30,6 +30,7 @@ import {
 } from "../../src";
 import {EmailSenderField} from "../../src/Input/EmailSenderField";
 import {Demo, DemoSource} from "../demo";
+import {DurationFieldDemo} from "./DurationFieldDemo";
 import {RadioGroupDemo} from "./RadioGroupDemo";
 import {SelectDemo} from "./SelectDemo";
 import {UrlUploadDemo} from "./UrlUploadDemo";
@@ -47,6 +48,7 @@ export function Inputs() {
 				<CheckboxDemo />
 				<RadioGroupDemo />
 				<SelectDemo />
+				<DurationFieldDemo />
 				<UrlUploadDemo />
 
 				<Box>
