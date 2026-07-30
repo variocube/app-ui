@@ -24,6 +24,7 @@ export * from "./localization";
 export * from "./logo";
 export * from "./logo";
 export * from "./Paging";
+export * from "./search";
 export * from "./splash";
 export * from "./spring";
 export * from "./storage";
