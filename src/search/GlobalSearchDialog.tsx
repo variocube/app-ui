@@ -47,7 +47,13 @@ export interface GlobalSearchDialogProps<T> {
 	/** Renders a result option. `state.inputValue` can be passed to `Highlight` to emphasize matches. */
 	renderOption: (props: HTMLAttributes<HTMLLIElement>, option: T, state: AutocompleteRenderOptionState) => ReactNode;
 
-	/** Groups options under the returned heading. */
+	/**
+	 * Groups options under the returned heading.
+	 *
+	 * The `search` result must already be ordered by group: a new heading is started whenever an option's group
+	 * differs from the preceding option's, so a group whose options are not contiguous renders its heading once
+	 * per run. Relevance-ordered results in particular need to be sorted by group before they are returned.
+	 */
 	groupBy?: (option: T) => string;
 
 	/** The dialog title. */

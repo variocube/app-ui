@@ -51,12 +51,16 @@ const fruits: Fruit[] = [
 async function searchFruits(tokens: string[]) {
 	// Simulate a server-side search with some latency.
 	await new Promise(resolve => setTimeout(resolve, 300));
-	return fruits.filter(fruit =>
-		tokens.every(token =>
-			fruit.name.toLowerCase().includes(token.toLowerCase())
-			|| fruit.color.toLowerCase().includes(token.toLowerCase())
+	return fruits
+		.filter(fruit =>
+			tokens.every(token =>
+				fruit.name.toLowerCase().includes(token.toLowerCase())
+				|| fruit.color.toLowerCase().includes(token.toLowerCase())
+			)
 		)
-	);
+		// `groupBy` needs the options ordered by group, otherwise a color's heading repeats for every
+		// non-contiguous run of matches (e.g. "re" matches red, green and red again).
+		.sort((a, b) => a.color.localeCompare(b.color));
 }
 
 export function GlobalSearchDialogDemo(props: BoxProps) {
