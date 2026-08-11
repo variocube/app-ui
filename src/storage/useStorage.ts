@@ -2,8 +2,24 @@ import {useCallback, useLayoutEffect, useMemo, useState} from "react";
 import {storage} from "./storage";
 import {StorageType} from "./types";
 
-export function useStorage<T>(key: string, defaultValue: T, storageType?: StorageType): [T, (newValue: T) => void] {
+/** Updater function that derives the new value from the currently persisted one. */
+export type StorageUpdater<T> = (previous: T) => T;
+
+export type StorageSetter<T> = (newValue: T | StorageUpdater<T>) => void;
+
+export function useStorage<T>(key: string, defaultValue: T, storageType?: StorageType): [T, StorageSetter<T>] {
 	const defaultValueSerialized = useMemo(() => JSON.stringify(defaultValue), [defaultValue]);
+
+	const parseValue = useCallback((serialized?: string | null): T => {
+		if (serialized !== undefined && serialized !== null) {
+			try {
+				return JSON.parse(serialized);
+			} catch (e) {
+				console.warn(`Failed to parse storage value for key "${key}", falling back to default value.`, e);
+			}
+		}
+		return defaultValueSerialized !== undefined ? JSON.parse(defaultValueSerialized) : undefined as T;
+	}, [key, defaultValueSerialized]);
 
 	const readStateFromStorage = useCallback(() => {
 		const storageValue = storage.read(key, storageType);
@@ -21,26 +37,21 @@ export function useStorage<T>(key: string, defaultValue: T, storageType?: Storag
 		return () => storage.removeChangeListener(key, updateStateFromStorage);
 	}, [key, updateStateFromStorage]);
 
-	const typedValue = useMemo(() => {
-		if (value === undefined) {
-			return defaultValueSerialized !== undefined ? JSON.parse(defaultValueSerialized) : undefined;
-		}
-		try {
-			return JSON.parse(value);
-		} catch (e) {
-			console.warn(`Failed to parse storage value for key "${key}", falling back to default value.`, e);
-			return defaultValueSerialized !== undefined ? JSON.parse(defaultValueSerialized) : undefined;
-		}
-	}, [value, key, defaultValueSerialized]);
+	const typedValue = useMemo(() => parseValue(value), [value, parseValue]);
 
-	const setTypedValue = useCallback((newValue: T) => {
-		const value = JSON.stringify(newValue);
-		if (value != defaultValueSerialized) {
-			storage.write(key, value, storageType);
+	const setTypedValue = useCallback<StorageSetter<T>>((newValue) => {
+		// An updater is applied to the currently persisted value, not to the one captured in the
+		// caller's render closure. This keeps concurrent writers from overwriting each other.
+		const resolved = typeof newValue === "function"
+			? (newValue as StorageUpdater<T>)(parseValue(storage.read(key, storageType)))
+			: newValue;
+		const serialized = JSON.stringify(resolved);
+		if (serialized != defaultValueSerialized) {
+			storage.write(key, serialized, storageType);
 		} else {
 			storage.delete(key, storageType);
 		}
-	}, [key, defaultValueSerialized, storageType]);
+	}, [key, defaultValueSerialized, storageType, parseValue]);
 
 	return [typedValue, setTypedValue];
 }
@@ -48,13 +59,13 @@ export function useStorage<T>(key: string, defaultValue: T, storageType?: Storag
 /**
  * Convenience hook for localStorage. Equivalent to `useStorage(key, defaultValue, "local")`.
  */
-export function useLocalStorage<T>(key: string, defaultValue: T): [T, (newValue: T) => void] {
+export function useLocalStorage<T>(key: string, defaultValue: T): [T, StorageSetter<T>] {
 	return useStorage(key, defaultValue, "local");
 }
 
 /**
  * Convenience hook for sessionStorage. Equivalent to `useStorage(key, defaultValue, "session")`.
  */
-export function useSessionStorage<T>(key: string, defaultValue: T): [T, (newValue: T) => void] {
+export function useSessionStorage<T>(key: string, defaultValue: T): [T, StorageSetter<T>] {
 	return useStorage(key, defaultValue, "session");
 }
