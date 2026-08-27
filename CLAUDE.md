@@ -121,9 +121,11 @@ A persisted `sortField` that no sortable column matches is then hidden from the 
 never reaches a query — a column that stops being `sortable` would otherwise keep breaking the
 server-side query for everyone who ever sorted by it (see issue #84). The persisted value itself is
 never modified: a column list can be incomplete (not resolved yet, or filtered by permissions), so the
-sort is only suppressed and returns as soon as its column does. The trade-off is that a truly dead
+sort is only suppressed and returns as soon as its column does. Two trade-offs: a truly dead
 `sortField` stays in browser storage, where code reading that key *without* passing `columns` still
-sees it.
+sees it; and a list that starts out empty hides the sort field until it resolves, which makes
+`DataTable` reset the page index when the sort reappears — so build the column list synchronously where
+you can.
 
 #### 5. Wrapper Components
 

@@ -111,6 +111,46 @@ describe("useStorage", () => {
 		expect(renderCount).toBeLessThanOrEqual(4);
 	});
 
+	test("serves a changed default value while nothing is persisted", () => {
+		// e.g. useDataTableColumnStorage, whose default columns are derived from available columns that
+		// an async permission fetch extends - the new default must not be shadowed by the state
+		function Component({defaultValue}: { defaultValue: string[] }) {
+			const [value] = useStorage("changing-default-key", defaultValue);
+			return <div data-value={JSON.stringify(value)} />;
+		}
+
+		let renderer: ReactTestRenderer;
+		act(() => {
+			renderer = create(<Component defaultValue={["name"]} />);
+		});
+		expect(JSON.parse(renderer!.root.findByType("div").props["data-value"])).toEqual(["name"]);
+
+		act(() => {
+			renderer.update(<Component defaultValue={["name", "price"]} />);
+		});
+
+		expect(JSON.parse(renderer!.root.findByType("div").props["data-value"])).toEqual(["name", "price"]);
+	});
+
+	test("keeps serving the persisted value when the default value changes", () => {
+		localStorage.setItem("persisted-key", JSON.stringify(["taste"]));
+
+		function Component({defaultValue}: { defaultValue: string[] }) {
+			const [value] = useStorage("persisted-key", defaultValue);
+			return <div data-value={JSON.stringify(value)} />;
+		}
+
+		let renderer: ReactTestRenderer;
+		act(() => {
+			renderer = create(<Component defaultValue={["name"]} />);
+		});
+		act(() => {
+			renderer.update(<Component defaultValue={["name", "price"]} />);
+		});
+
+		expect(JSON.parse(renderer!.root.findByType("div").props["data-value"])).toEqual(["taste"]);
+	});
+
 	test("reads the other area after the storage type changed", () => {
 		localStorage.setItem("area-key", JSON.stringify({page: 1, size: 25}));
 		sessionStorage.setItem("area-key", JSON.stringify({page: 7, size: 25}));

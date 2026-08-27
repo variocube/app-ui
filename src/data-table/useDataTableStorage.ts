@@ -24,6 +24,10 @@ export interface DataTableStorageOptions<T = unknown> {
 	 * The persisted value itself is never modified: a column list can be incomplete - not resolved yet,
 	 * or filtered down to what a user may see - and hiding the sort field is reversible, while deleting
 	 * it would cost the user their setting for good. It comes back as soon as its column does.
+	 *
+	 * Prefer building the list synchronously. A list that starts out empty hides the sort field until it
+	 * resolves, and `DataTable` resets the page index whenever the sort field changes, so a restored page
+	 * index greater than zero is given up when the sort reappears.
 	 */
 	columns?: ReadonlyArray<DataTableColumn<T>>;
 }
@@ -38,32 +42,25 @@ function isDataTableStorageOptions<T>(value: unknown): value is DataTableStorage
 		&& ("defaults" in value || "storageType" in value || "columns" in value);
 }
 
-function hasSortableColumn<T>(field: string, columns: ReadonlyArray<DataTableColumn<T>>) {
-	return columns.some(column => column.sortable && column.field == field);
+/**
+ * Whether the data table can sort by the given field: the single rule behind both hiding a persisted
+ * sort field and refusing a click on one.
+ *
+ * Without columns there is nothing to check against, so anything goes - that is the behaviour of this
+ * hook before columns could be passed. An empty list, on the other hand, matches nothing: it may just
+ * not be resolved yet, and a sort that cannot be applied is better suppressed than sent to a backend
+ * that rejects it.
+ */
+function isSortable<T>(field: string, columns?: ReadonlyArray<DataTableColumn<T>>) {
+	return !columns || columns.some(column => column.sortable && column.field == field);
 }
 
-/**
- * The sort field to hand out, i.e. the persisted one unless no sortable column matches it.
- *
- * Without columns there is nothing to check against and the field is handed out as persisted. An empty
- * list does hide it: it may just not be resolved yet, and a sort that cannot be applied is better
- * suppressed than sent to a backend that rejects it.
- */
+/** The sort field to hand out, i.e. the persisted one unless the data table cannot sort by it. */
 function visibleSortField<T>(sortField?: string, columns?: ReadonlyArray<DataTableColumn<T>>) {
-	if (!sortField || !columns) {
+	if (!sortField || isSortable(sortField, columns)) {
 		return sortField;
 	}
-	return hasSortableColumn(sortField, columns) ? sortField : undefined;
-}
-
-/**
- * Whether a sort by the given field may be persisted.
- *
- * Without columns - or with a list that is not resolved yet - this cannot be decided, so the click is
- * trusted: the data table rendered that header as sortable.
- */
-function canSortBy<T>(field: string, columns?: ReadonlyArray<DataTableColumn<T>>) {
-	return !columns?.length || hasSortableColumn(field, columns);
+	return undefined;
 }
 
 /**
@@ -132,10 +129,12 @@ export function useDataTableStorage<T>(
 	}, [setStorage]);
 
 	const onSort = useCallback((field: string) => {
-		if (!canSortBy(field, columnsRef.current)) {
+		if (!isSortable(field, columnsRef.current)) {
 			// Persisting the field would replace a working sort with one that is hidden again on read.
 			// Happens when the columns passed to this hook and the ones rendered by the DataTable diverge
-			// - typically because the visible columns were passed instead of the available ones.
+			// - typically because the visible columns were passed instead of the available ones. Using the
+			// same rule as the mask above is what makes the click either take effect or be reported;
+			// accepting it under a rule the mask does not share would produce a silent dead click.
 			console.warn(`Ignoring sort by "${field}": no sortable column of the data table "${key}" matches it.`);
 			return;
 		}

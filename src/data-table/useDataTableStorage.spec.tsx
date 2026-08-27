@@ -254,6 +254,20 @@ describe("useDataTableStorage", () => {
 			expect(readPersisted()).toEqual({sortField: "name", sortDirection: "desc"});
 		});
 
+		test("ignores a field while the columns are empty, rather than sorting silently", () => {
+			// only reachable when the DataTable renders columns the hook was not given: the same rule that
+			// hides a sort field must reject the click, otherwise the click is a dead no-op
+			const {last} = renderHook(() => useDataTableStorage(KEY, {columns: []}));
+			const setItem = jest.spyOn(Storage.prototype, "setItem");
+			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+			act(() => last().onSort("name"));
+
+			expect(setItem).not.toHaveBeenCalled();
+			expect(warn).toHaveBeenCalledWith(expect.stringContaining("name"));
+			expect(last().sortField).toBeUndefined();
+		});
+
 		test("does not toggle the direction of a discarded sort field", () => {
 			persist({sortField: "tags", sortDirection: "desc"});
 

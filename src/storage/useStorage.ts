@@ -1,4 +1,4 @@
-import {useCallback, useLayoutEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useLayoutEffect, useMemo, useState} from "react";
 import {storage} from "./storage";
 import {StorageType} from "./types";
 
@@ -21,10 +21,9 @@ export function useStorage<T>(key: string, defaultValue: T, storageType?: Storag
 		return defaultValueSerialized !== undefined ? JSON.parse(defaultValueSerialized) : undefined as T;
 	}, [key, defaultValueSerialized]);
 
-	const readStateFromStorage = useCallback(() => {
-		const storageValue = storage.read(key, storageType);
-		return storageValue ?? defaultValueSerialized;
-	}, [key, defaultValueSerialized, storageType]);
+	// The state mirrors what is persisted, and stays `null` while nothing is: resolving the default value
+	// on read instead of storing it keeps a changed default value from being shadowed by the state.
+	const readStateFromStorage = useCallback(() => storage.read(key, storageType), [key, storageType]);
 
 	const [value, setValue] = useState(readStateFromStorage);
 
@@ -35,14 +34,13 @@ export function useStorage<T>(key: string, defaultValue: T, storageType?: Storag
 	// The state is initialized once, so after the key or the storage type changed it would keep serving
 	// the value of the previous entry. Adjust it while rendering rather than in an effect, so that no
 	// commit - and no effect of a consumer - ever sees the previous entry's value paired with the new
-	// key. This must be tied to the entry itself and not to `readStateFromStorage`, whose identity also
-	// changes with the default value: that would loop for a default that is rebuilt on every render
-	// (e.g. one containing a timestamp) while nothing is persisted for the entry yet.
+	// key. `syncedEntry` is state rather than a ref on purpose: a ref survives a render that React
+	// discards and restarts, which would swallow the re-read it is meant to trigger.
 	const entry = `${storageType ?? "local"}:${key}`;
-	const syncedEntry = useRef(entry);
+	const [syncedEntry, setSyncedEntry] = useState(entry);
 
-	if (syncedEntry.current !== entry) {
-		syncedEntry.current = entry;
+	if (syncedEntry !== entry) {
+		setSyncedEntry(entry);
 		setValue(readStateFromStorage());
 	}
 
