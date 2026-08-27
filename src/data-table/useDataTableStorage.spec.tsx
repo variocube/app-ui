@@ -128,7 +128,7 @@ describe("useDataTableStorage", () => {
 			expect(readPersisted()).toEqual({});
 		});
 
-		test("discards the sort field before a consumer can write it back on mount", () => {
+		test("is not written back by a consumer that resets the page in a mount effect", () => {
 			persist({pageIndex: 2, sortField: "tags"});
 
 			// a consumer that resets the page index in a mount effect
@@ -152,6 +152,42 @@ describe("useDataTableStorage", () => {
 			// ... and the page reset did not write it back
 			expect(readPersisted()).toMatchObject({pageIndex: 0});
 			expect(readPersisted()?.sortField).toBeUndefined();
+		});
+
+		test("keeps a persisted sort field while the columns are still empty", () => {
+			persist({pageIndex: 2, sortField: "tags", sortDirection: "desc"});
+
+			// a consumer whose columns are built from an async permission or feature flag
+			const {last} = renderHook(() => useDataTableStorage(KEY, {columns: []}));
+
+			expect(last().sortField).toBe("tags");
+			expect(readPersisted()).toMatchObject({sortField: "tags"});
+		});
+
+		test("discards the sort field once the columns arrive", () => {
+			persist({sortField: "tags", sortDirection: "desc"});
+
+			let currentColumns: ReadonlyArray<DataTableColumn<unknown>> = [];
+			const {last, renders, rerender} = renderHook(() => useDataTableStorage(KEY, {columns: currentColumns}));
+
+			expect(last().sortField).toBe("tags");
+
+			currentColumns = columns;
+			rerender();
+
+			expect(last().sortField).toBeUndefined();
+			expect(readPersisted()?.sortField).toBeUndefined();
+			expect(renders.length).toBeGreaterThan(1);
+		});
+
+		test("deletes the entry when only the sort field distinguished it from the defaults", () => {
+			persist({pageIndex: 0, pageSize: 10, sortDirection: "asc", sortField: "tags"});
+
+			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
+
+			expect(last().sortField).toBeUndefined();
+			// `useStorage` deletes an entry that equals the defaults, the cleanup must not pin one
+			expect(localStorage.getItem(KEY)).toBeNull();
 		});
 
 		test("leaves an unparsable persisted value to useStorage", () => {
@@ -189,6 +225,21 @@ describe("useDataTableStorage", () => {
 
 			act(() => last().onSort("name"));
 			expect(last().sortDirection).toBe("asc");
+		});
+
+		test("ignores a field that no sortable column matches", () => {
+			// the columns passed to the hook and the ones rendered by the DataTable diverged
+			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
+			const setItem = jest.spyOn(Storage.prototype, "setItem");
+
+			act(() => last().onSort("tags"));
+
+			// not even written and cleaned up again - the click is simply a no-op
+			expect(setItem).not.toHaveBeenCalledWith(KEY, expect.stringContaining("tags"));
+			setItem.mockRestore();
+
+			expect(last().sortField).toBeUndefined();
+			expect(readPersisted()?.sortField).toBeUndefined();
 		});
 
 		test("does not toggle the direction of a discarded sort field", () => {

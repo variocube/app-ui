@@ -33,6 +33,9 @@ export function useStorage<T>(key: string, defaultValue: T, storageType?: Storag
 	}, [readStateFromStorage]);
 
 	useLayoutEffect(() => {
+		// Sync the state with the current key: it is only initialized once, so after a key change the
+		// state would otherwise keep serving the value of the previous key until the next write.
+		updateStateFromStorage();
 		storage.addChangeListener(key, updateStateFromStorage);
 		return () => storage.removeChangeListener(key, updateStateFromStorage);
 	}, [key, updateStateFromStorage]);

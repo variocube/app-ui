@@ -5,7 +5,7 @@
 import * as React from "react";
 import {useRef} from "react";
 import {act, create, ReactTestRenderer} from "react-test-renderer";
-import {useStorage} from "./useStorage";
+import {StorageSetter, StorageUpdater, useStorage} from "./useStorage";
 
 // Reset storage between tests
 beforeEach(() => {
@@ -84,13 +84,35 @@ describe("useStorage", () => {
 		expect(result.value).toEqual({page: 2, size: 50});
 	});
 
+	test("reads the value of a new key after the key changed", () => {
+		localStorage.setItem("key-a", JSON.stringify({page: 1, size: 25}));
+		localStorage.setItem("key-b", JSON.stringify({page: 9, size: 50}));
+
+		let renderer: ReactTestRenderer;
+		act(() => {
+			renderer = create(<TestComponent storageKey="key-a" />);
+		});
+		expect(getTestResult(renderer!).value).toEqual({page: 1, size: 25});
+
+		act(() => {
+			renderer.update(<TestComponent storageKey="key-b" />);
+		});
+
+		expect(getTestResult(renderer!).value).toEqual({page: 9, size: 50});
+	});
+
 	describe("setValue", () => {
+		interface TestValue {
+			page: number;
+			size: number;
+		}
+
 		function renderWithSetter(storageKey: string) {
-			const setters: Array<(value: any) => void> = [];
-			const values: any[] = [];
+			const setters: Array<StorageSetter<TestValue>> = [];
+			const values: TestValue[] = [];
 
 			function Component() {
-				const [value, setValue] = useStorage(storageKey, {page: 0, size: 25});
+				const [value, setValue] = useStorage<TestValue>(storageKey, {page: 0, size: 25});
 				values.push(value);
 				setters.push(setValue);
 				return null;
@@ -103,7 +125,8 @@ describe("useStorage", () => {
 			return {
 				values,
 				setters,
-				set: (value: any) => act(() => setters[setters.length - 1](value)),
+				set: (value: TestValue | StorageUpdater<TestValue>) =>
+					act(() => setters[setters.length - 1](value)),
 				last: () => values[values.length - 1],
 			};
 		}
@@ -120,7 +143,7 @@ describe("useStorage", () => {
 		test("applies an updater to the current value", () => {
 			const {set, last} = renderWithSetter("updater-key");
 
-			set((previous: any) => ({...previous, page: previous.page + 1}));
+			set(previous => ({...previous, page: previous.page + 1}));
 
 			expect(last()).toEqual({page: 1, size: 25});
 		});
@@ -132,7 +155,7 @@ describe("useStorage", () => {
 			const staleSetter = setters[0];
 
 			set({page: 5, size: 25});
-			act(() => staleSetter((previous: any) => ({...previous, size: 50})));
+			act(() => staleSetter(previous => ({...previous, size: 50})));
 
 			// the page written in between is preserved
 			expect(last()).toEqual({page: 5, size: 50});
@@ -144,7 +167,7 @@ describe("useStorage", () => {
 			set({page: 1, size: 25});
 			expect(localStorage.getItem("default-key")).not.toBeNull();
 
-			set((previous: any) => ({...previous, page: 0}));
+			set(previous => ({...previous, page: 0}));
 			expect(localStorage.getItem("default-key")).toBeNull();
 		});
 	});

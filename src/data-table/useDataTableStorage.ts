@@ -1,6 +1,6 @@
 import {SortDirection} from "@mui/material";
-import {useCallback, useMemo, useRef} from "react";
-import {storage as browserStorage, StorageType, useStorage} from "../storage";
+import {useCallback, useEffect, useRef} from "react";
+import {StorageType, useStorage} from "../storage";
 import {DataTableColumn, DataTablePage} from "./DataTable";
 
 export interface DataTableStorage {
@@ -20,6 +20,9 @@ export interface DataTableStorageOptions<T = unknown> {
 	 * When provided, a persisted `sortField` that does not match a sortable column is discarded,
 	 * both from the returned state and from the browser storage. Pass the full list of available
 	 * columns, not only the currently visible ones.
+	 *
+	 * An empty list is treated like no list at all, so that columns which are only built once an
+	 * async permission or feature flag has resolved do not discard a valid sort field in the meantime.
 	 */
 	columns?: ReadonlyArray<DataTableColumn<T>>;
 }
@@ -34,45 +37,25 @@ function isDataTableStorageOptions<T>(value: unknown): value is DataTableStorage
 		&& ("defaults" in value || "storageType" in value || "columns" in value);
 }
 
+/**
+ * Whether the given sort field can be used, i.e. whether a sortable column matches it.
+ *
+ * Without columns - or with an empty list, which is what consumers pass while they are still waiting
+ * for an async permission or feature flag - nothing can be decided, so the field is accepted.
+ */
 function isSortFieldValid<T>(sortField?: string, columns?: ReadonlyArray<DataTableColumn<T>>) {
-	return !sortField || !columns || columns.some(column => column.sortable && column.field == sortField);
+	if (!sortField || !columns?.length) {
+		return true;
+	}
+	return columns.some(column => column.sortable && column.field == sortField);
 }
 
+/** Returns the storage without its sort field, if no sortable column matches it. */
 function withValidSortField<T, S extends DataTableStorage>(
 	storage: S,
 	columns?: ReadonlyArray<DataTableColumn<T>>,
 ): S {
 	return isSortFieldValid(storage.sortField, columns) ? storage : {...storage, sortField: undefined};
-}
-
-/**
- * Removes a sort field that does not match a sortable column from the persisted value.
- *
- * Consumers keep their sort settings in browser storage indefinitely, while their column definitions
- * evolve: a field that was sortable once sticks around after the column stopped being sortable (or was
- * renamed or removed) and keeps breaking the server-side query on every load, with no way for the user
- * to recover.
- */
-function purgeInvalidSortField<T>(
-	key: string,
-	columns?: ReadonlyArray<DataTableColumn<T>>,
-	storageType?: StorageType,
-) {
-	if (!columns) {
-		return;
-	}
-	const serialized = browserStorage.read(key, storageType);
-	if (!serialized) {
-		return;
-	}
-	try {
-		const stored = JSON.parse(serialized) as DataTableStorage | null;
-		if (stored && !isSortFieldValid(stored.sortField, columns)) {
-			browserStorage.write(key, JSON.stringify({...stored, sortField: undefined}), storageType);
-		}
-	} catch (e) {
-		// leave an unparsable value to the fallback handling of `useStorage`
-	}
 }
 
 /**
@@ -124,15 +107,6 @@ export function useDataTableStorage<T>(
 		defaults = optionsOrDefaultsOrType;
 	}
 
-	// The purge has to happen while rendering, before `useStorage` below reads the value: doing it in an
-	// effect is too late, because `onPageChange`/`onSort` of this render would already have handed the
-	// invalid field out and the consumer may write it back (e.g. a page reset in a mount effect).
-	const purgedKey = useRef<string>();
-	if (purgedKey.current !== key) {
-		purgedKey.current = key;
-		purgeInvalidSortField(key, columns, storageType);
-	}
-
 	const [storage, setStorage] = useStorage<DataTableStorage>(key, {
 		pageIndex: 0,
 		pageSize: 10,
@@ -140,19 +114,28 @@ export function useDataTableStorage<T>(
 		...defaults,
 	}, storageType);
 
-	// Guard the value we hand out as well: the columns can change after the purge has run, e.g. when
-	// they depend on a permission or a feature flag that is resolved asynchronously.
-	const sortFieldValid = isSortFieldValid(storage.sortField, columns);
-	const validated = useMemo(
-		() => sortFieldValid ? storage : {...storage, sortField: undefined},
-		[storage, sortFieldValid],
-	);
+	// The state we hand out never carries an invalid sort field, whatever is persisted.
+	const validated = withValidSortField(storage, columns);
 
-	// Keep the columns out of the callback dependencies: they are commonly built inline, so a new array
-	// on every render would give the callbacks a new identity on every render.
+	// Keep the columns out of the dependency arrays below: they are commonly built inline, so a new
+	// array on every render would give the callbacks a new identity on every render.
 	const columnsRef = useRef(columns);
 	columnsRef.current = columns;
 
+	// Clean up the persisted value as well, so that an invalid sort field neither lingers for readers
+	// outside this hook nor survives until the next write. Writing through `setStorage` keeps the
+	// serialization contract of `useStorage` (including deleting an entry that equals the defaults) in
+	// one place, and doing it in an effect keeps the write out of the render phase, where it would
+	// notify the change listeners of other components while they are rendering.
+	const sortFieldValid = isSortFieldValid(storage.sortField, columns);
+	useEffect(() => {
+		if (!sortFieldValid) {
+			setStorage(previous => withValidSortField(previous, columnsRef.current));
+		}
+	}, [sortFieldValid, setStorage]);
+
+	// The updaters below resolve `previous` from the persisted value instead of the render closure, so
+	// concurrent writers cannot resurrect a sort field that has just been discarded.
 	const onPageChange = useCallback(({pageSize, pageIndex}: DataTablePage) => {
 		setStorage(previous => ({...withValidSortField(previous, columnsRef.current), pageSize, pageIndex}));
 	}, [setStorage]);
@@ -160,6 +143,12 @@ export function useDataTableStorage<T>(
 	const onSort = useCallback((field: string) => {
 		setStorage(previous => {
 			const current = withValidSortField(previous, columnsRef.current);
+			if (!isSortFieldValid(field, columnsRef.current)) {
+				// Nothing to do: persisting the field would only produce the kind of invalid sort field
+				// that is discarded again on read. Happens when the columns passed to this hook and the
+				// ones rendered by the DataTable diverge.
+				return current;
+			}
 			if (current.sortField == field) {
 				return {...current, sortDirection: current.sortDirection == "desc" ? "asc" : "desc"};
 			}
