@@ -119,13 +119,31 @@ describe("useDataTableStorage", () => {
 			expect(readPersisted()).toEqual({pageIndex: 2, sortDirection: "desc"});
 		});
 
-		test("discards the sort field of a removed column", () => {
-			persist({sortField: "no-such-column"});
+		test("hides, but keeps, a sort field that matches no column at all", () => {
+			persist({sortField: "no-such-column", sortDirection: "desc"});
 
 			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
 
+			// nothing reaches a query ...
 			expect(last().sortField).toBeUndefined();
-			expect(readPersisted()).toEqual({});
+			// ... but the column list may simply be incomplete, so the preference is not destroyed
+			expect(readPersisted()).toEqual({sortField: "no-such-column", sortDirection: "desc"});
+		});
+
+		test("restores a hidden sort field when the missing column shows up again", () => {
+			persist({sortField: "price", sortDirection: "desc"});
+
+			// a consumer that passes the visible columns instead of the available ones, with the sorted
+			// column currently hidden
+			let currentColumns: ReadonlyArray<DataTableColumn<unknown>> = columns;
+			const {last, rerender} = renderHook(() => useDataTableStorage(KEY, {columns: currentColumns}));
+
+			expect(last().sortField).toBeUndefined();
+
+			currentColumns = [...columns, {field: "price", label: "Price", sortable: true}];
+			rerender();
+
+			expect(last()).toMatchObject({sortField: "price", sortDirection: "desc"});
 		});
 
 		test("is not written back by a consumer that resets the page in a mount effect", () => {
@@ -231,12 +249,16 @@ describe("useDataTableStorage", () => {
 			// the columns passed to the hook and the ones rendered by the DataTable diverged
 			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
 			const setItem = jest.spyOn(Storage.prototype, "setItem");
+			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
 
 			act(() => last().onSort("tags"));
 
 			// not even written and cleaned up again - the click is simply a no-op
 			expect(setItem).not.toHaveBeenCalledWith(KEY, expect.stringContaining("tags"));
+			// but a silent no-op would be undiagnosable, so it is reported
+			expect(warn).toHaveBeenCalledWith(expect.stringContaining("tags"));
 			setItem.mockRestore();
+			warn.mockRestore();
 
 			expect(last().sortField).toBeUndefined();
 			expect(readPersisted()?.sortField).toBeUndefined();

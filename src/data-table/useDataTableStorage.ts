@@ -17,12 +17,15 @@ export interface DataTableStorageOptions<T = unknown> {
 	/**
 	 * The columns of the data table.
 	 *
-	 * When provided, a persisted `sortField` that does not match a sortable column is discarded,
-	 * both from the returned state and from the browser storage. Pass the full list of available
-	 * columns, not only the currently visible ones.
+	 * When provided, a persisted `sortField` that does not match a sortable column is discarded from
+	 * the returned state, so it never reaches a query. It is additionally removed from the browser
+	 * storage once a column with that field declares itself as not sortable - an unambiguous statement
+	 * that this sort no longer exists.
 	 *
-	 * An empty list is treated like no list at all, so that columns which are only built once an
-	 * async permission or feature flag has resolved do not discard a valid sort field in the meantime.
+	 * Pass the full list of available columns, not only the currently visible ones. A field that
+	 * matches no column at all is only hidden, never removed, because the list may simply be
+	 * incomplete for now: an empty list is treated like no list at all, and columns that are built
+	 * once an async permission or feature flag has resolved must not cost the user their sort.
 	 */
 	columns?: ReadonlyArray<DataTableColumn<T>>;
 }
@@ -122,17 +125,20 @@ export function useDataTableStorage<T>(
 	const columnsRef = useRef(columns);
 	columnsRef.current = columns;
 
-	// Clean up the persisted value as well, so that an invalid sort field neither lingers for readers
-	// outside this hook nor survives until the next write. Writing through `setStorage` keeps the
-	// serialization contract of `useStorage` (including deleting an entry that equals the defaults) in
-	// one place, and doing it in an effect keeps the write out of the render phase, where it would
-	// notify the change listeners of other components while they are rendering.
-	const sortFieldValid = isSortFieldValid(storage.sortField, columns);
+	// Clean up the persisted value as well, so that a sort field the columns declare as not sortable
+	// neither lingers for readers outside this hook nor survives until the next write. Only that case
+	// is removed: deleting a field that matches no column at all would destroy the user's preference
+	// whenever a column list arrives incomplete, and the mask above already keeps it out of queries.
+	// Writing through `setStorage` keeps the serialization contract of `useStorage` (including deleting
+	// an entry that equals the defaults) in one place, and doing it in an effect keeps the write out of
+	// the render phase, where it would notify the change listeners of other components while they are
+	// rendering.
+	const sortFieldDisabled = columns?.some(column => column.field == storage.sortField && !column.sortable) ?? false;
 	useEffect(() => {
-		if (!sortFieldValid) {
+		if (sortFieldDisabled) {
 			setStorage(previous => withValidSortField(previous, columnsRef.current));
 		}
-	}, [sortFieldValid, setStorage]);
+	}, [sortFieldDisabled, setStorage]);
 
 	// The updaters below resolve `previous` from the persisted value instead of the render closure, so
 	// concurrent writers cannot resurrect a sort field that has just been discarded.
@@ -146,7 +152,11 @@ export function useDataTableStorage<T>(
 			if (!isSortFieldValid(field, columnsRef.current)) {
 				// Nothing to do: persisting the field would only produce the kind of invalid sort field
 				// that is discarded again on read. Happens when the columns passed to this hook and the
-				// ones rendered by the DataTable diverge.
+				// ones rendered by the DataTable diverge - typically because the visible columns were
+				// passed instead of the available ones.
+				console.warn(
+					`Ignoring sort by "${field}": no sortable column of the data table "${key}" matches it.`,
+				);
 				return current;
 			}
 			if (current.sortField == field) {
@@ -158,7 +168,7 @@ export function useDataTableStorage<T>(
 				sortField: field,
 			};
 		});
-	}, [setStorage]);
+	}, [key, setStorage]);
 
 	return {
 		...validated,

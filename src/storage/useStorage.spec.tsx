@@ -84,6 +84,28 @@ describe("useStorage", () => {
 		expect(result.value).toEqual({page: 2, size: 50});
 	});
 
+	test("does not loop with a default value that changes on every render", () => {
+		// e.g. a default containing a timestamp or a generated id, with nothing persisted yet
+		let renderCount = 0;
+		function Component() {
+			renderCount++;
+			const [value] = useStorage("unstable-default-key", {createdAt: `render-${renderCount}`});
+			return <div data-value={JSON.stringify(value)} />;
+		}
+
+		let renderer: ReactTestRenderer;
+		act(() => {
+			renderer = create(<Component />);
+		});
+		// a re-render from the parent is what starts the loop: the state then holds the serialized
+		// default of the previous render, and syncing it in turn triggers the next render
+		act(() => {
+			renderer.update(<Component />);
+		});
+
+		expect(renderCount).toBeLessThanOrEqual(4);
+	});
+
 	test("reads the value of a new key after the key changed", () => {
 		localStorage.setItem("key-a", JSON.stringify({page: 1, size: 25}));
 		localStorage.setItem("key-b", JSON.stringify({page: 9, size: 50}));

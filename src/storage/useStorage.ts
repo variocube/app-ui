@@ -1,4 +1,4 @@
-import {useCallback, useLayoutEffect, useMemo, useState} from "react";
+import {useCallback, useLayoutEffect, useMemo, useRef, useState} from "react";
 import {storage} from "./storage";
 import {StorageType} from "./types";
 
@@ -32,10 +32,17 @@ export function useStorage<T>(key: string, defaultValue: T, storageType?: Storag
 		setValue(readStateFromStorage());
 	}, [readStateFromStorage]);
 
+	// The state is initialized once, so after a key change it would keep serving the value of the
+	// previous key until the next write. Re-read on an actual key change only: doing it whenever
+	// `updateStateFromStorage` changes identity would loop for a default value that is rebuilt on every
+	// render (e.g. one containing a timestamp) while nothing is persisted for the key yet.
+	const syncedKey = useRef(key);
+
 	useLayoutEffect(() => {
-		// Sync the state with the current key: it is only initialized once, so after a key change the
-		// state would otherwise keep serving the value of the previous key until the next write.
-		updateStateFromStorage();
+		if (syncedKey.current !== key) {
+			syncedKey.current = key;
+			updateStateFromStorage();
+		}
 		storage.addChangeListener(key, updateStateFromStorage);
 		return () => storage.removeChangeListener(key, updateStateFromStorage);
 	}, [key, updateStateFromStorage]);
