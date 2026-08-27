@@ -399,7 +399,7 @@ export function SpringDataTable() {
 
 	const {columns, setColumns} = useDataTableColumnStorage("SpringDataTableColumns", available);
 
-	// Passing the columns discards a persisted sort field that no sortable column matches, e.g. after a
+	// Passing the columns hides a persisted sort field that no sortable column matches, e.g. after a
 	// column was removed or stopped being sortable. Without it, such a field would be sent to the
 	// backend on every load and break the query for good.
 	const {onPageChange, onSort, ...storage} = useDataTableStorage("SpringDataTable", {
@@ -419,8 +419,8 @@ export function SpringDataTable() {
 				This data table emulates fetching from a Spring REST-API using the <Code>Pageable</Code> and{" "}
 				<Code>Page</Code> data types. Paging and sorting are persisted with{" "}
 				<Code>useDataTableStorage</Code>, which is given the <Code>columns</Code>{" "}
-				so that a persisted sort field of a column that is no longer sortable is discarded instead of being sent
-				to the backend forever.
+				so that a persisted sort field of a column that is no longer sortable is hidden instead of being sent to
+				the backend forever.
 			</Typography>
 			<DataTable
 				header={

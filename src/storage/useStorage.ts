@@ -32,17 +32,21 @@ export function useStorage<T>(key: string, defaultValue: T, storageType?: Storag
 		setValue(readStateFromStorage());
 	}, [readStateFromStorage]);
 
-	// The state is initialized once, so after a key change it would keep serving the value of the
-	// previous key until the next write. Re-read on an actual key change only: doing it whenever
-	// `updateStateFromStorage` changes identity would loop for a default value that is rebuilt on every
-	// render (e.g. one containing a timestamp) while nothing is persisted for the key yet.
-	const syncedKey = useRef(key);
+	// The state is initialized once, so after the key or the storage type changed it would keep serving
+	// the value of the previous entry. Adjust it while rendering rather than in an effect, so that no
+	// commit - and no effect of a consumer - ever sees the previous entry's value paired with the new
+	// key. This must be tied to the entry itself and not to `readStateFromStorage`, whose identity also
+	// changes with the default value: that would loop for a default that is rebuilt on every render
+	// (e.g. one containing a timestamp) while nothing is persisted for the entry yet.
+	const entry = `${storageType ?? "local"}:${key}`;
+	const syncedEntry = useRef(entry);
+
+	if (syncedEntry.current !== entry) {
+		syncedEntry.current = entry;
+		setValue(readStateFromStorage());
+	}
 
 	useLayoutEffect(() => {
-		if (syncedKey.current !== key) {
-			syncedKey.current = key;
-			updateStateFromStorage();
-		}
 		storage.addChangeListener(key, updateStateFromStorage);
 		return () => storage.removeChangeListener(key, updateStateFromStorage);
 	}, [key, updateStateFromStorage]);

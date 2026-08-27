@@ -20,6 +20,12 @@ beforeEach(() => {
 	sessionStorage.clear();
 });
 
+// spies are set up inside the tests below; without this, a failing assertion would leak a silenced
+// console or a spied storage into every later test in this file
+afterEach(() => {
+	jest.restoreAllMocks();
+});
+
 function persist(value: DataTableStorage, storage: Storage = localStorage) {
 	storage.setItem(KEY, JSON.stringify(value));
 }
@@ -108,18 +114,18 @@ describe("useDataTableStorage", () => {
 			expect(readPersisted()).toMatchObject({sortField: "name"});
 		});
 
-		test("discards the sort field of a column that is no longer sortable", () => {
+		test("hides the sort field of a column that is no longer sortable", () => {
 			persist({pageIndex: 2, sortField: "tags", sortDirection: "desc"});
 
 			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
 
 			expect(last().sortField).toBeUndefined();
-			// the remaining settings survive, in memory and in storage
 			expect(last().pageIndex).toBe(2);
-			expect(readPersisted()).toEqual({pageIndex: 2, sortDirection: "desc"});
+			// the persisted value is not touched: hiding is reversible, deleting would not be
+			expect(readPersisted()).toEqual({pageIndex: 2, sortField: "tags", sortDirection: "desc"});
 		});
 
-		test("hides, but keeps, a sort field that matches no column at all", () => {
+		test("hides a sort field that matches no column at all", () => {
 			persist({sortField: "no-such-column", sortDirection: "desc"});
 
 			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
@@ -140,13 +146,17 @@ describe("useDataTableStorage", () => {
 
 			expect(last().sortField).toBeUndefined();
 
+			// a write while the column is hidden must not drop what it does not know about
+			act(() => last().onPageChange({pageIndex: 1, pageSize: 10, totalElements: 100}));
+			expect(readPersisted()).toMatchObject({sortField: "price", pageIndex: 1});
+
 			currentColumns = [...columns, {field: "price", label: "Price", sortable: true}];
 			rerender();
 
-			expect(last()).toMatchObject({sortField: "price", sortDirection: "desc"});
+			expect(last()).toMatchObject({sortField: "price", sortDirection: "desc", pageIndex: 1});
 		});
 
-		test("is not written back by a consumer that resets the page in a mount effect", () => {
+		test("is never handed out, even to a consumer that writes in a mount effect", () => {
 			persist({pageIndex: 2, sortField: "tags"});
 
 			// a consumer that resets the page index in a mount effect
@@ -165,47 +175,27 @@ describe("useDataTableStorage", () => {
 				create(<Harness />);
 			});
 
-			// no render ever saw the invalid sort field ...
+			// no render ever saw the hidden sort field, so nothing reaches a query
 			expect(renders.every(render => render.sortField === undefined)).toBe(true);
-			// ... and the page reset did not write it back
-			expect(readPersisted()).toMatchObject({pageIndex: 0});
-			expect(readPersisted()?.sortField).toBeUndefined();
+			// the page reset went through, and left the persisted sort field alone
+			expect(readPersisted()).toMatchObject({pageIndex: 0, sortField: "tags"});
 		});
 
-		test("keeps a persisted sort field while the columns are still empty", () => {
-			persist({pageIndex: 2, sortField: "tags", sortDirection: "desc"});
-
+		test("hides the sort field while the columns are still empty, and applies it once they arrive", () => {
 			// a consumer whose columns are built from an async permission or feature flag
-			const {last} = renderHook(() => useDataTableStorage(KEY, {columns: []}));
-
-			expect(last().sortField).toBe("tags");
-			expect(readPersisted()).toMatchObject({sortField: "tags"});
-		});
-
-		test("discards the sort field once the columns arrive", () => {
-			persist({sortField: "tags", sortDirection: "desc"});
+			persist({pageIndex: 2, sortField: "name", sortDirection: "desc"});
 
 			let currentColumns: ReadonlyArray<DataTableColumn<unknown>> = [];
-			const {last, renders, rerender} = renderHook(() => useDataTableStorage(KEY, {columns: currentColumns}));
+			const {last, rerender} = renderHook(() => useDataTableStorage(KEY, {columns: currentColumns}));
 
-			expect(last().sortField).toBe("tags");
+			// a sort that cannot be applied yet is not sent, but it is not lost either
+			expect(last().sortField).toBeUndefined();
+			expect(readPersisted()).toMatchObject({sortField: "name"});
 
 			currentColumns = columns;
 			rerender();
 
-			expect(last().sortField).toBeUndefined();
-			expect(readPersisted()?.sortField).toBeUndefined();
-			expect(renders.length).toBeGreaterThan(1);
-		});
-
-		test("deletes the entry when only the sort field distinguished it from the defaults", () => {
-			persist({pageIndex: 0, pageSize: 10, sortDirection: "asc", sortField: "tags"});
-
-			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
-
-			expect(last().sortField).toBeUndefined();
-			// `useStorage` deletes an entry that equals the defaults, the cleanup must not pin one
-			expect(localStorage.getItem(KEY)).toBeNull();
+			expect(last()).toMatchObject({sortField: "name", sortDirection: "desc"});
 		});
 
 		test("leaves an unparsable persisted value to useStorage", () => {
@@ -245,23 +235,23 @@ describe("useDataTableStorage", () => {
 			expect(last().sortDirection).toBe("asc");
 		});
 
-		test("ignores a field that no sortable column matches", () => {
+		test("ignores a field that no sortable column matches, leaving the current sort alone", () => {
 			// the columns passed to the hook and the ones rendered by the DataTable diverged
+			persist({sortField: "name", sortDirection: "desc"});
+
 			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
 			const setItem = jest.spyOn(Storage.prototype, "setItem");
 			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
 
 			act(() => last().onSort("tags"));
 
-			// not even written and cleaned up again - the click is simply a no-op
-			expect(setItem).not.toHaveBeenCalledWith(KEY, expect.stringContaining("tags"));
-			// but a silent no-op would be undiagnosable, so it is reported
+			// a real no-op: nothing is written, and no listener on the key is notified
+			expect(setItem).not.toHaveBeenCalled();
+			// a silent no-op would be undiagnosable, so it is reported
 			expect(warn).toHaveBeenCalledWith(expect.stringContaining("tags"));
-			setItem.mockRestore();
-			warn.mockRestore();
-
-			expect(last().sortField).toBeUndefined();
-			expect(readPersisted()?.sortField).toBeUndefined();
+			// and the working sort is untouched
+			expect(last()).toMatchObject({sortField: "name", sortDirection: "desc"});
+			expect(readPersisted()).toEqual({sortField: "name", sortDirection: "desc"});
 		});
 
 		test("does not toggle the direction of a discarded sort field", () => {

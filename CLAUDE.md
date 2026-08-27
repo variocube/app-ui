@@ -91,10 +91,41 @@ Global singleton `storage` wrapper:
 
 - Auto-detects available storage: localStorage → sessionStorage → MemoryStorage
 - Event listener pattern for cross-tab synchronization
-- React hook: `useStorage<T>(key, defaultValue)`
+- React hook: `useStorage<T>(key, defaultValue, storageType?)` (plus `useLocalStorage`/`useSessionStorage`)
 - Change listeners for reactive updates
 
-#### 4. Wrapper Components
+The setter returned by `useStorage` takes a value **or an updater** (`StorageSetter<T>` /
+`StorageUpdater<T>`):
+
+```ts
+const [pageable, setPageable] = useStorage("Deliveries", {pageIndex: 0});
+setPageable(previous => ({...previous, pageIndex: 0}));
+```
+
+An updater is applied to the **currently persisted** value, not to the one captured in the caller's
+render closure, so concurrent writers don't overwrite each other. The hook re-reads when its `key` or
+`storageType` changes, and deletes the entry when a written value equals the default value.
+
+#### 4. Data Table State
+
+`useDataTableStorage(key, options?)` persists paging and sorting of a `DataTable`
+(`UseDataTableStorageResult`), `useDataTableColumnStorage(key, availableColumns)` the visible columns.
+
+Pass the **available** columns (not only the visible ones) to guard against a stale sort:
+
+```ts
+const storage = useDataTableStorage("Deliveries", {defaults: {pageSize: 25}, columns: availableColumns});
+```
+
+A persisted `sortField` that no sortable column matches is then hidden from the returned state, so it
+never reaches a query — a column that stops being `sortable` would otherwise keep breaking the
+server-side query for everyone who ever sorted by it (see issue #84). The persisted value itself is
+never modified: a column list can be incomplete (not resolved yet, or filtered by permissions), so the
+sort is only suppressed and returns as soon as its column does. The trade-off is that a truly dead
+`sortField` stays in browser storage, where code reading that key *without* passing `columns` still
+sees it.
+
+#### 5. Wrapper Components
 
 Many Input components wrap MUI components with enhancements:
 

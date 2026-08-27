@@ -1,5 +1,5 @@
 import {SortDirection} from "@mui/material";
-import {useCallback, useEffect, useRef} from "react";
+import {useCallback, useRef} from "react";
 import {StorageType, useStorage} from "../storage";
 import {DataTableColumn, DataTablePage} from "./DataTable";
 
@@ -17,15 +17,13 @@ export interface DataTableStorageOptions<T = unknown> {
 	/**
 	 * The columns of the data table.
 	 *
-	 * When provided, a persisted `sortField` that does not match a sortable column is discarded from
-	 * the returned state, so it never reaches a query. It is additionally removed from the browser
-	 * storage once a column with that field declares itself as not sortable - an unambiguous statement
-	 * that this sort no longer exists.
+	 * When provided, a persisted `sortField` that no sortable column matches is hidden from the
+	 * returned state, so that it never reaches a query. Pass the full list of available columns, not
+	 * only the currently visible ones.
 	 *
-	 * Pass the full list of available columns, not only the currently visible ones. A field that
-	 * matches no column at all is only hidden, never removed, because the list may simply be
-	 * incomplete for now: an empty list is treated like no list at all, and columns that are built
-	 * once an async permission or feature flag has resolved must not cost the user their sort.
+	 * The persisted value itself is never modified: a column list can be incomplete - not resolved yet,
+	 * or filtered down to what a user may see - and hiding the sort field is reversible, while deleting
+	 * it would cost the user their setting for good. It comes back as soon as its column does.
 	 */
 	columns?: ReadonlyArray<DataTableColumn<T>>;
 }
@@ -40,25 +38,32 @@ function isDataTableStorageOptions<T>(value: unknown): value is DataTableStorage
 		&& ("defaults" in value || "storageType" in value || "columns" in value);
 }
 
-/**
- * Whether the given sort field can be used, i.e. whether a sortable column matches it.
- *
- * Without columns - or with an empty list, which is what consumers pass while they are still waiting
- * for an async permission or feature flag - nothing can be decided, so the field is accepted.
- */
-function isSortFieldValid<T>(sortField?: string, columns?: ReadonlyArray<DataTableColumn<T>>) {
-	if (!sortField || !columns?.length) {
-		return true;
-	}
-	return columns.some(column => column.sortable && column.field == sortField);
+function hasSortableColumn<T>(field: string, columns: ReadonlyArray<DataTableColumn<T>>) {
+	return columns.some(column => column.sortable && column.field == field);
 }
 
-/** Returns the storage without its sort field, if no sortable column matches it. */
-function withValidSortField<T, S extends DataTableStorage>(
-	storage: S,
-	columns?: ReadonlyArray<DataTableColumn<T>>,
-): S {
-	return isSortFieldValid(storage.sortField, columns) ? storage : {...storage, sortField: undefined};
+/**
+ * The sort field to hand out, i.e. the persisted one unless no sortable column matches it.
+ *
+ * Without columns there is nothing to check against and the field is handed out as persisted. An empty
+ * list does hide it: it may just not be resolved yet, and a sort that cannot be applied is better
+ * suppressed than sent to a backend that rejects it.
+ */
+function visibleSortField<T>(sortField?: string, columns?: ReadonlyArray<DataTableColumn<T>>) {
+	if (!sortField || !columns) {
+		return sortField;
+	}
+	return hasSortableColumn(sortField, columns) ? sortField : undefined;
+}
+
+/**
+ * Whether a sort by the given field may be persisted.
+ *
+ * Without columns - or with a list that is not resolved yet - this cannot be decided, so the click is
+ * trusted: the data table rendered that header as sortable.
+ */
+function canSortBy<T>(field: string, columns?: ReadonlyArray<DataTableColumn<T>>) {
+	return !columns?.length || hasSortableColumn(field, columns);
 }
 
 /**
@@ -81,7 +86,7 @@ function withValidSortField<T, S extends DataTableStorage>(
  * const tableState = useDataTableStorage("my-table", { defaults: { pageSize: 25 }, storageType: "session" });
  *
  * @example
- * // With columns: a persisted sort field that no sortable column matches is discarded
+ * // With columns: a persisted sort field that no sortable column matches is hidden
  * const tableState = useDataTableStorage("my-table", { columns });
  */
 export function useDataTableStorage(key: string): UseDataTableStorageResult;
@@ -117,53 +122,31 @@ export function useDataTableStorage<T>(
 		...defaults,
 	}, storageType);
 
-	// The state we hand out never carries an invalid sort field, whatever is persisted.
-	const validated = withValidSortField(storage, columns);
-
-	// Keep the columns out of the dependency arrays below: they are commonly built inline, so a new
-	// array on every render would give the callbacks a new identity on every render.
+	// Keep the columns out of the dependency array of `onSort` below: they are commonly built inline, so
+	// a new array on every render would give the callback a new identity on every render.
 	const columnsRef = useRef(columns);
 	columnsRef.current = columns;
 
-	// Clean up the persisted value as well, so that a sort field the columns declare as not sortable
-	// neither lingers for readers outside this hook nor survives until the next write. Only that case
-	// is removed: deleting a field that matches no column at all would destroy the user's preference
-	// whenever a column list arrives incomplete, and the mask above already keeps it out of queries.
-	// Writing through `setStorage` keeps the serialization contract of `useStorage` (including deleting
-	// an entry that equals the defaults) in one place, and doing it in an effect keeps the write out of
-	// the render phase, where it would notify the change listeners of other components while they are
-	// rendering.
-	const sortFieldDisabled = columns?.some(column => column.field == storage.sortField && !column.sortable) ?? false;
-	useEffect(() => {
-		if (sortFieldDisabled) {
-			setStorage(previous => withValidSortField(previous, columnsRef.current));
-		}
-	}, [sortFieldDisabled, setStorage]);
-
-	// The updaters below resolve `previous` from the persisted value instead of the render closure, so
-	// concurrent writers cannot resurrect a sort field that has just been discarded.
 	const onPageChange = useCallback(({pageSize, pageIndex}: DataTablePage) => {
-		setStorage(previous => ({...withValidSortField(previous, columnsRef.current), pageSize, pageIndex}));
+		setStorage(previous => ({...previous, pageSize, pageIndex}));
 	}, [setStorage]);
 
 	const onSort = useCallback((field: string) => {
+		if (!canSortBy(field, columnsRef.current)) {
+			// Persisting the field would replace a working sort with one that is hidden again on read.
+			// Happens when the columns passed to this hook and the ones rendered by the DataTable diverge
+			// - typically because the visible columns were passed instead of the available ones.
+			console.warn(`Ignoring sort by "${field}": no sortable column of the data table "${key}" matches it.`);
+			return;
+		}
 		setStorage(previous => {
-			const current = withValidSortField(previous, columnsRef.current);
-			if (!isSortFieldValid(field, columnsRef.current)) {
-				// Nothing to do: persisting the field would only produce the kind of invalid sort field
-				// that is discarded again on read. Happens when the columns passed to this hook and the
-				// ones rendered by the DataTable diverge - typically because the visible columns were
-				// passed instead of the available ones.
-				console.warn(
-					`Ignoring sort by "${field}": no sortable column of the data table "${key}" matches it.`,
-				);
-				return current;
-			}
-			if (current.sortField == field) {
-				return {...current, sortDirection: current.sortDirection == "desc" ? "asc" : "desc"};
+			// Compare against the visible field, so that a hidden one cannot swallow the click as a
+			// direction toggle. The persisted value is written as it is, minus the sort that changes.
+			if (visibleSortField(previous.sortField, columnsRef.current) == field) {
+				return {...previous, sortDirection: previous.sortDirection == "desc" ? "asc" : "desc"};
 			}
 			return {
-				...current,
+				...previous,
 				sortDirection: "asc",
 				sortField: field,
 			};
@@ -171,7 +154,10 @@ export function useDataTableStorage<T>(
 	}, [key, setStorage]);
 
 	return {
-		...validated,
+		...storage,
+		// The state we hand out never carries a sort field that no sortable column matches, while the
+		// persisted value keeps it: hiding is reversible, deleting would not be.
+		sortField: visibleSortField(storage.sortField, columns),
 		onPageChange,
 		onSort,
 	};

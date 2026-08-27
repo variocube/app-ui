@@ -5,12 +5,17 @@
 import * as React from "react";
 import {useRef} from "react";
 import {act, create, ReactTestRenderer} from "react-test-renderer";
+import {StorageType} from "./types";
 import {StorageSetter, StorageUpdater, useStorage} from "./useStorage";
 
 // Reset storage between tests
 beforeEach(() => {
 	localStorage.clear();
 	sessionStorage.clear();
+});
+
+afterEach(() => {
+	jest.restoreAllMocks();
 });
 
 interface TestResult<T> {
@@ -104,6 +109,29 @@ describe("useStorage", () => {
 		});
 
 		expect(renderCount).toBeLessThanOrEqual(4);
+	});
+
+	test("reads the other area after the storage type changed", () => {
+		localStorage.setItem("area-key", JSON.stringify({page: 1, size: 25}));
+		sessionStorage.setItem("area-key", JSON.stringify({page: 7, size: 25}));
+
+		function Component({storageType}: { storageType: StorageType }) {
+			const [value] = useStorage("area-key", {page: 0, size: 25}, storageType);
+			return <div data-value={JSON.stringify(value)} />;
+		}
+
+		let renderer: ReactTestRenderer;
+		act(() => {
+			renderer = create(<Component storageType="local" />);
+		});
+		expect(JSON.parse(renderer!.root.findByType("div").props["data-value"])).toEqual({page: 1, size: 25});
+
+		// e.g. a "don't remember my settings on this device" toggle
+		act(() => {
+			renderer.update(<Component storageType="session" />);
+		});
+
+		expect(JSON.parse(renderer!.root.findByType("div").props["data-value"])).toEqual({page: 7, size: 25});
 	});
 
 	test("reads the value of a new key after the key changed", () => {
