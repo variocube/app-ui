@@ -25,9 +25,18 @@ export interface DataTableStorageOptions<T = unknown> {
 	 * or filtered down to what a user may see - and hiding the sort field is reversible, while deleting
 	 * it would cost the user their setting for good. It comes back as soon as its column does.
 	 *
-	 * Prefer building the list synchronously. A list that starts out empty hides the sort field until it
-	 * resolves, and `DataTable` resets the page index whenever the sort field changes, so a restored page
-	 * index greater than zero is given up when the sort reappears.
+	 * A `sortField` configured through `defaults` is never hidden: it states how the initial query is
+	 * sorted, which is a different question from whether a header can be clicked.
+	 *
+	 * Note that omitting this option and passing an empty list are opposites: without columns there is
+	 * nothing to check against and any sort field is handed out, while an empty list matches nothing and
+	 * hides it. So `{columns: query.data?.available}` is unguarded while it loads. Prefer building the
+	 * list synchronously anyway: a list that starts out empty hides the sort field until it resolves, and
+	 * `DataTable` resets the page index whenever the sort field changes, so a restored page index greater
+	 * than zero is given up when the sort reappears.
+	 *
+	 * A column list that does not match what the `DataTable` renders makes clicks on the headers it does
+	 * not know about no-ops that are logged, not sorts.
 	 */
 	columns?: ReadonlyArray<DataTableColumn<T>>;
 }
@@ -152,11 +161,22 @@ export function useDataTableStorage<T>(
 		});
 	}, [key, setStorage]);
 
+	// The state we hand out never carries a sort field that no sortable column matches, while the
+	// persisted value keeps it: hiding is reversible, deleting would not be. A sort field the consumer
+	// configured as its default is exempt: `sortable` governs whether a header is clickable, while
+	// `defaults.sortField` states how the initial query is sorted - which may well be a display-only
+	// column, or a field that has no column of its own at all.
+	const sortField = storage.sortField == defaults.sortField
+		? storage.sortField
+		: visibleSortField(storage.sortField, columns);
+	const sortFieldHidden = Boolean(storage.sortField) && !sortField;
+
 	return {
 		...storage,
-		// The state we hand out never carries a sort field that no sortable column matches, while the
-		// persisted value keeps it: hiding is reversible, deleting would not be.
-		sortField: visibleSortField(storage.sortField, columns),
+		sortField,
+		// Hide the direction along with the field, otherwise the data table previews a descending arrow
+		// on every header while nothing is sorted at all.
+		sortDirection: sortFieldHidden ? undefined : storage.sortDirection,
 		onPageChange,
 		onSort,
 	};

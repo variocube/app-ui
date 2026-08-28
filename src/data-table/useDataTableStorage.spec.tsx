@@ -196,6 +196,50 @@ describe("useDataTableStorage", () => {
 			rerender();
 
 			expect(last()).toMatchObject({sortField: "name", sortDirection: "desc"});
+
+			// the callbacks have to see the resolved columns too, or the table stays unsortable forever
+			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			act(() => last().onSort("name"));
+
+			expect(warn).not.toHaveBeenCalled();
+			expect(last()).toMatchObject({sortField: "name", sortDirection: "asc"});
+		});
+
+		test("keeps a sort field that was configured as the default", () => {
+			// `sortable` governs header clicks; a default sort may well use a display-only column or a
+			// field the table does not render at all
+			const {last} = renderHook(() =>
+				useDataTableStorage(KEY, {defaults: {sortField: "createdAt", sortDirection: "desc"}, columns})
+			);
+
+			expect(last()).toMatchObject({sortField: "createdAt", sortDirection: "desc"});
+		});
+
+		test("hides a persisted sort field even when a default sort is configured", () => {
+			persist({sortField: "tags"});
+
+			const {last} = renderHook(() =>
+				useDataTableStorage(KEY, {defaults: {sortField: "createdAt"}, columns})
+			);
+
+			expect(last().sortField).toBeUndefined();
+		});
+
+		test("hides the sort direction along with the sort field", () => {
+			persist({sortField: "tags", sortDirection: "desc"});
+
+			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
+
+			// a direction without a field makes DataTable preview a descending arrow on every header
+			expect(last().sortDirection).toBeUndefined();
+		});
+
+		test("keeps the sort direction when nothing is hidden", () => {
+			persist({sortField: "name", sortDirection: "desc"});
+
+			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
+
+			expect(last().sortDirection).toBe("desc");
 		});
 
 		test("leaves an unparsable persisted value to useStorage", () => {

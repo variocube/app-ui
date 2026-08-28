@@ -99,12 +99,18 @@ The setter returned by `useStorage` takes a value **or an updater** (`StorageSet
 
 ```ts
 const [pageable, setPageable] = useStorage("Deliveries", {pageIndex: 0});
-setPageable(previous => ({...previous, pageIndex: 0}));
+setPageable(previous => ({...previous, pageIndex: previous.pageIndex + 1}));
 ```
 
 An updater is applied to the **currently persisted** value, not to the one captured in the caller's
 render closure, so concurrent writers don't overwrite each other. The hook re-reads when its `key` or
-`storageType` changes, and deletes the entry when a written value equals the default value.
+`storageType` changes, and deletes the entry when a written value equals the default value — which is
+why the example above increments rather than writing the default back.
+
+The default value is resolved on every read instead of being captured at mount, so a changed default
+takes effect while nothing is persisted. Keep it stable or memoized: one rebuilt with fresh content on
+every render (a timestamp, a generated id) makes the returned value change with it until something is
+written.
 
 #### 4. Data Table State
 
@@ -121,11 +127,20 @@ A persisted `sortField` that no sortable column matches is then hidden from the 
 never reaches a query — a column that stops being `sortable` would otherwise keep breaking the
 server-side query for everyone who ever sorted by it (see issue #84). The persisted value itself is
 never modified: a column list can be incomplete (not resolved yet, or filtered by permissions), so the
-sort is only suppressed and returns as soon as its column does. Two trade-offs: a truly dead
-`sortField` stays in browser storage, where code reading that key *without* passing `columns` still
-sees it; and a list that starts out empty hides the sort field until it resolves, which makes
-`DataTable` reset the page index when the sort reappears — so build the column list synchronously where
-you can.
+sort is only suppressed and returns as soon as its column does. A `sortField` given through `defaults`
+is exempt: it states how the initial query is sorted, which is a different question from whether a
+header can be clicked.
+
+Three trade-offs:
+
+- A truly dead `sortField` stays in browser storage, where code reading that key *without* passing
+  `columns` still sees it.
+- A column list that does not match what the `DataTable` renders turns clicks on the headers it does not
+  know about into logged no-ops — which is what a consumer passing the *visible* columns will hit.
+- A list that starts out empty hides the sort field until it resolves, and `DataTable` resets the page
+  index when the sort reappears. Note that omitting `columns` and passing `[]` are opposites — without
+  columns anything is handed out, an empty list matches nothing — so `{columns: query.data?.available}`
+  is unguarded while it loads. Build the column list synchronously where you can.
 
 #### 5. Wrapper Components
 
@@ -181,7 +196,7 @@ The localization system uses recursive TypeScript types for deep object navigati
 **Framework:** Jest with ts-jest preset
 **Default environment:** Node (some tests override to jsdom via `/** @jest-environment jsdom */` pragma)
 **Node version:** 24 (specified in `.nvmrc`)
-**Test files:** Located alongside source files with `.spec.ts` extension
+**Test files:** Located alongside source files with a `.spec.ts` / `.spec.tsx` extension
 
 ```bash
 # Run all tests

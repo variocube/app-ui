@@ -7,6 +7,14 @@ export type StorageUpdater<T> = (previous: T) => T;
 
 export type StorageSetter<T> = (newValue: T | StorageUpdater<T>) => void;
 
+/**
+ * Hook for a value persisted in browser storage.
+ *
+ * The default value is resolved on every read rather than captured at mount, so that a changed default
+ * takes effect while nothing is persisted. Keep it stable or memoized: one that is rebuilt with fresh
+ * content on every render (a timestamp, a generated id) makes the returned value change with it until
+ * something is written.
+ */
 export function useStorage<T>(key: string, defaultValue: T, storageType?: StorageType): [T, StorageSetter<T>] {
 	const defaultValueSerialized = useMemo(() => JSON.stringify(defaultValue), [defaultValue]);
 
@@ -34,8 +42,11 @@ export function useStorage<T>(key: string, defaultValue: T, storageType?: Storag
 	// The state is initialized once, so after the key or the storage type changed it would keep serving
 	// the value of the previous entry. Adjust it while rendering rather than in an effect, so that no
 	// commit - and no effect of a consumer - ever sees the previous entry's value paired with the new
-	// key. `syncedEntry` is state rather than a ref on purpose: a ref survives a render that React
-	// discards and restarts, which would swallow the re-read it is meant to trigger.
+	// key. `syncedEntry` is state rather than a ref on purpose: as a guard, a ref would survive a render
+	// that React discards and restarts and would then swallow the re-read it is meant to trigger. (A ref
+	// that merely mirrors the latest value, re-assigned by every render, is unaffected by that.)
+	// The re-read runs before any layout effect, while the change listener below is registered after, so
+	// a write to the new entry from a sibling earlier in tree order goes unnoticed until the next write.
 	const entry = `${storageType ?? "local"}:${key}`;
 	const [syncedEntry, setSyncedEntry] = useState(entry);
 
