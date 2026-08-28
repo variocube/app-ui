@@ -68,13 +68,12 @@ export function useStorage<T>(key: string, defaultValue: T, storageType?: Storag
 		const resolved = typeof newValue === "function"
 			? (newValue as StorageUpdater<T>)(parseValue(storage.read(key, storageType)))
 			: newValue;
-		const serialized = JSON.stringify(resolved);
-		if (serialized != defaultValueSerialized) {
-			storage.write(key, serialized, storageType);
-		} else {
-			storage.delete(key, storageType);
-		}
-	}, [key, defaultValueSerialized, storageType, parseValue]);
+		// Every written value is persisted, including one that happens to equal the default value:
+		// writing is how a consumer states a choice, and deleting the entry instead would make that
+		// choice indistinguishable from never having made one - a later change of the default value
+		// would then silently overrule it.
+		storage.write(key, JSON.stringify(resolved), storageType);
+	}, [key, storageType, parseValue]);
 
 	return [typedValue, setTypedValue];
 }

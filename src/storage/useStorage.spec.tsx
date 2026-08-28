@@ -251,14 +251,42 @@ describe("useStorage", () => {
 			expect(last()).toEqual({page: 5, size: 50});
 		});
 
-		test("deletes the entry when the value equals the default value", () => {
+		test("persists a value that equals the default value", () => {
 			const {set} = renderWithSetter("default-key");
 
 			set({page: 1, size: 25});
 			expect(localStorage.getItem("default-key")).not.toBeNull();
 
+			// deleting the entry instead would make "chose exactly the default" indistinguishable from
+			// "never chose anything"
 			set(previous => ({...previous, page: 0}));
-			expect(localStorage.getItem("default-key")).toBeNull();
+			expect(JSON.parse(localStorage.getItem("default-key")!)).toEqual({page: 0, size: 25});
+		});
+
+		test("does not let a changed default value overrule a choice that equals the old one", () => {
+			function Component({defaultValue}: { defaultValue: string[] }) {
+				const [value, setValue] = useStorage("chosen-key", defaultValue);
+				setters.push(setValue as StorageSetter<string[]>);
+				rendered.push(value);
+				return null;
+			}
+
+			const setters: Array<StorageSetter<string[]>> = [];
+			const rendered: string[][] = [];
+
+			let renderer: ReactTestRenderer;
+			act(() => {
+				renderer = create(<Component defaultValue={["name"]} />);
+			});
+
+			// the user picks exactly what the default happens to be
+			act(() => setters[setters.length - 1](["name"]));
+
+			act(() => {
+				renderer.update(<Component defaultValue={["name", "price"]} />);
+			});
+
+			expect(rendered[rendered.length - 1]).toEqual(["name"]);
 		});
 	});
 });

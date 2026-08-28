@@ -104,8 +104,9 @@ setPageable(previous => ({...previous, pageIndex: previous.pageIndex + 1}));
 
 An updater is applied to the **currently persisted** value, not to the one captured in the caller's
 render closure, so concurrent writers don't overwrite each other. The hook re-reads when its `key` or
-`storageType` changes, and deletes the entry when a written value equals the default value — which is
-why the example above increments rather than writing the default back.
+`storageType` changes, and persists every written value — including one that equals the default value,
+because writing is how a consumer states a choice, and that must not be indistinguishable from never
+having chosen (a later change of the default would otherwise silently overrule it).
 
 The default value is resolved on every read instead of being captured at mount, so a changed default
 takes effect while nothing is persisted. Keep it stable or memoized: one rebuilt with fresh content on
