@@ -152,12 +152,16 @@ export function DataTable<T>(props: Readonly<DataTableProps<T>>) {
 		}
 	}, [page, onPageChange]);
 
-	// reset page index to `0` when the sort field changes
-	// (direction-only toggles keep the user on the current page)
+	// reset page index to `0` when the rows are re-ordered under the user, i.e. when the sort moves from
+	// one field to another. Direction-only toggles keep the user on the current page, and so do changes
+	// from or to "no sort field": those are not necessarily a user action. `useDataTableStorage` hides a
+	// sort field whose column is currently not sortable and reveals it once it is, which must not cost
+	// the user their page - that hook resets the page index itself when the user picks a sort.
 	const previousSortField = useRef(sortField);
 	useEffect(() => {
-		if (previousSortField.current !== sortField) {
-			previousSortField.current = sortField;
+		const previous = previousSortField.current;
+		previousSortField.current = sortField;
+		if (previous && sortField && previous !== sortField) {
 			if (page && onPageChange && page.pageIndex !== 0) {
 				onPageChange({...page, pageIndex: 0});
 			}

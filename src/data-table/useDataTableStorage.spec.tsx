@@ -279,6 +279,30 @@ describe("useDataTableStorage", () => {
 			expect(last().sortDirection).toBe("asc");
 		});
 
+		test("returns to the first page when the sort moves to another field", () => {
+			// the rows are re-ordered under the user, so the page they are on has lost its meaning.
+			// `DataTable` cannot do this itself - it only sees the sort field change, which also happens
+			// when a hidden sort field is revealed
+			persist({pageIndex: 4, sortField: "tags", sortDirection: "desc"});
+
+			const {last} = renderHook(() => useDataTableStorage(KEY));
+
+			act(() => last().onSort("name"));
+
+			expect(last().pageIndex).toBe(0);
+			expect(readPersisted()).toMatchObject({pageIndex: 0, sortField: "name"});
+		});
+
+		test("stays on the page for a direction-only toggle", () => {
+			persist({pageIndex: 4, sortField: "name", sortDirection: "asc"});
+
+			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
+
+			act(() => last().onSort("name"));
+
+			expect(last()).toMatchObject({pageIndex: 4, sortDirection: "desc"});
+		});
+
 		test("ignores a field that no sortable column matches, leaving the current sort alone", () => {
 			// the columns passed to the hook and the ones rendered by the DataTable diverged
 			persist({sortField: "name", sortDirection: "desc"});

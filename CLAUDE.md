@@ -137,10 +137,15 @@ Three trade-offs:
   `columns` still sees it.
 - A column list that does not match what the `DataTable` renders turns clicks on the headers it does not
   know about into logged no-ops — which is what a consumer passing the *visible* columns will hit.
-- A list that starts out empty hides the sort field until it resolves, and `DataTable` resets the page
-  index when the sort reappears. Note that omitting `columns` and passing `[]` are opposites — without
-  columns anything is handed out, an empty list matches nothing — so `{columns: query.data?.available}`
-  is unguarded while it loads. Build the column list synchronously where you can.
+- A list that starts out empty hides the sort field until it resolves, so the first query goes out
+  unsorted — one request more than a list built synchronously. Note that omitting `columns` and passing
+  `[]` are opposites — without columns anything is handed out, an empty list matches nothing — so
+  `{columns: query.data?.available}` is unguarded while it loads.
+
+Resetting the page index is `onSort`'s job, not `DataTable`'s: the rows are re-ordered under the user
+only when *they* pick another sort field. `DataTable` still resets when the sort moves between two
+fields (for consumers that manage sorting themselves), but no longer when a field merely appears or
+disappears — which is what hiding and revealing a sort field looks like from its side.
 
 #### 5. Wrapper Components
 

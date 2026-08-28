@@ -30,10 +30,9 @@ export interface DataTableStorageOptions<T = unknown> {
 	 *
 	 * Note that omitting this option and passing an empty list are opposites: without columns there is
 	 * nothing to check against and any sort field is handed out, while an empty list matches nothing and
-	 * hides it. So `{columns: query.data?.available}` is unguarded while it loads. Prefer building the
-	 * list synchronously anyway: a list that starts out empty hides the sort field until it resolves, and
-	 * `DataTable` resets the page index whenever the sort field changes, so a restored page index greater
-	 * than zero is given up when the sort reappears.
+	 * hides it. So `{columns: query.data?.available}` is unguarded while it loads, and a list that starts
+	 * out empty queries unsorted until it resolves - one request more than a list built synchronously.
+	 * The page the user is on survives that, because only picking a sort resets it.
 	 *
 	 * A column list that does not match what the `DataTable` renders makes clicks on the headers it does
 	 * not know about no-ops that are logged, not sorts.
@@ -153,10 +152,14 @@ export function useDataTableStorage<T>(
 			if (visibleSortField(previous.sortField, columnsRef.current) == field) {
 				return {...previous, sortDirection: previous.sortDirection == "desc" ? "asc" : "desc"};
 			}
+			// Sorting by another field re-orders the rows under the user, so the page they are on has
+			// lost its meaning. `DataTable` cannot decide this on its own: all it sees is the sort field
+			// changing, which also happens when a hidden one is revealed.
 			return {
 				...previous,
 				sortDirection: "asc",
 				sortField: field,
+				pageIndex: 0,
 			};
 		});
 	}, [key, setStorage]);
