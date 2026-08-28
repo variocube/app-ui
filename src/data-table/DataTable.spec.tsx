@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import {SortDirection} from "@mui/material";
+import {SortDirection, TableSortLabel} from "@mui/material";
 import * as React from "react";
 import {act, create, ReactTestRenderer} from "react-test-renderer";
 import {DataTable, DataTableColumn, DataTablePage} from "./DataTable";
@@ -34,6 +34,7 @@ interface Sort {
 
 function renderTable(sort: Sort) {
 	const onPageChange = jest.fn();
+	const onSort = jest.fn();
 
 	function table(sort: Sort) {
 		return (
@@ -42,6 +43,7 @@ function renderTable(sort: Sort) {
 				rows={rows}
 				page={page}
 				onPageChange={onPageChange}
+				onSort={onSort}
 				{...sort}
 			/>
 		);
@@ -54,35 +56,55 @@ function renderTable(sort: Sort) {
 
 	return {
 		onPageChange,
+		onSort,
 		update: (sort: Sort) =>
 			act(() => {
 				renderer.update(table(sort));
+			}),
+		/** Clicks the header of a sortable column, the way a user starts a sort. */
+		clickHeader: (label: string) =>
+			act(() => {
+				const header = renderer.root.findAll(node =>
+					node.type === TableSortLabel && node.props.children === label
+				);
+				header[0].props.onClick();
 			}),
 	};
 }
 
 describe("DataTable", () => {
 	describe("resetting the page index when the sort changes", () => {
-		test("resets when the sort moves to another field", () => {
-			const {update, onPageChange} = renderTable({sortField: "name", sortDirection: "asc"});
+		test("resets when the user sorts by another field", () => {
+			const {clickHeader, update, onPageChange} = renderTable({sortField: "name", sortDirection: "asc"});
 
+			clickHeader("Price");
 			update({sortField: "price", sortDirection: "asc"});
 
 			expect(onPageChange).toHaveBeenCalledWith({...page, pageIndex: 0});
 		});
 
-		test("keeps the page on a direction-only toggle", () => {
-			const {update, onPageChange} = renderTable({sortField: "name", sortDirection: "asc"});
+		test("resets when the user sorts a table that was not sorted", () => {
+			// consumers that keep the sort in their own state or in the URL rely on this
+			const {clickHeader, update, onPageChange} = renderTable({});
 
+			clickHeader("Name");
+			update({sortField: "name", sortDirection: "asc"});
+
+			expect(onPageChange).toHaveBeenCalledWith({...page, pageIndex: 0});
+		});
+
+		test("keeps the page on a direction-only toggle", () => {
+			const {clickHeader, update, onPageChange} = renderTable({sortField: "name", sortDirection: "asc"});
+
+			clickHeader("Name");
 			update({sortField: "name", sortDirection: "desc"});
 
 			expect(onPageChange).not.toHaveBeenCalled();
 		});
 
-		test("keeps the page when a sort field appears", () => {
+		test("keeps the page when a sort field appears without a click", () => {
 			// `useDataTableStorage` hides a sort field whose column is not sortable (yet) and reveals it
-			// once it is - that is not a re-ordering the user asked for, so their page must survive it.
-			// The hook resets the page index itself when the user does pick a sort.
+			// once it is - that is not a re-ordering the user asked for, so their page must survive it
 			const {update, onPageChange} = renderTable({sortDirection: "asc"});
 
 			update({sortField: "name", sortDirection: "asc"});
@@ -90,7 +112,7 @@ describe("DataTable", () => {
 			expect(onPageChange).not.toHaveBeenCalled();
 		});
 
-		test("keeps the page when the sort field disappears", () => {
+		test("keeps the page when the sort field disappears without a click", () => {
 			const {update, onPageChange} = renderTable({sortField: "name", sortDirection: "asc"});
 
 			update({sortDirection: "asc"});

@@ -152,21 +152,28 @@ export function DataTable<T>(props: Readonly<DataTableProps<T>>) {
 		}
 	}, [page, onPageChange]);
 
-	// reset page index to `0` when the rows are re-ordered under the user, i.e. when the sort moves from
-	// one field to another. Direction-only toggles keep the user on the current page, and so do changes
-	// from or to "no sort field": those are not necessarily a user action. `useDataTableStorage` hides a
-	// sort field whose column is currently not sortable and reveals it once it is, which must not cost
-	// the user their page - that hook resets the page index itself when the user picks a sort.
+	// reset page index to `0` when the user sorts by another field, because the rows are re-ordered under
+	// them. The trigger is the click, not the sort field changing: `useDataTableStorage` also changes it
+	// when it reveals a sort field whose column was (temporarily) not sortable, and giving up the page
+	// for that would cost the user a position they never left. Direction-only toggles keep the page.
+	const sortClicked = useRef(false);
 	const previousSortField = useRef(sortField);
 	useEffect(() => {
-		const previous = previousSortField.current;
+		const sortFieldChanged = previousSortField.current !== sortField;
 		previousSortField.current = sortField;
-		if (previous && sortField && previous !== sortField) {
-			if (page && onPageChange && page.pageIndex !== 0) {
-				onPageChange({...page, pageIndex: 0});
-			}
+		if (!sortClicked.current) {
+			return;
 		}
-	}, [sortField, page, onPageChange]);
+		sortClicked.current = false;
+		if (sortFieldChanged && page && onPageChange && page.pageIndex !== 0) {
+			onPageChange({...page, pageIndex: 0});
+		}
+	}, [sortField, sortDirection, page, onPageChange]);
+
+	const handleSort = useCallback((field: string) => {
+		sortClicked.current = true;
+		onSort?.(field);
+	}, [onSort]);
 
 	// Reset selection when the rows change.
 	// In the future, we might add a mode where a selection can span across multiple pages
@@ -251,7 +258,7 @@ export function DataTable<T>(props: Readonly<DataTableProps<T>>) {
 									column={column}
 									sortField={sortField}
 									sortDirection={sortDirection}
-									onSort={onSort}
+									onSort={onSort && handleSort}
 								/>
 							))}
 						</TableRow>

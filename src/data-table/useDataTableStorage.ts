@@ -1,5 +1,5 @@
 import {SortDirection} from "@mui/material";
-import {useCallback, useRef} from "react";
+import {useCallback, useLayoutEffect, useRef} from "react";
 import {StorageType, useStorage} from "../storage";
 import {DataTableColumn, DataTablePage} from "./DataTable";
 
@@ -25,8 +25,9 @@ export interface DataTableStorageOptions<T = unknown> {
 	 * or filtered down to what a user may see - and hiding the sort field is reversible, while deleting
 	 * it would cost the user their setting for good. It comes back as soon as its column does.
 	 *
-	 * A `sortField` configured through `defaults` is never hidden: it states how the initial query is
-	 * sorted, which is a different question from whether a header can be clicked.
+	 * A `sortField` configured through `defaults` is never hidden - it states how the initial query is
+	 * sorted, which is a different question from whether a header can be clicked - and a hidden one falls
+	 * back to it, so the query keeps the declared baseline instead of going out unsorted.
 	 *
 	 * Note that omitting this option and passing an empty list are opposites: without columns there is
 	 * nothing to check against and any sort field is handed out, while an empty list matches nothing and
@@ -128,21 +129,27 @@ export function useDataTableStorage<T>(
 	}, storageType);
 
 	// Keep the columns out of the dependency array of `onSort` below: they are commonly built inline, so
-	// a new array on every render would give the callback a new identity on every render.
+	// a new array on every render would give the callback a new identity on every render. The mirror is
+	// written after the commit, so a render that React discards cannot leave columns behind that were
+	// never shown. `defaults.sortField` is a string and compares by value, so it can be a dependency.
 	const columnsRef = useRef(columns);
-	columnsRef.current = columns;
+	useLayoutEffect(() => {
+		columnsRef.current = columns;
+	});
+
+	const defaultSortField = defaults.sortField;
 
 	const onPageChange = useCallback(({pageSize, pageIndex}: DataTablePage) => {
 		setStorage(previous => ({...previous, pageSize, pageIndex}));
 	}, [setStorage]);
 
 	const onSort = useCallback((field: string) => {
-		if (!isSortable(field, columnsRef.current)) {
+		if (!isSortable(field, columnsRef.current) && field != defaultSortField) {
 			// Persisting the field would replace a working sort with one that is hidden again on read.
 			// Happens when the columns passed to this hook and the ones rendered by the DataTable diverge
-			// - typically because the visible columns were passed instead of the available ones. Using the
-			// same rule as the mask above is what makes the click either take effect or be reported;
-			// accepting it under a rule the mask does not share would produce a silent dead click.
+			// - typically because the visible columns were passed instead of the available ones. This is
+			// the rule the value we hand out is masked with, the configured default included: a click on
+			// a header the data table shows as sorted has to take effect, or nothing here would.
 			console.warn(`Ignoring sort by "${field}": no sortable column of the data table "${key}" matches it.`);
 			return;
 		}
@@ -162,24 +169,30 @@ export function useDataTableStorage<T>(
 				pageIndex: 0,
 			};
 		});
-	}, [key, setStorage]);
+	}, [key, defaultSortField, setStorage]);
 
 	// The state we hand out never carries a sort field that no sortable column matches, while the
-	// persisted value keeps it: hiding is reversible, deleting would not be. A sort field the consumer
-	// configured as its default is exempt: `sortable` governs whether a header is clickable, while
-	// `defaults.sortField` states how the initial query is sorted - which may well be a display-only
-	// column, or a field that has no column of its own at all.
-	const sortField = storage.sortField == defaults.sortField
-		? storage.sortField
-		: visibleSortField(storage.sortField, columns);
-	const sortFieldHidden = Boolean(storage.sortField) && !sortField;
+	// persisted value keeps it: hiding is reversible, deleting would not be. The direction goes with the
+	// field, otherwise the data table previews a descending arrow on every header while nothing is
+	// sorted at all.
+	const isDefaultSortField = Boolean(storage.sortField) && storage.sortField == defaultSortField;
+	let sortField = isDefaultSortField ? storage.sortField : visibleSortField(storage.sortField, columns);
+	let sortDirection = storage.sortField && !sortField ? undefined : storage.sortDirection;
+
+	if (!sortField && defaultSortField) {
+		// Fall back to the sort the consumer configured rather than querying unsorted. That default is
+		// exempt from the rule: `sortable` governs whether a header is clickable, while `defaults`
+		// states how the initial query is sorted - which may well use a display-only column, or a field
+		// that has no column of its own at all. Unlike a persisted value it also cannot go stale behind
+		// the consumer's back, because it lives in their code.
+		sortField = defaultSortField;
+		sortDirection = defaults.sortDirection ?? "asc";
+	}
 
 	return {
 		...storage,
 		sortField,
-		// Hide the direction along with the field, otherwise the data table previews a descending arrow
-		// on every header while nothing is sorted at all.
-		sortDirection: sortFieldHidden ? undefined : storage.sortDirection,
+		sortDirection,
 		onPageChange,
 		onSort,
 	};

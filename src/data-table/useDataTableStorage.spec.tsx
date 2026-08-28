@@ -215,14 +215,29 @@ describe("useDataTableStorage", () => {
 			expect(last()).toMatchObject({sortField: "createdAt", sortDirection: "desc"});
 		});
 
-		test("hides a persisted sort field even when a default sort is configured", () => {
-			persist({sortField: "tags"});
+		test("falls back to the configured default when the persisted sort field is hidden", () => {
+			persist({sortField: "tags", sortDirection: "asc"});
 
 			const {last} = renderHook(() =>
-				useDataTableStorage(KEY, {defaults: {sortField: "createdAt"}, columns})
+				useDataTableStorage(KEY, {defaults: {sortField: "createdAt", sortDirection: "desc"}, columns})
 			);
 
-			expect(last().sortField).toBeUndefined();
+			// querying unsorted would ignore the baseline the consumer declared
+			expect(last()).toMatchObject({sortField: "createdAt", sortDirection: "desc"});
+		});
+
+		test("accepts a click on the configured default sort field", () => {
+			// the data table may well render it as sortable - the mask hands it out, so a click on it
+			// has to take effect rather than be refused
+			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const {last} = renderHook(() =>
+				useDataTableStorage(KEY, {defaults: {sortField: "createdAt", sortDirection: "desc"}, columns})
+			);
+
+			act(() => last().onSort("createdAt"));
+
+			expect(warn).not.toHaveBeenCalled();
+			expect(last()).toMatchObject({sortField: "createdAt", sortDirection: "asc"});
 		});
 
 		test("hides the sort direction along with the sort field", () => {

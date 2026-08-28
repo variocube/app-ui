@@ -142,10 +142,14 @@ Three trade-offs:
   `[]` are opposites — without columns anything is handed out, an empty list matches nothing — so
   `{columns: query.data?.available}` is unguarded while it loads.
 
-Resetting the page index is `onSort`'s job, not `DataTable`'s: the rows are re-ordered under the user
-only when *they* pick another sort field. `DataTable` still resets when the sort moves between two
-fields (for consumers that manage sorting themselves), but no longer when a field merely appears or
-disappears — which is what hiding and revealing a sort field looks like from its side.
+A `sortField` given through `defaults` is exempt from the rule and is also what a hidden one falls back
+to, so the query keeps the baseline the consumer declared instead of going out unsorted.
+
+The page index is reset when the **user** sorts by another field: `onSort` writes `pageIndex: 0` with
+the new field, and `DataTable` resets when a header click changes the sort field (which is what
+consumers keeping the sort in their own state or in the URL rely on). Neither resets when the sort
+field merely appears or disappears — that is what hiding and revealing look like, and the user never
+left their page.
 
 #### 5. Wrapper Components
 
