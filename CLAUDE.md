@@ -147,10 +147,15 @@ A `sortField` given through `defaults` is exempt from the rule and is also what 
 to, so the query keeps the baseline the consumer declared instead of going out unsorted.
 
 The page index is reset when the **user** sorts by another field: `onSort` writes `pageIndex: 0` with
-the new field, and `DataTable` resets when a header click changes the sort field (which is what
-consumers keeping the sort in their own state or in the URL rely on). Neither resets when the sort
-field merely appears or disappears — that is what hiding and revealing look like, and the user never
-left their page.
+the new field, and `DataTable` resets when a **header click** changes the sort field — which is what
+consumers keeping the sort in their own state or in the URL rely on. `onSort` may return `false` to
+suppress that reset, which is what `useDataTableStorage` does, since it resets the page itself.
+
+Neither resets when the sort field merely appears or disappears — that is what hiding and revealing
+look like, and the user never left their page. Two consequences worth knowing: a sort changed
+**programmatically** (a "sort by" select, a saved view, a URL parameter) does not reset the page for a
+consumer managing its own state, since no header was clicked; and a column selection emptied through
+`useDataTableColumnStorage` stays empty rather than reverting to the default columns.
 
 #### 5. Wrapper Components
 

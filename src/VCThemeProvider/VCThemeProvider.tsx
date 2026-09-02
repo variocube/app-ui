@@ -93,7 +93,8 @@ export function VCThemeProvider({branding, children}: PropsWithChildren<VCThemeP
 	// Select actual mode to use
 	const mode = useMemo(() => modeOverride ?? defaultMode, [modeOverride, defaultMode]);
 
-	// Allows setting the mode override. Clears the storage item if the default mode is set.
+	// Allows setting the mode override. Records `null` when the mode the user picked is the default one,
+	// so that the mode follows the system preference again.
 	const setMode = useCallback((newMode: PaletteMode) => {
 		setModeOverride(newMode != defaultMode ? newMode : null);
 	}, [defaultMode]);

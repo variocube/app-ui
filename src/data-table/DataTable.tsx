@@ -23,7 +23,6 @@ import React, {
 	ReactNode,
 	useCallback,
 	useEffect,
-	useRef,
 	useState,
 } from "react";
 import {UndrawEmpty} from "../content-table/UndrawEmpty";
@@ -73,7 +72,13 @@ export interface DataTableProps<T> {
 	/** The direction by which the rows are currently sorted. */
 	sortDirection?: SortDirection;
 
-	/** Callback that is invoked when the user wants to sort by a specific field. */
+	/**
+	 * Callback that is invoked when the user wants to sort by a specific field.
+	 *
+	 * Clicking a header of another field also resets the page index to `0`, because the rows are
+	 * re-ordered under the user. Return `false` to suppress that, i.e. when the handler ignored the
+	 * click or takes care of paging itself - which is what `useDataTableStorage` does.
+	 */
 	onSort?: (field: string) => any;
 
 	/** Whether the data is currently loading. */
@@ -152,28 +157,20 @@ export function DataTable<T>(props: Readonly<DataTableProps<T>>) {
 		}
 	}, [page, onPageChange]);
 
-	// reset page index to `0` when the user sorts by another field, because the rows are re-ordered under
-	// them. The trigger is the click, not the sort field changing: `useDataTableStorage` also changes it
-	// when it reveals a sort field whose column was (temporarily) not sortable, and giving up the page
-	// for that would cost the user a position they never left. Direction-only toggles keep the page.
-	const sortClicked = useRef(false);
-	const previousSortField = useRef(sortField);
-	useEffect(() => {
-		const sortFieldChanged = previousSortField.current !== sortField;
-		previousSortField.current = sortField;
-		if (!sortClicked.current) {
+	// Reset the page index to `0` when the user sorts by another field, because the rows are re-ordered
+	// under them. This happens right here, at the click: the sort field arrives back as a prop an unknown
+	// number of renders later, and by then it is no longer possible to tell a click from
+	// `useDataTableStorage` revealing a sort field whose column was (temporarily) not sortable - giving
+	// up the page for that would cost the user a position they never left. Direction-only toggles and
+	// sort changes that do not come from a header keep the page.
+	const handleSort = useCallback((field: string) => {
+		if (!onSort || onSort(field) === false) {
 			return;
 		}
-		sortClicked.current = false;
-		if (sortFieldChanged && page && onPageChange && page.pageIndex !== 0) {
+		if (field !== sortField && page && onPageChange && page.pageIndex !== 0) {
 			onPageChange({...page, pageIndex: 0});
 		}
-	}, [sortField, sortDirection, page, onPageChange]);
-
-	const handleSort = useCallback((field: string) => {
-		sortClicked.current = true;
-		onSort?.(field);
-	}, [onSort]);
+	}, [onSort, sortField, page, onPageChange]);
 
 	// Reset selection when the rows change.
 	// In the future, we might add a mode where a selection can span across multiple pages

@@ -199,7 +199,9 @@ describe("useDataTableStorage", () => {
 
 			// the callbacks have to see the resolved columns too, or the table stays unsortable forever
 			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
-			act(() => last().onSort("name"));
+			act(() => {
+				last().onSort("name");
+			});
 
 			expect(warn).not.toHaveBeenCalled();
 			expect(last()).toMatchObject({sortField: "name", sortDirection: "asc"});
@@ -226,6 +228,45 @@ describe("useDataTableStorage", () => {
 			expect(last()).toMatchObject({sortField: "createdAt", sortDirection: "desc"});
 		});
 
+		test("toggles the direction of the configured default sort field", () => {
+			// it is exempt from the mask, so the toggle has to recognise it as the current sort - it is
+			// the one field that is handed out while no sortable column matches it
+			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			persist({pageIndex: 4});
+			const {last} = renderHook(() =>
+				useDataTableStorage(KEY, {defaults: {sortField: "createdAt", sortDirection: "desc"}, columns})
+			);
+
+			act(() => {
+				last().onSort("createdAt");
+			});
+			expect(last()).toMatchObject({sortField: "createdAt", sortDirection: "asc", pageIndex: 0});
+
+			act(() => {
+				last().onSort("createdAt");
+			});
+			expect(last()).toMatchObject({sortField: "createdAt", sortDirection: "desc"});
+
+			act(() => {
+				last().onSort("createdAt");
+			});
+			expect(last()).toMatchObject({sortField: "createdAt", sortDirection: "asc"});
+			expect(warn).not.toHaveBeenCalled();
+		});
+
+		test("stays on the page when toggling the direction of the configured default sort field", () => {
+			persist({pageIndex: 4, sortField: "createdAt", sortDirection: "asc"});
+			const {last} = renderHook(() =>
+				useDataTableStorage(KEY, {defaults: {sortField: "createdAt", sortDirection: "desc"}, columns})
+			);
+
+			act(() => {
+				last().onSort("createdAt");
+			});
+
+			expect(last()).toMatchObject({sortDirection: "desc", pageIndex: 4});
+		});
+
 		test("accepts a click on the configured default sort field", () => {
 			// the data table may well render it as sortable - the mask hands it out, so a click on it
 			// has to take effect rather than be refused
@@ -234,7 +275,9 @@ describe("useDataTableStorage", () => {
 				useDataTableStorage(KEY, {defaults: {sortField: "createdAt", sortDirection: "desc"}, columns})
 			);
 
-			act(() => last().onSort("createdAt"));
+			act(() => {
+				last().onSort("createdAt");
+			});
 
 			expect(warn).not.toHaveBeenCalled();
 			expect(last()).toMatchObject({sortField: "createdAt", sortDirection: "asc"});
@@ -276,7 +319,9 @@ describe("useDataTableStorage", () => {
 		test("sorts ascending by a newly selected field", () => {
 			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
 
-			act(() => last().onSort("name"));
+			act(() => {
+				last().onSort("name");
+			});
 
 			expect(last()).toMatchObject({sortField: "name", sortDirection: "asc"});
 			expect(readPersisted()).toMatchObject({sortField: "name", sortDirection: "asc"});
@@ -287,10 +332,14 @@ describe("useDataTableStorage", () => {
 
 			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
 
-			act(() => last().onSort("name"));
+			act(() => {
+				last().onSort("name");
+			});
 			expect(last().sortDirection).toBe("desc");
 
-			act(() => last().onSort("name"));
+			act(() => {
+				last().onSort("name");
+			});
 			expect(last().sortDirection).toBe("asc");
 		});
 
@@ -302,7 +351,9 @@ describe("useDataTableStorage", () => {
 
 			const {last} = renderHook(() => useDataTableStorage(KEY));
 
-			act(() => last().onSort("name"));
+			act(() => {
+				last().onSort("name");
+			});
 
 			expect(last().pageIndex).toBe(0);
 			expect(readPersisted()).toMatchObject({pageIndex: 0, sortField: "name"});
@@ -313,7 +364,9 @@ describe("useDataTableStorage", () => {
 
 			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
 
-			act(() => last().onSort("name"));
+			act(() => {
+				last().onSort("name");
+			});
 
 			expect(last()).toMatchObject({pageIndex: 4, sortDirection: "desc"});
 		});
@@ -326,7 +379,9 @@ describe("useDataTableStorage", () => {
 			const setItem = jest.spyOn(Storage.prototype, "setItem");
 			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
 
-			act(() => last().onSort("tags"));
+			act(() => {
+				last().onSort("tags");
+			});
 
 			// a real no-op: nothing is written, and no listener on the key is notified
 			expect(setItem).not.toHaveBeenCalled();
@@ -344,7 +399,9 @@ describe("useDataTableStorage", () => {
 			const setItem = jest.spyOn(Storage.prototype, "setItem");
 			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
 
-			act(() => last().onSort("name"));
+			act(() => {
+				last().onSort("name");
+			});
 
 			expect(setItem).not.toHaveBeenCalled();
 			expect(warn).toHaveBeenCalledWith(expect.stringContaining("name"));
@@ -357,7 +414,9 @@ describe("useDataTableStorage", () => {
 			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
 
 			// the user clicks the header of a column that is still sortable
-			act(() => last().onSort("name"));
+			act(() => {
+				last().onSort("name");
+			});
 
 			expect(last()).toMatchObject({sortField: "name", sortDirection: "asc"});
 		});
@@ -369,7 +428,9 @@ describe("useDataTableStorage", () => {
 		const {onPageChange, onSort} = renders[0];
 
 		rerender();
-		act(() => last().onSort("name"));
+		act(() => {
+				last().onSort("name");
+			});
 
 		expect(renders.length).toBeGreaterThan(1);
 		expect(renders.every(render => render.onPageChange === onPageChange && render.onSort === onSort)).toBe(true);

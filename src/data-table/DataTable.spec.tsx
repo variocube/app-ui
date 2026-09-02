@@ -32,9 +32,9 @@ interface Sort {
 	sortDirection?: SortDirection;
 }
 
-function renderTable(sort: Sort) {
+function renderTable(sort: Sort, sortResult?: () => unknown) {
 	const onPageChange = jest.fn();
-	const onSort = jest.fn();
+	const onSort = jest.fn(sortResult ?? (() => undefined));
 
 	function table(sort: Sort) {
 		return (
@@ -102,6 +102,27 @@ describe("DataTable", () => {
 			expect(onPageChange).not.toHaveBeenCalled();
 		});
 
+		test("keeps the page when the sort handler refuses the click", () => {
+			// `useDataTableStorage` returns false for a click it ignores, and for one it applied itself:
+			// nothing sorted here, so nothing may move the user
+			const {clickHeader, onPageChange} = renderTable({sortField: "name", sortDirection: "asc"}, () => false);
+
+			clickHeader("Price");
+
+			expect(onPageChange).not.toHaveBeenCalled();
+		});
+
+		test("resets even when an unrelated render happens before the sort arrives", () => {
+			// consumers build `page` inline, so any render in between used to consume the click
+			const {clickHeader, update, onPageChange} = renderTable({sortField: "name", sortDirection: "asc"});
+
+			clickHeader("Price");
+			update({sortField: "name", sortDirection: "asc"});
+			update({sortField: "price", sortDirection: "asc"});
+
+			expect(onPageChange).toHaveBeenCalledWith({...page, pageIndex: 0});
+		});
+
 		test("keeps the page when a sort field appears without a click", () => {
 			// `useDataTableStorage` hides a sort field whose column is not sortable (yet) and reveals it
 			// once it is - that is not a re-ordering the user asked for, so their page must survive it
@@ -156,6 +177,19 @@ describe("DataTable", () => {
 
 			// the sort is hidden while the columns are empty, and the page is where the user left it
 			expect(JSON.parse(localStorage.getItem(key)!)).toMatchObject({pageIndex: 2, sortField: "price"});
+
+			// a click the hook refuses while the columns are still empty must not arm anything either -
+			// the header is rendered from the table's own columns, so it looks clickable
+			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			act(() => {
+				const header = renderer.root.findAll(node =>
+					node.type === TableSortLabel && node.props.children === "Price"
+				);
+				header[0].props.onClick();
+			});
+			expect(warn).toHaveBeenCalled();
+			expect(JSON.parse(localStorage.getItem(key)!)).toMatchObject({pageIndex: 2, sortField: "price"});
+			warn.mockRestore();
 
 			available = columns;
 			act(() => {

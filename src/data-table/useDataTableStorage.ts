@@ -43,7 +43,9 @@ export interface DataTableStorageOptions<T = unknown> {
 
 export type UseDataTableStorageResult = DataTableStorage & {
 	onPageChange: (page: DataTablePage) => void;
-	onSort: (field: string) => void;
+
+	/** Returns `false`, so that a `DataTable` leaves the page index to this hook. */
+	onSort: (field: string) => boolean;
 };
 
 function isDataTableStorageOptions<T>(value: unknown): value is DataTableStorageOptions<T> {
@@ -143,6 +145,9 @@ export function useDataTableStorage<T>(
 		setStorage(previous => ({...previous, pageSize, pageIndex}));
 	}, [setStorage]);
 
+	// Returns `false` throughout: the data table must not reset the page index on top of this hook,
+	// which resets it itself when the sort field changes - and must not move the user at all for a
+	// click that is refused below.
 	const onSort = useCallback((field: string) => {
 		if (!isSortable(field, columnsRef.current) && field != defaultSortField) {
 			// Persisting the field would replace a working sort with one that is hidden again on read.
@@ -151,12 +156,13 @@ export function useDataTableStorage<T>(
 			// the rule the value we hand out is masked with, the configured default included: a click on
 			// a header the data table shows as sorted has to take effect, or nothing here would.
 			console.warn(`Ignoring sort by "${field}": no sortable column of the data table "${key}" matches it.`);
-			return;
+			return false;
 		}
 		setStorage(previous => {
-			// Compare against the visible field, so that a hidden one cannot swallow the click as a
-			// direction toggle. The persisted value is written as it is, minus the sort that changes.
-			if (visibleSortField(previous.sortField, columnsRef.current) == field) {
+			// The guard above established that the field is sortable, or the configured default. So a
+			// hidden persisted field can only equal it when it is that default - which is the one that
+			// has to toggle rather than start over.
+			if (previous.sortField == field) {
 				return {...previous, sortDirection: previous.sortDirection == "desc" ? "asc" : "desc"};
 			}
 			// Sorting by another field re-orders the rows under the user, so the page they are on has
@@ -169,6 +175,7 @@ export function useDataTableStorage<T>(
 				pageIndex: 0,
 			};
 		});
+		return false;
 	}, [key, defaultSortField, setStorage]);
 
 	// The state we hand out never carries a sort field that no sortable column matches, while the
