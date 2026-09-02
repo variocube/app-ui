@@ -215,8 +215,7 @@ describe("useStorage", () => {
 			return {
 				values,
 				setters,
-				set: (value: TestValue | StorageUpdater<TestValue>) =>
-					act(() => setters[setters.length - 1](value)),
+				set: (value: TestValue | StorageUpdater<TestValue>) => act(() => setters[setters.length - 1](value)),
 				last: () => values[values.length - 1],
 			};
 		}

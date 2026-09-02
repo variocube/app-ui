@@ -15,8 +15,9 @@ export type StorageSetter<T> = (newValue: T | StorageUpdater<T>) => void;
  * content on every render (a timestamp, a generated id) makes the returned value change with it until
  * something is written.
  *
- * Every written value is persisted, with one exception: writing `undefined` clears the entry, which is
- * how a consumer returns to the default value.
+ * Every written value is persisted, so that a choice which happens to equal the default value is not
+ * indistinguishable from never having chosen. A value of `undefined` clears the entry instead - which
+ * only a `T` that includes `undefined` can express, since the setter takes `T`.
  */
 export function useStorage<T>(key: string, defaultValue: T, storageType?: StorageType): [T, StorageSetter<T>] {
 	const defaultValueSerialized = useMemo(() => JSON.stringify(defaultValue), [defaultValue]);

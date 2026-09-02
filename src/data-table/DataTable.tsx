@@ -14,17 +14,7 @@ import {
 	TableSortLabel,
 	useTheme,
 } from "@mui/material";
-import React, {
-	ChangeEvent,
-	FC,
-	Fragment,
-	Key,
-	ReactElement,
-	ReactNode,
-	useCallback,
-	useEffect,
-	useState,
-} from "react";
+import React, {ChangeEvent, FC, Fragment, Key, ReactElement, ReactNode, useCallback, useEffect, useState} from "react";
 import {UndrawEmpty} from "../content-table/UndrawEmpty";
 import {ErrorAlert} from "../ErrorAlert";
 
@@ -151,7 +141,9 @@ export function DataTable<T>(props: Readonly<DataTableProps<T>>) {
 		if (page && onPageChange) {
 			const {pageIndex, pageSize, totalElements} = page;
 			const totalPages = Math.ceil(totalElements / pageSize);
-			if (pageIndex >= totalPages) {
+			// an empty result set has no pages at all, so page `0` is "out of bounds" as well - reporting
+			// a change from `0` to `0` would ask the consumer to store a page nobody navigated to
+			if (pageIndex > 0 && pageIndex >= totalPages) {
 				onPageChange({...page, pageIndex: 0});
 			}
 		}

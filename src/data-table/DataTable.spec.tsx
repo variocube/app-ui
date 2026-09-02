@@ -141,6 +141,69 @@ describe("DataTable", () => {
 			expect(onPageChange).not.toHaveBeenCalled();
 		});
 
+		test("does not report a page change for an empty result set", () => {
+			// an empty result set has no pages, so page 0 counts as out of bounds - reporting 0 -> 0 would
+			// have a persisting consumer store settings the user never chose
+			const onPageChange = jest.fn();
+			act(() => {
+				create(
+					<DataTable
+						columns={columns}
+						rows={[]}
+						page={{pageIndex: 0, pageSize: 10, totalElements: 0}}
+						onPageChange={onPageChange}
+					/>,
+				);
+			});
+
+			expect(onPageChange).not.toHaveBeenCalled();
+		});
+
+		test("still resets a page index that is out of bounds", () => {
+			const onPageChange = jest.fn();
+			const outOfBounds = {pageIndex: 3, pageSize: 10, totalElements: 0};
+			act(() => {
+				create(
+					<DataTable columns={columns} rows={[]} page={outOfBounds} onPageChange={onPageChange} />,
+				);
+			});
+
+			expect(onPageChange).toHaveBeenCalledWith({...outOfBounds, pageIndex: 0});
+		});
+
+		test("leaves the storage untouched when a table with an empty result set is opened", () => {
+			// through both layers: `useStorage` persists every write, so a write the library makes on its
+			// own would shadow a later change of the consumer's defaults
+			const key = "DataTableEmpty";
+
+			function Harness() {
+				const {onPageChange, onSort, ...storage} = useDataTableStorage(key, {
+					defaults: {pageSize: 10},
+					columns,
+				});
+				return (
+					<DataTable
+						columns={columns}
+						rows={[]}
+						page={{
+							pageIndex: storage.pageIndex ?? 0,
+							pageSize: storage.pageSize ?? 10,
+							totalElements: 0,
+						}}
+						onPageChange={onPageChange}
+						onSort={onSort}
+						{...storage}
+					/>
+				);
+			}
+
+			act(() => {
+				create(<Harness />);
+			});
+
+			expect(localStorage.getItem(key)).toBeNull();
+		});
+
 		test("keeps the persisted page when async columns reveal the sort field", () => {
 			// the whole point, through both layers: a table whose columns resolve asynchronously used to
 			// hand the user page 1 of a re-sorted list and write that loss to storage

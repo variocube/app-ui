@@ -66,12 +66,37 @@ function isSortable<T>(field: string, columns?: ReadonlyArray<DataTableColumn<T>
 	return !columns || columns.some(column => column.sortable && column.field == field);
 }
 
-/** The sort field to hand out, i.e. the persisted one unless the data table cannot sort by it. */
-function visibleSortField<T>(sortField?: string, columns?: ReadonlyArray<DataTableColumn<T>>) {
-	if (!sortField || isSortable(sortField, columns)) {
-		return sortField;
+interface SortResolution<T> {
+	storage: DataTableStorage;
+	columns?: ReadonlyArray<DataTableColumn<T>>;
+	defaultSortField?: string;
+	defaultSortDirection?: SortDirection;
+}
+
+/**
+ * The sort to hand out for a persisted value: the persisted one unless the data table cannot sort by
+ * it, in which case the sort the consumer configured as its default takes over - and if there is none,
+ * nothing is sorted, the direction included.
+ *
+ * The configured default is never hidden itself: `sortable` governs whether a header is clickable,
+ * while `defaults` states how the initial query is sorted, which may well use a display-only column or
+ * a field that has no column of its own at all.
+ *
+ * This is the single place the rule lives. Everything that has to agree on "what is sorted right now"
+ * - the state handed out, and the click that toggles the direction of it - asks here.
+ */
+function resolveSort<T>(resolution: SortResolution<T>) {
+	const {storage, columns, defaultSortField, defaultSortDirection} = resolution;
+	const {sortField, sortDirection} = storage;
+
+	if (sortField && (sortField == defaultSortField || isSortable(sortField, columns))) {
+		return {sortField, sortDirection};
 	}
-	return undefined;
+	if (defaultSortField) {
+		return {sortField: defaultSortField, sortDirection: defaultSortDirection ?? "asc" as SortDirection};
+	}
+	// a direction without a field would make the data table preview a descending arrow on every header
+	return {sortField: undefined, sortDirection: sortField ? undefined : sortDirection};
 }
 
 /**
@@ -140,6 +165,7 @@ export function useDataTableStorage<T>(
 	});
 
 	const defaultSortField = defaults.sortField;
+	const defaultSortDirection = defaults.sortDirection;
 
 	const onPageChange = useCallback(({pageSize, pageIndex}: DataTablePage) => {
 		setStorage(previous => ({...previous, pageSize, pageIndex}));
@@ -159,11 +185,23 @@ export function useDataTableStorage<T>(
 			return false;
 		}
 		setStorage(previous => {
-			// The guard above established that the field is sortable, or the configured default. So a
-			// hidden persisted field can only equal it when it is that default - which is the one that
-			// has to toggle rather than start over.
-			if (previous.sortField == field) {
-				return {...previous, sortDirection: previous.sortDirection == "desc" ? "asc" : "desc"};
+			// Compare against the sort that is actually shown, not against the persisted field: they
+			// differ whenever a hidden field fell back to the configured default, and a click on the
+			// header of that default has to toggle its direction rather than start a new sort. Writing
+			// the field along with the direction is what makes the toggle stick - the fallback would
+			// otherwise re-derive the default direction on the next render.
+			const shown = resolveSort({
+				storage: previous,
+				columns: columnsRef.current,
+				defaultSortField,
+				defaultSortDirection,
+			});
+			if (shown.sortField == field) {
+				return {
+					...previous,
+					sortField: field,
+					sortDirection: shown.sortDirection == "desc" ? "asc" : "desc",
+				};
 			}
 			// Sorting by another field re-orders the rows under the user, so the page they are on has
 			// lost its meaning. `DataTable` cannot decide this on its own: all it sees is the sort field
@@ -176,25 +214,12 @@ export function useDataTableStorage<T>(
 			};
 		});
 		return false;
-	}, [key, defaultSortField, setStorage]);
+	}, [key, defaultSortField, defaultSortDirection, setStorage]);
 
 	// The state we hand out never carries a sort field that no sortable column matches, while the
-	// persisted value keeps it: hiding is reversible, deleting would not be. The direction goes with the
-	// field, otherwise the data table previews a descending arrow on every header while nothing is
-	// sorted at all.
-	const isDefaultSortField = Boolean(storage.sortField) && storage.sortField == defaultSortField;
-	let sortField = isDefaultSortField ? storage.sortField : visibleSortField(storage.sortField, columns);
-	let sortDirection = storage.sortField && !sortField ? undefined : storage.sortDirection;
-
-	if (!sortField && defaultSortField) {
-		// Fall back to the sort the consumer configured rather than querying unsorted. That default is
-		// exempt from the rule: `sortable` governs whether a header is clickable, while `defaults`
-		// states how the initial query is sorted - which may well use a display-only column, or a field
-		// that has no column of its own at all. Unlike a persisted value it also cannot go stale behind
-		// the consumer's back, because it lives in their code.
-		sortField = defaultSortField;
-		sortDirection = defaults.sortDirection ?? "asc";
-	}
+	// persisted value keeps it: hiding is reversible, deleting would not be. Unlike a persisted value,
+	// the configured default cannot go stale behind the consumer's back, because it lives in their code.
+	const {sortField, sortDirection} = resolveSort({storage, columns, defaultSortField, defaultSortDirection});
 
 	return {
 		...storage,

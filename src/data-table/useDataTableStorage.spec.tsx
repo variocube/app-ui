@@ -237,10 +237,11 @@ describe("useDataTableStorage", () => {
 				useDataTableStorage(KEY, {defaults: {sortField: "createdAt", sortDirection: "desc"}, columns})
 			);
 
+			// it is the sort that is already shown, so the first click toggles it and keeps the page
 			act(() => {
 				last().onSort("createdAt");
 			});
-			expect(last()).toMatchObject({sortField: "createdAt", sortDirection: "asc", pageIndex: 0});
+			expect(last()).toMatchObject({sortField: "createdAt", sortDirection: "asc", pageIndex: 4});
 
 			act(() => {
 				last().onSort("createdAt");
@@ -265,6 +266,24 @@ describe("useDataTableStorage", () => {
 			});
 
 			expect(last()).toMatchObject({sortDirection: "desc", pageIndex: 4});
+		});
+
+		test("toggles the default sort field that a hidden field fell back to", () => {
+			// the shown sort is the configured default while the persisted field is hidden, so a click on
+			// its header has to move the arrow - not start the same sort over and give up the page
+			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			persist({pageIndex: 4, sortField: "tags", sortDirection: "asc"});
+			const {last} = renderHook(() => useDataTableStorage(KEY, {defaults: {sortField: "createdAt"}, columns}));
+
+			expect(last()).toMatchObject({sortField: "createdAt", sortDirection: "asc", pageIndex: 4});
+
+			act(() => {
+				last().onSort("createdAt");
+			});
+
+			expect(last()).toMatchObject({sortField: "createdAt", sortDirection: "desc", pageIndex: 4});
+			expect(readPersisted()).toMatchObject({sortField: "createdAt", sortDirection: "desc"});
+			expect(warn).not.toHaveBeenCalled();
 		});
 
 		test("accepts a click on the configured default sort field", () => {
@@ -429,8 +448,8 @@ describe("useDataTableStorage", () => {
 
 		rerender();
 		act(() => {
-				last().onSort("name");
-			});
+			last().onSort("name");
+		});
 
 		expect(renders.length).toBeGreaterThan(1);
 		expect(renders.every(render => render.onPageChange === onPageChange && render.onSort === onSort)).toBe(true);
