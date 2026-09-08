@@ -266,6 +266,9 @@ describe("useDataTableStorage", () => {
 			});
 
 			expect(last()).toMatchObject({sortDirection: "desc", pageIndex: 4});
+			// asserted on the persisted value too: the returned one would also read "desc" if the click had
+			// been ignored and the hidden field had fallen back to the configured default direction
+			expect(readPersisted()).toMatchObject({sortField: "createdAt", sortDirection: "desc"});
 		});
 
 		test("toggles the default sort field that a hidden field fell back to", () => {

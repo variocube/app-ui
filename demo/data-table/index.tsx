@@ -253,6 +253,9 @@ export function PagingDataTable() {
 		} else {
 			setSortField(field as keyof Fruit);
 			setSortDirection("asc");
+			// sorting by another field re-orders the rows, so the page the user is on has lost its meaning.
+			// The table leaves this to the sort handler, so that the new sort and the page are one update
+			setPageIndex(0);
 		}
 	}
 

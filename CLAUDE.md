@@ -126,35 +126,53 @@ const storage = useDataTableStorage("Deliveries", {defaults: {pageSize: 25}, col
 
 A persisted `sortField` that no sortable column matches is then hidden from the returned state, so it
 never reaches a query — a column that stops being `sortable` would otherwise keep breaking the
-server-side query for everyone who ever sorted by it (see issue #84). The persisted value itself is
-never modified: a column list can be incomplete (not resolved yet, or filtered by permissions), so the
-sort is only suppressed and returns as soon as its column does. A `sortField` given through `defaults`
-is exempt: it states how the initial query is sorted, which is a different question from whether a
-header can be clicked.
+server-side query for everyone who ever sorted by it (see issue #84). The persisted value is not
+modified to hide it: a column list can be incomplete (not resolved yet, or filtered by permissions), so
+the sort is only suppressed and returns as soon as its column does — unless the user sorts in the
+meantime, which replaces it like any other sort.
+
+A `sortField` given through `defaults` is exempt from the rule, for the returned state and for clicks
+alike: it states how the initial query is sorted and may name a display-only column or a field with no
+column at all, and a header the table shows as sorted must stay clickable. It is also what a hidden
+field falls back to, so the query keeps the baseline the consumer declared instead of going out
+unsorted.
 
 Three trade-offs:
 
 - A truly dead `sortField` stays in browser storage, where code reading that key *without* passing
   `columns` still sees it.
 - A column list that does not match what the `DataTable` renders turns clicks on the headers it does not
-  know about into logged no-ops — which is what a consumer passing the *visible* columns will hit.
+  know about into logged no-ops — which is what a consumer passing the *visible* columns will hit. Only
+  the header of `defaults.sortField` is exempt.
 - A list that starts out empty hides the sort field until it resolves, so the first query goes out
   unsorted — one request more than a list built synchronously. Note that omitting `columns` and passing
   `[]` are opposites — without columns anything is handed out, an empty list matches nothing — so
   `{columns: query.data?.available}` is unguarded while it loads.
 
-A `sortField` given through `defaults` is exempt from the rule and is also what a hidden one falls back
-to, so the query keeps the baseline the consumer declared instead of going out unsorted.
+**The page index is reset by whoever owns the sort state, not by the `DataTable`.** `onSort` of
+`useDataTableStorage` writes `pageIndex: 0` together with a new sort field, in one update, and keeps the
+page for a direction-only toggle. A consumer keeping the sort in its own state or in the URL does the
+same in its own handler:
 
-The page index is reset when the **user** sorts by another field: `onSort` writes `pageIndex: 0` with
-the new field, and `DataTable` resets when a **header click** changes the sort field — which is what
-consumers keeping the sort in their own state or in the URL rely on. `onSort` may return `false` to
-suppress that reset, which is what `useDataTableStorage` does, since it resets the page itself.
+```ts
+function handleSort(field: string) {
+	if (field == sortField) {
+		setSortDirection(previous => previous == "asc" ? "desc" : "asc");
+	} else {
+		setSortField(field);
+		setSortDirection("asc");
+		setPageIndex(0); // the rows are re-ordered, so the page has lost its meaning
+	}
+}
+```
 
-Neither resets when the sort field merely appears or disappears — that is what hiding and revealing
-look like, and the user never left their page. Two consequences worth knowing: a sort changed
-**programmatically** (a "sort by" select, a saved view, a URL parameter) does not reset the page for a
-consumer managing its own state, since no header was clicked; and a column selection emptied through
+`DataTable` reporting that page change itself would be a second write in the same tick as the sort, and
+would overwrite a handler that spreads the same state (`setState({...state, ...})`, or react-router's
+`setSearchParams({...params, ...})`). It also could not tell a click from `useDataTableStorage`
+revealing a sort field it had been hiding, which would cost the user a page they never left.
+
+Two consequences worth knowing: nothing resets the page when the sort field merely appears or
+disappears — that is what hiding and revealing look like; and a column selection emptied through
 `useDataTableColumnStorage` stays empty rather than reverting to the default columns.
 
 #### 5. Wrapper Components

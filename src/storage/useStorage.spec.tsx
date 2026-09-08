@@ -262,6 +262,28 @@ describe("useStorage", () => {
 			expect(JSON.parse(localStorage.getItem("default-key")!)).toEqual({page: 0, size: 25});
 		});
 
+		test("clears the entry when writing undefined", () => {
+			// the one way left to remove an entry, now that a written value is always persisted - it must
+			// not end up as the string "null" instead, which would read back as a persisted choice
+			const setters: Array<StorageSetter<TestValue | undefined>> = [];
+
+			function Component() {
+				const [, setValue] = useStorage<TestValue | undefined>("clear-key", {page: 0, size: 25});
+				setters.push(setValue);
+				return null;
+			}
+
+			act(() => {
+				create(<Component />);
+			});
+
+			act(() => setters[setters.length - 1]({page: 3, size: 25}));
+			expect(localStorage.getItem("clear-key")).not.toBeNull();
+
+			act(() => setters[setters.length - 1](undefined));
+			expect(localStorage.getItem("clear-key")).toBeNull();
+		});
+
 		test("does not let a changed default value overrule a choice that equals the old one", () => {
 			function Component({defaultValue}: { defaultValue: string[] }) {
 				const [value, setValue] = useStorage("chosen-key", defaultValue);

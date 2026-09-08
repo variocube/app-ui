@@ -4,6 +4,7 @@
 
 import {SortDirection, TableSortLabel} from "@mui/material";
 import * as React from "react";
+import {useState} from "react";
 import {act, create, ReactTestRenderer} from "react-test-renderer";
 import {DataTable, DataTableColumn, DataTablePage} from "./DataTable";
 import {useDataTableStorage} from "./useDataTableStorage";
@@ -27,14 +28,24 @@ beforeEach(() => {
 	localStorage.clear();
 });
 
+afterEach(() => {
+	jest.restoreAllMocks();
+});
+
 interface Sort {
 	sortField?: string;
 	sortDirection?: SortDirection;
 }
 
-function renderTable(sort: Sort, sortResult?: () => unknown) {
+/** The sort and paging state of a consumer that keeps it itself, instead of using the storage hook. */
+interface OwnState extends Sort {
+	pageIndex: number;
+	pageSize: number;
+}
+
+function renderTable(sort: Sort) {
 	const onPageChange = jest.fn();
-	const onSort = jest.fn(sortResult ?? (() => undefined));
+	const onSort = jest.fn();
 
 	function table(sort: Sort) {
 		return (
@@ -73,27 +84,27 @@ function renderTable(sort: Sort, sortResult?: () => unknown) {
 }
 
 describe("DataTable", () => {
-	describe("resetting the page index when the sort changes", () => {
-		test("resets when the user sorts by another field", () => {
+	describe("reporting a sort click", () => {
+		test("reports the clicked field", () => {
+			const {clickHeader, onSort} = renderTable({sortField: "name", sortDirection: "asc"});
+
+			clickHeader("Price");
+
+			expect(onSort).toHaveBeenCalledWith("price");
+		});
+
+		test("does not report a page change for a sort click", () => {
+			// re-ordered rows do cost the user their page, but the reset belongs to the handler that owns
+			// the sort: reported separately it would arrive as a second write and overwrite the first
 			const {clickHeader, update, onPageChange} = renderTable({sortField: "name", sortDirection: "asc"});
 
 			clickHeader("Price");
 			update({sortField: "price", sortDirection: "asc"});
 
-			expect(onPageChange).toHaveBeenCalledWith({...page, pageIndex: 0});
+			expect(onPageChange).not.toHaveBeenCalled();
 		});
 
-		test("resets when the user sorts a table that was not sorted", () => {
-			// consumers that keep the sort in their own state or in the URL rely on this
-			const {clickHeader, update, onPageChange} = renderTable({});
-
-			clickHeader("Name");
-			update({sortField: "name", sortDirection: "asc"});
-
-			expect(onPageChange).toHaveBeenCalledWith({...page, pageIndex: 0});
-		});
-
-		test("keeps the page on a direction-only toggle", () => {
+		test("does not report a page change for a direction-only toggle", () => {
 			const {clickHeader, update, onPageChange} = renderTable({sortField: "name", sortDirection: "asc"});
 
 			clickHeader("Name");
@@ -102,25 +113,39 @@ describe("DataTable", () => {
 			expect(onPageChange).not.toHaveBeenCalled();
 		});
 
-		test("keeps the page when the sort handler refuses the click", () => {
-			// `useDataTableStorage` returns false for a click it ignores, and for one it applied itself:
-			// nothing sorted here, so nothing may move the user
-			const {clickHeader, onPageChange} = renderTable({sortField: "name", sortDirection: "asc"}, () => false);
+		test("keeps the sort of a consumer that spreads its own state", () => {
+			// the ordinary `setS({...s, ...})` pattern, and the shape of `setSearchParams({...params, ...})`:
+			// a page change reported alongside the sort would land in the same tick and overwrite it
+			let seen: OwnState = {sortField: "name", sortDirection: "asc", pageIndex: 3, pageSize: 10};
 
-			clickHeader("Price");
+			function Harness() {
+				const [state, setState] = useState<OwnState>(seen);
+				seen = state;
+				return (
+					<DataTable
+						columns={columns}
+						rows={rows}
+						sortField={state.sortField}
+						sortDirection={state.sortDirection}
+						page={{pageIndex: state.pageIndex, pageSize: state.pageSize, totalElements: 100}}
+						onSort={field => setState({...state, sortField: field, sortDirection: "asc", pageIndex: 0})}
+						onPageChange={page => setState({...state, pageIndex: page.pageIndex, pageSize: page.pageSize})}
+					/>
+				);
+			}
 
-			expect(onPageChange).not.toHaveBeenCalled();
-		});
+			let renderer: ReactTestRenderer;
+			act(() => {
+				renderer = create(<Harness />);
+			});
+			act(() => {
+				const header = renderer.root.findAll(node =>
+					node.type === TableSortLabel && node.props.children === "Price"
+				);
+				header[0].props.onClick();
+			});
 
-		test("resets even when an unrelated render happens before the sort arrives", () => {
-			// consumers build `page` inline, so any render in between used to consume the click
-			const {clickHeader, update, onPageChange} = renderTable({sortField: "name", sortDirection: "asc"});
-
-			clickHeader("Price");
-			update({sortField: "name", sortDirection: "asc"});
-			update({sortField: "price", sortDirection: "asc"});
-
-			expect(onPageChange).toHaveBeenCalledWith({...page, pageIndex: 0});
+			expect(seen).toMatchObject({sortField: "price", sortDirection: "asc", pageIndex: 0});
 		});
 
 		test("keeps the page when a sort field appears without a click", () => {
@@ -140,7 +165,9 @@ describe("DataTable", () => {
 
 			expect(onPageChange).not.toHaveBeenCalled();
 		});
+	});
 
+	describe("resetting a page index that is out of bounds", () => {
 		test("does not report a page change for an empty result set", () => {
 			// an empty result set has no pages, so page 0 counts as out of bounds - reporting 0 -> 0 would
 			// have a persisting consumer store settings the user never chose
@@ -170,7 +197,9 @@ describe("DataTable", () => {
 
 			expect(onPageChange).toHaveBeenCalledWith({...outOfBounds, pageIndex: 0});
 		});
+	});
 
+	describe("through both layers", () => {
 		test("leaves the storage untouched when a table with an empty result set is opened", () => {
 			// through both layers: `useStorage` persists every write, so a write the library makes on its
 			// own would shadow a later change of the consumer's defaults
@@ -252,7 +281,6 @@ describe("DataTable", () => {
 			});
 			expect(warn).toHaveBeenCalled();
 			expect(JSON.parse(localStorage.getItem(key)!)).toMatchObject({pageIndex: 2, sortField: "price"});
-			warn.mockRestore();
 
 			available = columns;
 			act(() => {
@@ -260,6 +288,51 @@ describe("DataTable", () => {
 			});
 
 			expect(JSON.parse(localStorage.getItem(key)!)).toMatchObject({pageIndex: 2, sortField: "price"});
+		});
+
+		test("returns to the first page when the user sorts by another field", () => {
+			// the reset the table no longer reports: the hook writes it together with the new sort field
+			const key = "DataTableSortReset";
+			localStorage.setItem(
+				key,
+				JSON.stringify({pageIndex: 2, pageSize: 10, sortField: "name", sortDirection: "asc"}),
+			);
+
+			function Harness() {
+				const {onPageChange, onSort, ...storage} = useDataTableStorage(key, {columns});
+				return (
+					<DataTable
+						columns={columns}
+						rows={rows}
+						page={{
+							pageIndex: storage.pageIndex ?? 0,
+							pageSize: storage.pageSize ?? 10,
+							totalElements: 100,
+						}}
+						onPageChange={onPageChange}
+						onSort={onSort}
+						{...storage}
+					/>
+				);
+			}
+
+			let renderer: ReactTestRenderer;
+			act(() => {
+				renderer = create(<Harness />);
+			});
+			act(() => {
+				const header = renderer.root.findAll(node =>
+					node.type === TableSortLabel && node.props.children === "Price"
+				);
+				header[0].props.onClick();
+			});
+
+			expect(JSON.parse(localStorage.getItem(key)!)).toMatchObject({
+				pageIndex: 0,
+				pageSize: 10,
+				sortField: "price",
+				sortDirection: "asc",
+			});
 		});
 	});
 });

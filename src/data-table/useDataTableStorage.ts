@@ -21,13 +21,15 @@ export interface DataTableStorageOptions<T = unknown> {
 	 * returned state, so that it never reaches a query. Pass the full list of available columns, not
 	 * only the currently visible ones.
 	 *
-	 * The persisted value itself is never modified: a column list can be incomplete - not resolved yet,
-	 * or filtered down to what a user may see - and hiding the sort field is reversible, while deleting
-	 * it would cost the user their setting for good. It comes back as soon as its column does.
+	 * The persisted value itself is not modified to hide the field: a column list can be incomplete - not
+	 * resolved yet, or filtered down to what a user may see - and hiding the sort field is reversible,
+	 * while deleting it would cost the user their setting for good. It comes back as soon as its column
+	 * does, unless the user sorts in the meantime, which replaces it like any other sort.
 	 *
 	 * A `sortField` configured through `defaults` is never hidden - it states how the initial query is
-	 * sorted, which is a different question from whether a header can be clicked - and a hidden one falls
-	 * back to it, so the query keeps the declared baseline instead of going out unsorted.
+	 * sorted, and may well name a display-only column or a field with no column at all - and a hidden one
+	 * falls back to it, so the query keeps the declared baseline instead of going out unsorted. Clicks
+	 * share that exemption, so a header the table shows as sorted can always be clicked.
 	 *
 	 * Note that omitting this option and passing an empty list are opposites: without columns there is
 	 * nothing to check against and any sort field is handed out, while an empty list matches nothing and
@@ -36,7 +38,8 @@ export interface DataTableStorageOptions<T = unknown> {
 	 * The page the user is on survives that, because only picking a sort resets it.
 	 *
 	 * A column list that does not match what the `DataTable` renders makes clicks on the headers it does
-	 * not know about no-ops that are logged, not sorts.
+	 * not know about no-ops that are logged, not sorts - except on the header of `defaults.sortField`,
+	 * which is exempt.
 	 */
 	columns?: ReadonlyArray<DataTableColumn<T>>;
 }
@@ -44,8 +47,13 @@ export interface DataTableStorageOptions<T = unknown> {
 export type UseDataTableStorageResult = DataTableStorage & {
 	onPageChange: (page: DataTablePage) => void;
 
-	/** Returns `false`, so that a `DataTable` leaves the page index to this hook. */
-	onSort: (field: string) => boolean;
+	/**
+	 * Sorts by the given field, ascending - or toggles the direction when it is already sorted by it.
+	 *
+	 * Sorting by another field also returns to the first page, in the same write, because the rows are
+	 * re-ordered under the user.
+	 */
+	onSort: (field: string) => void;
 };
 
 function isDataTableStorageOptions<T>(value: unknown): value is DataTableStorageOptions<T> {
@@ -159,6 +167,9 @@ export function useDataTableStorage<T>(
 	// a new array on every render would give the callback a new identity on every render. The mirror is
 	// written after the commit, so a render that React discards cannot leave columns behind that were
 	// never shown. `defaults.sortField` is a string and compares by value, so it can be a dependency.
+	// Accepted: a child's layout effects run before this one, so an `onSort` called from one in the very
+	// commit that changed the columns is judged against the previous list. A click from the DOM always
+	// lands after layout effects, which is the only way a user reaches `onSort`.
 	const columnsRef = useRef(columns);
 	useLayoutEffect(() => {
 		columnsRef.current = columns;
@@ -171,9 +182,6 @@ export function useDataTableStorage<T>(
 		setStorage(previous => ({...previous, pageSize, pageIndex}));
 	}, [setStorage]);
 
-	// Returns `false` throughout: the data table must not reset the page index on top of this hook,
-	// which resets it itself when the sort field changes - and must not move the user at all for a
-	// click that is refused below.
 	const onSort = useCallback((field: string) => {
 		if (!isSortable(field, columnsRef.current) && field != defaultSortField) {
 			// Persisting the field would replace a working sort with one that is hidden again on read.
@@ -182,7 +190,7 @@ export function useDataTableStorage<T>(
 			// the rule the value we hand out is masked with, the configured default included: a click on
 			// a header the data table shows as sorted has to take effect, or nothing here would.
 			console.warn(`Ignoring sort by "${field}": no sortable column of the data table "${key}" matches it.`);
-			return false;
+			return;
 		}
 		setStorage(previous => {
 			// Compare against the sort that is actually shown, not against the persisted field: they
@@ -204,8 +212,9 @@ export function useDataTableStorage<T>(
 				};
 			}
 			// Sorting by another field re-orders the rows under the user, so the page they are on has
-			// lost its meaning. `DataTable` cannot decide this on its own: all it sees is the sort field
-			// changing, which also happens when a hidden one is revealed.
+			// lost its meaning. It is reset here, in the same write as the new sort field: `DataTable`
+			// cannot decide this on its own, since all it would see is the sort field changing, which
+			// also happens when a hidden one is revealed.
 			return {
 				...previous,
 				sortDirection: "asc",
@@ -213,7 +222,6 @@ export function useDataTableStorage<T>(
 				pageIndex: 0,
 			};
 		});
-		return false;
 	}, [key, defaultSortField, defaultSortDirection, setStorage]);
 
 	// The state we hand out never carries a sort field that no sortable column matches, while the

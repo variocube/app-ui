@@ -65,9 +65,11 @@ export interface DataTableProps<T> {
 	/**
 	 * Callback that is invoked when the user wants to sort by a specific field.
 	 *
-	 * Clicking a header of another field also resets the page index to `0`, because the rows are
-	 * re-ordered under the user. Return `false` to suppress that, i.e. when the handler ignored the
-	 * click or takes care of paging itself - which is what `useDataTableStorage` does.
+	 * Sorting by another field re-orders the rows under the user, so the page they are on has lost its
+	 * meaning and should be reset to `0`. That belongs to this handler, which owns the sort state: it can
+	 * write the new sort and the page index as one update, while a page change reported separately by the
+	 * table would arrive as a second write and overwrite a handler that spreads the same state. Consumers
+	 * using `useDataTableStorage` get the reset from the hook and need not do anything.
 	 */
 	onSort?: (field: string) => any;
 
@@ -148,21 +150,6 @@ export function DataTable<T>(props: Readonly<DataTableProps<T>>) {
 			}
 		}
 	}, [page, onPageChange]);
-
-	// Reset the page index to `0` when the user sorts by another field, because the rows are re-ordered
-	// under them. This happens right here, at the click: the sort field arrives back as a prop an unknown
-	// number of renders later, and by then it is no longer possible to tell a click from
-	// `useDataTableStorage` revealing a sort field whose column was (temporarily) not sortable - giving
-	// up the page for that would cost the user a position they never left. Direction-only toggles and
-	// sort changes that do not come from a header keep the page.
-	const handleSort = useCallback((field: string) => {
-		if (!onSort || onSort(field) === false) {
-			return;
-		}
-		if (field !== sortField && page && onPageChange && page.pageIndex !== 0) {
-			onPageChange({...page, pageIndex: 0});
-		}
-	}, [onSort, sortField, page, onPageChange]);
 
 	// Reset selection when the rows change.
 	// In the future, we might add a mode where a selection can span across multiple pages
@@ -247,7 +234,7 @@ export function DataTable<T>(props: Readonly<DataTableProps<T>>) {
 									column={column}
 									sortField={sortField}
 									sortDirection={sortDirection}
-									onSort={onSort && handleSort}
+									onSort={onSort}
 								/>
 							))}
 						</TableRow>
