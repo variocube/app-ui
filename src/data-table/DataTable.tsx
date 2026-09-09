@@ -66,10 +66,11 @@ export interface DataTableProps<T> {
 	 * Callback that is invoked when the user wants to sort by a specific field.
 	 *
 	 * Sorting by another field re-orders the rows under the user, so the page they are on has lost its
-	 * meaning and should be reset to `0`. That belongs to this handler, which owns the sort state: it can
-	 * write the new sort and the page index as one update, while a page change reported separately by the
-	 * table would arrive as a second write and overwrite a handler that spreads the same state. Consumers
-	 * using `useDataTableStorage` get the reset from the hook and need not do anything.
+	 * meaning and should be reset to `0` - only then, though: a click that merely toggles the direction of
+	 * the current field keeps the user where they are. The reset belongs to this handler, which owns the
+	 * sort state: it can write the new sort and the page index as one update, while a page change reported
+	 * separately by the table would arrive as a second write and overwrite a handler that spreads the same
+	 * state. Consumers using `useDataTableStorage` get the reset from the hook and need not do anything.
 	 */
 	onSort?: (field: string) => any;
 

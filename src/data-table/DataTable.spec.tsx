@@ -80,10 +80,33 @@ function renderTable(sort: Sort) {
 				);
 				header[0].props.onClick();
 			}),
+		/** What the header of a column renders as its sort indicator. */
+		indicator: (label: string) => {
+			const header = renderer.root.findAll(node => node.type === TableSortLabel && node.props.children === label);
+			const {active, direction} = header[0].props;
+			return {active, direction};
+		},
 	};
 }
 
 describe("DataTable", () => {
+	describe("rendering the sort indicator", () => {
+		test("marks only the sorted column, in its direction", () => {
+			const {indicator} = renderTable({sortField: "price", sortDirection: "desc"});
+
+			expect(indicator("Price")).toEqual({active: true, direction: "desc"});
+			expect(indicator("Name")).toMatchObject({active: false});
+		});
+
+		test("previews no direction while nothing is sorted", () => {
+			// a direction handed out without a field made every header hover-preview a descending arrow
+			const {indicator} = renderTable({});
+
+			expect(indicator("Name")).toEqual({active: false, direction: undefined});
+			expect(indicator("Price")).toEqual({active: false, direction: undefined});
+		});
+	});
+
 	describe("reporting a sort click", () => {
 		test("reports the clicked field", () => {
 			const {clickHeader, onSort} = renderTable({sortField: "name", sortDirection: "asc"});

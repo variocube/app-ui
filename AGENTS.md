@@ -91,10 +91,91 @@ Global singleton `storage` wrapper:
 
 - Auto-detects available storage: localStorage → sessionStorage → MemoryStorage
 - Event listener pattern for cross-tab synchronization
-- React hook: `useStorage<T>(key, defaultValue)`
+- React hook: `useStorage<T>(key, defaultValue, storageType?)` (plus `useLocalStorage`/`useSessionStorage`)
 - Change listeners for reactive updates
 
-#### 4. Wrapper Components
+The setter returned by `useStorage` takes a value **or an updater** (`StorageSetter<T>` /
+`StorageUpdater<T>`):
+
+```ts
+const [pageable, setPageable] = useStorage("Deliveries", {pageIndex: 0});
+setPageable(previous => ({...previous, pageIndex: previous.pageIndex + 1}));
+```
+
+An updater is applied to the **currently persisted** value, not to the one captured in the caller's
+render closure, so concurrent writers don't overwrite each other. The hook re-reads when its `key` or
+`storageType` changes, and persists every written value — including one that equals the default value,
+because writing is how a consumer states a choice, and that must not be indistinguishable from never
+having chosen (a later change of the default would otherwise silently overrule it).
+
+The default value is resolved on every read instead of being captured at mount, so a changed default
+takes effect while nothing is persisted. Keep it stable or memoized: one rebuilt with fresh content on
+every render (a timestamp, a generated id) makes the returned value change with it until something is
+written.
+
+#### 4. Data Table State
+
+`useDataTableStorage(key, options?)` persists paging and sorting of a `DataTable`
+(`UseDataTableStorageResult`), `useDataTableColumnStorage(key, availableColumns)` the visible columns.
+
+Pass the **available** columns (not only the visible ones) to guard against a stale sort:
+
+```ts
+const storage = useDataTableStorage("Deliveries", {defaults: {pageSize: 25}, columns: availableColumns});
+```
+
+A persisted `sortField` that no sortable column matches is then hidden from the returned state, so it
+never reaches a query — a column that stops being `sortable` would otherwise keep breaking the
+server-side query for everyone who ever sorted by it (see issue #84). The persisted value is not
+modified to hide it: a column list can be incomplete (not resolved yet, or filtered by permissions), so
+the sort is only suppressed and returns as soon as its column does — unless the user sorts in the
+meantime, which replaces it like any other sort.
+
+A `sortField` given through `defaults` is exempt from the rule, for the returned state and for clicks
+alike: it states how the initial query is sorted and may name a display-only column or a field with no
+column at all, and a header the table shows as sorted must stay clickable. It is also what a hidden
+field falls back to, so the query keeps the baseline the consumer declared instead of going out
+unsorted.
+
+Three trade-offs:
+
+- A truly dead `sortField` stays in browser storage, where code reading that key *without* passing
+  `columns` still sees it.
+- A column list that does not match what the `DataTable` renders turns clicks on the headers it does not
+  know about into logged no-ops — which is what a consumer passing the *visible* columns will hit. Only
+  the header of `defaults.sortField` is exempt.
+- A list that starts out empty hides the sort field until it resolves, so the first query goes out
+  unsorted — one request more than a list built synchronously. Note that omitting `columns` and passing
+  `[]` are opposites — without columns anything is handed out, an empty list matches nothing — so
+  `{columns: query.data?.available}` is unguarded while it loads.
+
+**The page index is reset by whoever owns the sort state, not by the `DataTable`.** `onSort` of
+`useDataTableStorage` writes `pageIndex: 0` together with a new sort field, in one update, and keeps the
+page for a direction-only toggle. A consumer keeping the sort in its own state or in the URL does the
+same in its own handler:
+
+```ts
+function handleSort(field: string) {
+	if (field == sortField) {
+		setSortDirection(previous => previous == "asc" ? "desc" : "asc");
+	} else {
+		setSortField(field);
+		setSortDirection("asc");
+		setPageIndex(0); // the rows are re-ordered, so the page has lost its meaning
+	}
+}
+```
+
+`DataTable` reporting that page change itself would be a second write in the same tick as the sort, and
+would overwrite a handler that spreads the same state (`setState({...state, ...})`, or react-router's
+`setSearchParams({...params, ...})`). It also could not tell a click from `useDataTableStorage`
+revealing a sort field it had been hiding, which would cost the user a page they never left.
+
+Two consequences worth knowing: nothing resets the page when the sort field merely appears or
+disappears — that is what hiding and revealing look like; and a column selection emptied through
+`useDataTableColumnStorage` stays empty rather than reverting to the default columns.
+
+#### 5. Wrapper Components
 
 Many Input components wrap MUI components with enhancements:
 
@@ -148,7 +229,7 @@ The localization system uses recursive TypeScript types for deep object navigati
 **Framework:** Jest with ts-jest preset
 **Default environment:** Node (some tests override to jsdom via `/** @jest-environment jsdom */` pragma)
 **Node version:** 24 (specified in `.nvmrc`)
-**Test files:** Located alongside source files with `.spec.ts` extension
+**Test files:** Located alongside source files with a `.spec.ts` / `.spec.tsx` extension
 
 ```bash
 # Run all tests

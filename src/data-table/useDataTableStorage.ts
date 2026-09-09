@@ -169,7 +169,8 @@ export function useDataTableStorage<T>(
 	// never shown. `defaults.sortField` is a string and compares by value, so it can be a dependency.
 	// Accepted: a child's layout effects run before this one, so an `onSort` called from one in the very
 	// commit that changed the columns is judged against the previous list. A click from the DOM always
-	// lands after layout effects, which is the only way a user reaches `onSort`.
+	// lands after layout effects, and that is how a user reaches `onSort`; calling it from a layout effect
+	// in that one commit is the narrow window this trades for.
 	const columnsRef = useRef(columns);
 	useLayoutEffect(() => {
 		columnsRef.current = columns;

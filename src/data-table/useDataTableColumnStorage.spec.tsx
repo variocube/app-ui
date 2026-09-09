@@ -17,6 +17,11 @@ beforeEach(() => {
 	localStorage.clear();
 });
 
+// as in the other specs of this PR: a failing assertion must not leak a spy into later tests
+afterEach(() => {
+	jest.restoreAllMocks();
+});
+
 function renderHook(available: () => ReadonlyArray<DataTableColumn<unknown>>) {
 	const renders: Array<ReturnType<typeof useDataTableColumnStorage>> = [];
 
