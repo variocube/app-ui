@@ -171,9 +171,12 @@ would overwrite a handler that spreads the same state (`setState({...state, ...}
 `setSearchParams({...params, ...})`). It also could not tell a click from `useDataTableStorage`
 revealing a sort field it had been hiding, which would cost the user a page they never left.
 
-Two consequences worth knowing: nothing resets the page when the sort field merely appears or
-disappears — that is what hiding and revealing look like; and a column selection emptied through
-`useDataTableColumnStorage` stays empty rather than reverting to the default columns.
+Three consequences worth knowing: nothing resets the page when the sort field merely appears or
+disappears — that is what hiding and revealing look like; nothing resets it for a sort that does not go
+through `onSort` either, so binding `defaults.sortField` to a saved view or a URL parameter changes the
+shown sort but keeps the page, because that is indistinguishable from a hidden field being revealed; and
+a column selection emptied through `useDataTableColumnStorage` stays empty rather than reverting to the
+default columns.
 
 #### 5. Wrapper Components
 

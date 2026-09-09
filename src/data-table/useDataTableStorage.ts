@@ -51,7 +51,10 @@ export type UseDataTableStorageResult = DataTableStorage & {
 	 * Sorts by the given field, ascending - or toggles the direction when it is already sorted by it.
 	 *
 	 * Sorting by another field also returns to the first page, in the same write, because the rows are
-	 * re-ordered under the user.
+	 * re-ordered under the user. Only a sort that goes through here does: changing `defaults.sortField`
+	 * - from a saved view or a URL parameter, say - re-resolves the shown sort without writing anything,
+	 * and keeps the page. That is indistinguishable from revealing a sort field that was hidden, which
+	 * must not cost the user a page they never left.
 	 */
 	onSort: (field: string) => void;
 };
