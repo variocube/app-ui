@@ -253,6 +253,9 @@ export function PagingDataTable() {
 		} else {
 			setSortField(field as keyof Fruit);
 			setSortDirection("asc");
+			// sorting by another field re-orders the rows, so the page the user is on has lost its meaning.
+			// The table leaves this to the sort handler, so that the new sort and the page are one update
+			setPageIndex(0);
 		}
 	}
 
@@ -399,8 +402,12 @@ export function SpringDataTable() {
 
 	const {columns, setColumns} = useDataTableColumnStorage("SpringDataTableColumns", available);
 
+	// Passing the columns hides a persisted sort field that no sortable column matches, e.g. after a
+	// column was removed or stopped being sortable. Without it, such a field would be sent to the
+	// backend on every load and break the query for good.
 	const {onPageChange, onSort, ...storage} = useDataTableStorage("SpringDataTable", {
-		pageSize: 4,
+		defaults: {pageSize: 4},
+		columns: available,
 	});
 	const pageable = useSpringPageable(storage);
 	const {loading, error, result} = useAsync(() => fakeSpringFetch(pageable), [pageable]);
@@ -413,7 +420,10 @@ export function SpringDataTable() {
 			</Typography>
 			<Typography variant="body1" gutterBottom>
 				This data table emulates fetching from a Spring REST-API using the <Code>Pageable</Code> and{" "}
-				<Code>Page</Code> data types.
+				<Code>Page</Code> data types. Paging and sorting are persisted with{" "}
+				<Code>useDataTableStorage</Code>, which is given the <Code>columns</Code>{" "}
+				so that a persisted sort field of a column that is no longer sortable is hidden instead of being sent to
+				the backend forever.
 			</Typography>
 			<DataTable
 				header={

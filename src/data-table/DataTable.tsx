@@ -14,18 +14,7 @@ import {
 	TableSortLabel,
 	useTheme,
 } from "@mui/material";
-import React, {
-	ChangeEvent,
-	FC,
-	Fragment,
-	Key,
-	ReactElement,
-	ReactNode,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import React, {ChangeEvent, FC, Fragment, Key, ReactElement, ReactNode, useCallback, useEffect, useState} from "react";
 import {UndrawEmpty} from "../content-table/UndrawEmpty";
 import {ErrorAlert} from "../ErrorAlert";
 
@@ -73,7 +62,32 @@ export interface DataTableProps<T> {
 	/** The direction by which the rows are currently sorted. */
 	sortDirection?: SortDirection;
 
-	/** Callback that is invoked when the user wants to sort by a specific field. */
+	/**
+	 * Callback that is invoked when the user wants to sort by a specific field. Its return value is
+	 * ignored.
+	 *
+	 * The table never reports a page change for a sort itself. Sorting by another field re-orders the rows
+	 * under the user, so the page they are on has lost its meaning and should be reset to `0` - only then,
+	 * though: a click that merely toggles the direction of the current field keeps the user where they
+	 * are. The reset belongs to this handler, which owns the sort state: it can write the new sort and the
+	 * page index as one update, while a page change reported separately by the table would arrive as a
+	 * second write and overwrite a handler that spreads the same state.
+	 *
+	 * Consumers using `useDataTableStorage` get the reset from the hook and need not do anything. Up to
+	 * version 1.18.0 the table reset the page itself, from an effect on the `sortField` prop, so a
+	 * consumer keeping the sort in its own state takes that over:
+	 *
+	 * @example
+	 * function handleSort(field: string) {
+	 * 	if (field == sortField) {
+	 * 		setSortDirection(previous => previous == "asc" ? "desc" : "asc");
+	 * 	} else {
+	 * 		setSortField(field);
+	 * 		setSortDirection("asc");
+	 * 		setPageIndex(0); // the rows are re-ordered, so the page has lost its meaning
+	 * 	}
+	 * }
+	 */
 	onSort?: (field: string) => any;
 
 	/** Whether the data is currently loading. */
@@ -146,23 +160,13 @@ export function DataTable<T>(props: Readonly<DataTableProps<T>>) {
 		if (page && onPageChange) {
 			const {pageIndex, pageSize, totalElements} = page;
 			const totalPages = Math.ceil(totalElements / pageSize);
-			if (pageIndex >= totalPages) {
+			// an empty result set has no pages at all, so page `0` is "out of bounds" as well - reporting
+			// a change from `0` to `0` would ask the consumer to store a page nobody navigated to
+			if (pageIndex > 0 && pageIndex >= totalPages) {
 				onPageChange({...page, pageIndex: 0});
 			}
 		}
 	}, [page, onPageChange]);
-
-	// reset page index to `0` when the sort field changes
-	// (direction-only toggles keep the user on the current page)
-	const previousSortField = useRef(sortField);
-	useEffect(() => {
-		if (previousSortField.current !== sortField) {
-			previousSortField.current = sortField;
-			if (page && onPageChange && page.pageIndex !== 0) {
-				onPageChange({...page, pageIndex: 0});
-			}
-		}
-	}, [sortField, page, onPageChange]);
 
 	// Reset selection when the rows change.
 	// In the future, we might add a mode where a selection can span across multiple pages
