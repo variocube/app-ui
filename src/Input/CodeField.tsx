@@ -15,7 +15,7 @@ import {
 import {InputBaseComponentProps} from "@mui/material/InputBase";
 import {unstable_useId as useId, useForkRef} from "@mui/material/utils";
 import * as React from "react";
-import {FormEvent, ReactNode, Ref, useEffect, useRef, useState} from "react";
+import {FormEvent, forwardRef, InputHTMLAttributes, ReactNode, Ref, useEffect, useRef, useState} from "react";
 import {Labels} from "../localization";
 
 export type CodeFieldLabel = "clear" | "delete" | "showCode" | "hideCode" | "keypad";
@@ -58,6 +58,7 @@ export interface CodeFieldProps {
 
 	/**
 	 * A control rendered inside the field at its right edge, typically a `type="submit"` *Continue* button.
+	 * It fills the field's height up to its border, with square corners on the left.
 	 * Tapping it keeps the focus in the field, so the field gets the focus back, and the keypad opens again,
 	 * after a failed check.
 	 */
@@ -107,8 +108,28 @@ export interface CodeFieldProps {
 	 */
 	autoFocus?: boolean;
 
+	/**
+	 * A message shown inside the field instead of the code, e.g. *Checking code…* (optionally with a progress
+	 * indicator) or *Invalid code*, in the error color when `error` is set. Screen readers announce it.
+	 *
+	 * Prefer it over `helperText` for messages that come and go: the field keeps its height, so the pop-up keypad
+	 * doesn't move, and the message appears where people look. Clear it on the next change, otherwise it hides
+	 * what is typed.
+	 */
+	status?: ReactNode;
+
+	/**
+	 * `large` enlarges the field and its text, e.g. for a kiosk start screen. The keypad keeps its size.
+	 * Default: `medium`.
+	 */
+	size?: "medium" | "large";
+
 	label?: ReactNode;
 	placeholder?: string;
+
+	/**
+	 * A hint below the field. For messages that come and go, use `status`.
+	 */
 	helperText?: ReactNode;
 	error?: boolean;
 	id?: string;
@@ -149,6 +170,8 @@ export function CodeField(props: CodeFieldProps) {
 		revealable = true,
 		softKeyboard = false,
 		autoFocus = false,
+		status,
+		size = "medium",
 		label,
 		placeholder,
 		helperText,
@@ -273,6 +296,7 @@ export function CodeField(props: CodeFieldProps) {
 	);
 
 	const showToggle = masked && revealable;
+	const large = size == "large";
 
 	return (
 		<Box
@@ -299,6 +323,8 @@ export function CodeField(props: CodeFieldProps) {
 				placeholder={placeholder}
 				helperText={helperText}
 				error={error}
+				// the label must not sit over the status of an empty field
+				InputLabelProps={status ? {shrink: true} : undefined}
 				value={value}
 				onChange={e => onChange(e.target.value)}
 				onFocus={handleFocus}
@@ -314,30 +340,56 @@ export function CodeField(props: CodeFieldProps) {
 					maxLength,
 					inputMode: softKeyboard ? inputProps?.inputMode : "none",
 					"aria-controls": showPopup ? keypadId : inputProps?.["aria-controls"],
+					status,
+					statusError: error,
 				}}
 				InputProps={{
+					inputComponent: StatusInput,
 					onClick: popup ? handleFieldClick : undefined,
 					endAdornment: (showToggle || action) && (
-						<InputAdornment position="end">
+						<>
 							{showToggle && (
-								<IconButton
-									edge={action ? undefined : "end"}
-									onMouseDown={preventFocusChange}
-									onClick={() => setRevealed(prev => !prev)}
-									disabled={disabled}
-									aria-label={labels(revealed ? "hideCode" : "showCode")}
-								>
-									{revealed ? <VisibilityOffIcon /> : <VisibilityIcon />}
-								</IconButton>
+								<InputAdornment position="end">
+									<IconButton
+										edge={action ? undefined : "end"}
+										onMouseDown={preventFocusChange}
+										onClick={() => setRevealed(prev => !prev)}
+										disabled={disabled}
+										aria-label={labels(revealed ? "hideCode" : "showCode")}
+										sx={action ? {mr: 0.5} : undefined}
+									>
+										{revealed ? <VisibilityOffIcon /> : <VisibilityIcon />}
+									</IconButton>
+								</InputAdornment>
 							)}
 							{action && (
-								<Box onMouseDown={preventFocusChange} sx={{display: "flex", ml: 1, mr: -0.75}}>
+								<Box
+									onMouseDown={preventFocusChange}
+									sx={{
+										alignSelf: "stretch",
+										display: "flex",
+										// fills the field up to its border on the top, right and bottom
+										"& > *": {
+											alignSelf: "stretch",
+											height: "auto",
+											"&, &:hover, &:active, &.Mui-focusVisible": {boxShadow: "none"},
+											borderRadius: theme =>
+												`0 ${theme.shape.borderRadius}px ${theme.shape.borderRadius}px 0`,
+										},
+									}}
+								>
 									{action}
 								</Box>
 							)}
-						</InputAdornment>
+						</>
 					),
 				}}
+				sx={[
+					{"--CodeField-padding-x": "14px"},
+					// the outline is drawn over the action, as the action is flush with it
+					Boolean(action) && {"& .MuiOutlinedInput-root": {pr: 0}},
+					large && LARGE_FIELD_STYLES,
+				]}
 			/>
 			{popup
 				? (
@@ -367,6 +419,67 @@ export function CodeField(props: CodeFieldProps) {
 		</Box>
 	);
 }
+
+/**
+ * MUI's outlined text field has no large size. These styles scale the text by 1.5 and adjust what MUI positions
+ * in px for the medium size: the input's padding, the label in both positions and the gap in the outline
+ * (the gap's width follows the font size by itself).
+ */
+const LARGE_FIELD_STYLES = {
+	"--CodeField-padding-x": "18px",
+	"& .MuiInputBase-root": {fontSize: "1.5rem"},
+	"& .MuiInputBase-input": {padding: "18.75px var(--CodeField-padding-x)"},
+	"& .MuiInputLabel-root": {
+		fontSize: "1.5rem",
+		transform: "translate(var(--CodeField-padding-x), 18.75px) scale(1)",
+		maxWidth: "calc(100% - 36px)",
+	},
+	"& .MuiInputLabel-root.MuiInputLabel-shrink": {
+		transform: "translate(var(--CodeField-padding-x), -13.5px) scale(0.75)",
+		maxWidth: "calc(133% - 44px)",
+	},
+	"& .MuiOutlinedInput-notchedOutline": {padding: "0 12px"},
+	// the reveal toggle's and an icon action's icons
+	"& .MuiInputBase-root .MuiSvgIcon-root": {fontSize: "2rem"},
+	"& .MuiFormHelperText-root": {fontSize: "0.875rem"},
+} as const;
+
+interface StatusInputProps extends InputHTMLAttributes<HTMLInputElement> {
+	status?: ReactNode;
+	statusError?: boolean;
+}
+
+/**
+ * The text field's input, with the status laid over it. A wrapper of only the input, so that the status
+ * doesn't cover the reveal toggle and the action.
+ */
+const StatusInput = forwardRef<HTMLInputElement, StatusInputProps>(function StatusInput(props, ref) {
+	const {status, statusError, style, ...inputProps} = props;
+	return (
+		<Box component="span" sx={{position: "relative", display: "flex", flex: "1 1 auto", minWidth: 0}}>
+			<input ref={ref} style={status ? {...style, opacity: 0} : style} {...inputProps} />
+			<Box
+				component="span"
+				// always rendered, so that screen readers announce a status that appears
+				aria-live="polite"
+				sx={{
+					position: "absolute",
+					inset: 0,
+					display: "flex",
+					alignItems: "center",
+					gap: 1,
+					pl: "var(--CodeField-padding-x)",
+					overflow: "hidden",
+					whiteSpace: "nowrap",
+					pointerEvents: "none",
+					color: statusError ? "error.main" : "text.secondary",
+				}}
+			>
+				{status}
+			</Box>
+		</Box>
+	);
+});
 
 type PopperModifier = NonNullable<PopperProps["modifiers"]>[number];
 type PopperInstance = NonNullable<Extract<PopperProps["popperRef"], { current: unknown }>["current"]>;

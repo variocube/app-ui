@@ -205,9 +205,19 @@ Many Input components wrap MUI components with enhancements:
     otherwise a tap closes the pop-up, and a hardware keyboard types into nothing. As a fallback, a key tap also
     focuses the field (unless `softKeyboard` is set). A field that had the focus gets it back, and the pop-up
     reopens, when it is enabled again after a check: disabling a focused input blurs it.
-  - `action` renders inside the field at the right edge (end adornment, after the reveal toggle), typically the
-    `type="submit"` button. With `onSubmit` the component renders its own `<form>`, so Enter submits natively and
-    does nothing while the submit button is disabled. Without `onSubmit`, Enter submits the enclosing form.
+  - `action` renders inside the field at the right edge (after the reveal toggle, outside MUI's `InputAdornment`,
+    whose height is capped), typically the `type="submit"` button. It fills the field up to its border on the top,
+    right and bottom, with square corners on the left; the outline is drawn over it. With `onSubmit` the component
+    renders its own `<form>`, so Enter submits natively and does nothing while the submit button is disabled.
+    Without `onSubmit`, Enter submits the enclosing form.
+  - `status` shows messages like "Checking code…" / "Invalid code" inside the field, laid over the input by a
+    custom `inputComponent` that wraps only the input (so it doesn't cover the toggle and the action). Unlike
+    `helperText`, it doesn't change the field's height, so the pop-up keypad doesn't jump. The label is forced to
+    shrink while a status is shown, and the live region is always rendered, so screen readers announce a status
+    that appears.
+  - `size="large"` scales the field's text by 1.5. MUI's outlined field has no large size and positions the
+    label and padding in px, so `LARGE_FIELD_STYLES` adjusts those; the outline's gap for the label follows the
+    font size by itself. The keypad keeps its size.
   - Labels default to English and are overridden with `labels`: app-ui ships no translations, and kiosk apps switch
     the language at runtime through their own localization, so a navigator-based default would not follow it.
   - `type="password"` is safe on the kiosk: there is no "Save password?" prompt on either kiosk stack. The current

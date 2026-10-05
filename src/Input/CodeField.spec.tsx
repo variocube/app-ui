@@ -237,10 +237,18 @@ describe("CodeField", () => {
 
 	test("renders the action inside the field, after the reveal toggle", () => {
 		render({action: <button type="submit">Continue</button>});
-		const inputRoot = getInput().parentElement!;
+		const inputRoot = getInput().closest(".MuiInputBase-root")!;
 		const buttons = Array.from(inputRoot.querySelectorAll("button"));
 		expect(buttons.map(button => button.getAttribute("aria-label") ?? button.textContent))
 			.toEqual(["Show code", "Continue"]);
+	});
+
+	test("makes the action fill the field up to its border, with square corners on the left", () => {
+		render({action: <button type="submit">Continue</button>});
+		const style = getComputedStyle(getKey("Continue"));
+		expect(style.alignSelf).toBe("stretch");
+		expect(style.borderRadius).toBe("0 4px 4px 0");
+		expect(getComputedStyle(getInput().closest(".MuiInputBase-root")!).paddingRight).toBe("0px");
 	});
 
 	test("prevents the action from taking the focus", () => {
@@ -255,6 +263,61 @@ describe("CodeField", () => {
 		render({inputProps: {"data-testid": "code-input"}, inputRef});
 		expect(getInput().getAttribute("data-testid")).toBe("code-input");
 		expect(inputRef.current).toBe(getInput());
+	});
+
+	describe("status", () => {
+		function getStatus() {
+			return container.querySelector("[aria-live=polite]")!;
+		}
+
+		test("shows the status over the input, which it hides", () => {
+			render({value: "12", status: "Checking code…"});
+			expect(getStatus().textContent).toBe("Checking code…");
+			expect(getInput().style.opacity).toBe("0");
+		});
+
+		test("does not cover the reveal toggle and the action", () => {
+			render({status: "Invalid code", action: <button type="submit">Continue</button>});
+			expect(getStatus().contains(getToggle())).toBe(false);
+			expect(getStatus().contains(getKey("Continue"))).toBe(false);
+		});
+
+		test("shows the status in the error color with error", () => {
+			render({status: "Invalid code", error: true});
+			const statusColor = getComputedStyle(getStatus()).color;
+			render({status: "Checking code…"});
+			expect(getComputedStyle(getStatus()).color).not.toBe(statusColor);
+		});
+
+		test("shrinks the label, so that it doesn't sit over the status", () => {
+			render({label: "Code", status: "Invalid code"});
+			expect(container.querySelector("label")?.getAttribute("data-shrink")).toBe("true");
+			render({label: "Code"});
+			expect(container.querySelector("label")?.getAttribute("data-shrink")).toBe("false");
+		});
+
+		test("renders an empty live region without status, so that a status that appears is announced", () => {
+			render();
+			expect(getStatus()).not.toBeNull();
+			expect(getStatus().textContent).toBe("");
+			expect(getInput().style.opacity).toBe("");
+		});
+	});
+
+	describe("size", () => {
+		test("enlarges the field's text with large", () => {
+			render();
+			const root = () => getInput().closest(".MuiInputBase-root")!;
+			const mediumSize = getComputedStyle(root()).fontSize;
+			render({size: "large"});
+			expect(getComputedStyle(root()).fontSize).toBe("1.5rem");
+			expect(mediumSize).not.toBe("1.5rem");
+		});
+
+		test("keeps the keys' size", () => {
+			render({size: "large"});
+			expect(getComputedStyle(getKey("1")).minHeight).toBe("64px");
+		});
 	});
 
 	describe("submit", () => {

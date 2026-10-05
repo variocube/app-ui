@@ -6,6 +6,7 @@ import {
 	Card,
 	CardContent,
 	CardHeader,
+	CircularProgress,
 	Container,
 	Dialog,
 	DialogActions,
@@ -46,6 +47,7 @@ export function CodeFieldDemo() {
 			<Stack spacing={8} mt={4}>
 				<BasicDemo />
 				<VerifyDemo />
+				<LargeDemo />
 				<InlineDemo />
 				<DialogDemo />
 				<WidthDemo />
@@ -119,10 +121,10 @@ function VerifyDemo() {
 			<Typography variant="subtitle1" gutterBottom>
 				The component doesn't check codes itself; the app owns that state. The recommended pattern: disable the
 				component while the check runs, clear the code when it fails and show why in{" "}
-				<Code>helperText</Code>, then clear the error on the next keypress. Tapping the action keeps the focus
-				in the field, so after a failed check the field gets the focus back and the keypad opens again for the
-				next attempt. The keypad opens below the helper text, so the error stays visible. The demo accepts{" "}
-				<Code>1234</Code>.
+				<Code>status</Code>, then clear the status on the next keypress. <Code>status</Code>{" "}
+				shows the message inside the field, where people look, and the field keeps its height, so the keypad
+				doesn't move. Tapping the action keeps the focus in the field, so after a failed check the field gets
+				the focus back and the keypad opens again for the next attempt. The demo accepts <Code>1234</Code>.
 			</Typography>
 			<Demo source={source} id="code-field-verify">
 				<Stack spacing={2} p={2}>
@@ -147,8 +149,13 @@ function VerifyDemo() {
 									}}
 									disabled={checking}
 									error={invalid}
-									helperText={checking
-										? "Checking code…"
+									status={checking
+										? (
+											<>
+												<CircularProgress size="1em" color="inherit" />
+												Checking code…
+											</>
+										)
 										: invalid
 										? "Invalid code. Please try again."
 										: undefined}
@@ -171,6 +178,62 @@ function VerifyDemo() {
 						the page doesn't scroll to this demo when it loads.
 					</Typography>
 				</DemoControls>
+			</Demo>
+		</Box>
+	);
+}
+
+function LargeDemo() {
+	const [code, setCode] = useState("");
+	const [checking, setChecking] = useState(false);
+	const [invalid, setInvalid] = useState(false);
+
+	return (
+		<Box>
+			<Typography variant="h2" gutterBottom>Large size</Typography>
+			<Typography variant="subtitle1" gutterBottom>
+				<Code>size="large"</Code>{" "}
+				enlarges the field and its text, e.g. for a kiosk start screen. The keypad keeps its size. A large{" "}
+				<Code>action</Code> fits well, e.g. a <Code>Button</Code> with <Code>size="large"</Code>.
+			</Typography>
+			<Demo source={source} id="code-field-large">
+				<Box p={2}>
+					<DemoSource for="#code-field-large">
+						<CodeField
+							size="large"
+							label="Pickup code"
+							value={code}
+							onChange={value => {
+								setCode(value);
+								setInvalid(false);
+							}}
+							onSubmit={async () => {
+								setChecking(true);
+								const valid = await checkCode(code);
+								setChecking(false);
+								setCode("");
+								setInvalid(!valid);
+							}}
+							disabled={checking}
+							error={invalid}
+							status={checking
+								? (
+									<>
+										<CircularProgress size="1em" color="inherit" />
+										Checking code…
+									</>
+								)
+								: invalid
+								? "Invalid code. Please try again."
+								: undefined}
+							action={
+								<Button type="submit" variant="contained" size="large" disabled={checking || !code}>
+									Continue
+								</Button>
+							}
+						/>
+					</DemoSource>
+				</Box>
 			</Demo>
 		</Box>
 	);
@@ -260,7 +323,7 @@ function DialogDemo() {
 									}}
 									disabled={checking}
 									error={invalid}
-									helperText={invalid ? "Invalid PIN" : undefined}
+									status={invalid ? "Invalid PIN" : undefined}
 									keypad="inline"
 									autoFocus
 									sx={{pt: 1}}
@@ -340,6 +403,9 @@ function OptionsDemo() {
 	const [masked, setMasked] = useState(true);
 	const [revealable, setRevealable] = useState(true);
 	const [softKeyboard, setSoftKeyboard] = useState(false);
+	const [size, setSize] = useState<"medium" | "large">("medium");
+	const [showStatus, setShowStatus] = useState(false);
+	const [error, setError] = useState(false);
 	const [german, setGerman] = useState(false);
 
 	const action = actionType == "button"
@@ -365,7 +431,10 @@ function OptionsDemo() {
 				(default on) adds a toggle to show it. A revealed code is masked again when the value is emptied, so it
 				doesn't stay revealed for the next person. <Code>softKeyboard</Code>{" "}
 				(default off) lets the field open the OS soft keyboard, e.g. on a tablet. <Code>labels</Code>{" "}
-				overrides the English key and toggle labels, typically with the app's own translations.
+				overrides the English key and toggle labels, typically with the app's own translations.{" "}
+				<Code>size</Code> enlarges the field. <Code>status</Code>{" "}
+				shows a message inside the field instead of the code, in the error color with <Code>error</Code>
+				; <Code>helperText</Code> remains for a hint below the field.
 			</Typography>
 			<Demo source={source} id="code-field-options">
 				<Box p={2}>
@@ -374,7 +443,8 @@ function OptionsDemo() {
 							label="Code"
 							value={code}
 							onChange={setCode}
-							onSubmit={() => setCode("")}
+							onSubmit={() =>
+								setCode("")}
 							action={action}
 							keypad={keypad}
 							maxLength={maxLength}
@@ -382,6 +452,10 @@ function OptionsDemo() {
 							masked={masked}
 							revealable={revealable}
 							softKeyboard={softKeyboard}
+							size={size}
+							status={showStatus ? "Invalid code. Please try again." : undefined}
+							error={error}
+							helperText="A hint below the field"
 							labels={german ? (key => GERMAN_LABELS[key]) : undefined}
 						/>
 					</DemoSource>
@@ -414,6 +488,17 @@ function OptionsDemo() {
 						<TextField
 							select
 							size="small"
+							label="size"
+							value={size}
+							onChange={e => setSize(e.target.value as "medium" | "large")}
+							sx={{minWidth: 120}}
+						>
+							<MenuItem value="medium">medium</MenuItem>
+							<MenuItem value="large">large</MenuItem>
+						</TextField>
+						<TextField
+							select
+							size="small"
 							label="maxLength"
 							value={maxLength ?? ""}
 							onChange={e => setMaxLength(e.target.value ? Number(e.target.value) : undefined)}
@@ -429,6 +514,8 @@ function OptionsDemo() {
 						<DemoSwitch label="revealable" checked={revealable} onChange={setRevealable} />
 						<DemoSwitch label="softKeyboard" checked={softKeyboard} onChange={setSoftKeyboard} />
 						<DemoSwitch label="German labels" checked={german} onChange={setGerman} />
+						<DemoSwitch label="status" checked={showStatus} onChange={setShowStatus} />
+						<DemoSwitch label="error" checked={error} onChange={setError} />
 					</Stack>
 				</DemoControls>
 			</Demo>
