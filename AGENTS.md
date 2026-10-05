@@ -192,12 +192,16 @@ Many Input components wrap MUI components with enhancements:
   - With `onSubmit` it renders its own `<form>`, so Enter submits natively and does nothing while the app's submit
     button is disabled. Without `onSubmit`, Enter submits the enclosing form.
   - Keypad keys and the reveal toggle must never take the focus (`preventDefault` on `mousedown`), otherwise a
-    barcode scanner or hardware keyboard types into nothing after a tap.
+    barcode scanner or hardware keyboard types into nothing after a tap. As a fallback, a key tap also focuses the
+    field (unless `softKeyboard` is set). For the same reason, a field that had the focus gets it back when it is
+    enabled again after a check: disabling a focused input blurs it.
+  - The layout depends on the component's own width (measured with a `ResizeObserver`), not the viewport: below
+    32rem the keypad goes below the field and `actions` below the keypad, so it also works in a narrow dialog.
   - Labels default to English and are overridden with `labels`: app-ui ships no translations, and kiosk apps switch
     the language at runtime through their own localization, so a navigator-based default would not follow it.
-  - `type="password"` is safe on the kiosk: its Chromium disables the password manager by policy
-    (`kiosk/chromium/debian/etc/chromium-browser/policies/managed/chrome.json`), so there is no "Save password?"
-    prompt.
+  - `type="password"` is safe on the kiosk: there is no "Save password?" prompt on either kiosk stack. The current
+    stack, Cog (WPE WebKit), has no password manager UI; the legacy Chromium stack disables it by policy
+    (`kiosk/chromium/debian/etc/chromium-browser/policies/managed/chrome.json`).
 
 ### Provider Chain and Integration
 

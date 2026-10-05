@@ -56,11 +56,6 @@ function BasicDemo() {
 	const [code, setCode] = useState("");
 	const [submitted, setSubmitted] = useState<string>();
 
-	function handleSubmit() {
-		setSubmitted(code);
-		setCode("");
-	}
-
 	return (
 		<Box>
 			<Typography variant="h2" gutterBottom>Basic use</Typography>
@@ -78,7 +73,10 @@ function BasicDemo() {
 							label="Code"
 							value={code}
 							onChange={setCode}
-							onSubmit={handleSubmit}
+							onSubmit={() => {
+								setSubmitted(code);
+								setCode("");
+							}}
 							actions={
 								<Button type="submit" variant="contained" disabled={!code}>
 									Continue
@@ -108,27 +106,15 @@ function VerifyDemo() {
 	const [invalid, setInvalid] = useState(false);
 	const [opened, setOpened] = useState(false);
 
-	function handleChange(value: string) {
-		setCode(value);
-		setInvalid(false);
-	}
-
-	async function handleSubmit() {
-		setChecking(true);
-		const valid = await checkCode(code);
-		setChecking(false);
-		setCode("");
-		setInvalid(!valid);
-		setOpened(valid);
-	}
-
 	return (
 		<Box>
 			<Typography variant="h2" gutterBottom>Checking a code</Typography>
 			<Typography variant="subtitle1" gutterBottom>
 				The component doesn't check codes itself; the app owns that state. The recommended pattern: disable the
 				component while the check runs, clear the code when it fails and show why in{" "}
-				<Code>helperText</Code>, then clear the error on the next keypress. The demo accepts <Code>1234</Code>.
+				<Code>helperText</Code>, then clear the error on the next keypress. If the field had the focus, it gets
+				it back after the check, so a scanner can type the next code right away. The demo accepts{" "}
+				<Code>1234</Code>.
 			</Typography>
 			<Demo source={source} id="code-field-verify">
 				<Box p={2}>
@@ -136,8 +122,18 @@ function VerifyDemo() {
 						<CodeField
 							label="Code"
 							value={code}
-							onChange={handleChange}
-							onSubmit={handleSubmit}
+							onChange={value => {
+								setCode(value);
+								setInvalid(false); // the error goes away on the next keypress
+							}}
+							onSubmit={async () => {
+								setChecking(true); // disables the component during the check
+								const valid = await checkCode(code);
+								setChecking(false);
+								setCode(""); // the next attempt starts empty
+								setInvalid(!valid);
+								setOpened(valid);
+							}}
 							disabled={checking}
 							error={invalid}
 							helperText={checking
@@ -191,10 +187,11 @@ function EmbeddingDemo() {
 			<Typography variant="subtitle1" gutterBottom>
 				Inside a <Code>Card</Code> or <Code>Paper</Code>, the component takes its width from the container. In a
 				{" "}
-				<Code>Dialog</Code>, <Code>actions</Code> holds <em>Cancel</em> and <em>Continue</em>. The dialog uses
-				{" "}
-				<Code>autoFocus</Code>: the field gets the focus when the dialog opens and gets it back after each
-				check, so a scanner can type into it right away. The demos above show the component directly on a page.
+				<Code>Dialog</Code>, <Code>actions</Code> holds <em>Cancel</em> and <em>Login</em>. The dialog uses{" "}
+				<Code>autoFocus</Code>: the field gets the focus when the dialog opens, so a scanner can type into it
+				right away. <em>Cancel</em>{" "}
+				is disabled during the check, so a late result can't show up in a closed dialog. The demos above show
+				the component directly on a page.
 			</Typography>
 			<Demo source={source} id="code-field-embedding">
 				<Stack spacing={2} p={2}>
@@ -209,7 +206,7 @@ function EmbeddingDemo() {
 						<Button variant="outlined" onClick={() => setDialogOpen(true)}>
 							Open dialog
 						</Button>
-						<Dialog open={dialogOpen} onClose={closeDialog} maxWidth="sm" fullWidth>
+						<Dialog open={dialogOpen} onClose={checking ? undefined : closeDialog} maxWidth="sm" fullWidth>
 							<DialogTitle>Technician login</DialogTitle>
 							<DialogContent>
 								<CodeField
@@ -227,7 +224,7 @@ function EmbeddingDemo() {
 									sx={{pt: 1}}
 									actions={
 										<>
-											<Button onClick={closeDialog}>Cancel</Button>
+											<Button onClick={closeDialog} disabled={checking}>Cancel</Button>
 											<Button
 												type="submit"
 												variant="contained"
@@ -374,6 +371,7 @@ function DemoSwitch({label, checked, onChange}: DemoSwitchProps) {
 
 function HardwareInputDemo() {
 	const [code, setCode] = useState("");
+	const [submitted, setSubmitted] = useState<string>();
 	const inputRef = useRef<HTMLInputElement>(null);
 	const focused = useFocused(inputRef);
 
@@ -383,7 +381,8 @@ function HardwareInputDemo() {
 			<Typography variant="subtitle1" gutterBottom>
 				The keypad is an extra input method, not the only one. Click into the field, type on your keyboard and
 				tap keys on the keypad in between: the keys don't take the focus, so typing continues in the field and
-				Enter still submits. Here the code isn't masked, so you can see which input went where.
+				Enter still submits. A barcode scanner that ends a scan with Enter submits the same way. Here the code
+				isn't masked, so you can see which input went where.
 			</Typography>
 			<Demo source={source} id="code-field-hardware">
 				<Box p={2}>
@@ -392,6 +391,10 @@ function HardwareInputDemo() {
 							label="Item code"
 							value={code}
 							onChange={setCode}
+							onSubmit={() => {
+								setSubmitted(code);
+								setCode("");
+							}}
 							masked={false}
 							inputRef={inputRef}
 						/>
@@ -399,6 +402,11 @@ function HardwareInputDemo() {
 					<Typography variant="body2" mt={2}>
 						Field has the focus: <Code>{focused ? "yes" : "no"}</Code>
 					</Typography>
+					{submitted !== undefined && (
+						<Typography variant="body2">
+							Submitted: <Code>{submitted}</Code>
+						</Typography>
+					)}
 				</Box>
 			</Demo>
 		</Box>

@@ -48,7 +48,7 @@ describe("CodeField", () => {
 	}
 
 	function getToggle() {
-		return container.querySelector<HTMLButtonElement>("button[aria-pressed]");
+		return container.querySelector<HTMLButtonElement>("button[aria-label]");
 	}
 
 	function click(element: HTMLElement) {
@@ -60,7 +60,7 @@ describe("CodeField", () => {
 	test("renders the keys 1-9, Clear, 0, Delete in this order", () => {
 		render();
 		const keys = Array.from(container.querySelectorAll("button"))
-			.filter(button => !button.hasAttribute("aria-pressed"))
+			.filter(button => !button.hasAttribute("aria-label"))
 			.map(button => button.textContent);
 		expect(keys).toEqual(["1", "2", "3", "4", "5", "6", "7", "8", "9", "Clear", "0", "Delete"]);
 	});
@@ -84,6 +84,33 @@ describe("CodeField", () => {
 		expect(getKey("Clear").disabled).toBe(true);
 		expect(getKey("Delete").disabled).toBe(true);
 		expect(getKey("1").disabled).toBe(false);
+	});
+
+	test("disables the digit keys for a value longer than maxLength", () => {
+		render({value: "123456", maxLength: 4});
+		expect(getKey("5").disabled).toBe(true);
+		click(getKey("Delete"));
+		expect(onChange).toHaveBeenCalledWith("12345");
+	});
+
+	test("takes maxLength from inputProps", () => {
+		render({value: "12", inputProps: {maxLength: 2, "data-testid": "code-input"}});
+		expect(getInput().maxLength).toBe(2);
+		expect(getKey("3").disabled).toBe(true);
+	});
+
+	test("prefers the maxLength prop over inputProps", () => {
+		render({value: "12", maxLength: 3, inputProps: {maxLength: 2}});
+		expect(getInput().maxLength).toBe(3);
+		expect(getKey("3").disabled).toBe(false);
+	});
+
+	test("keys don't submit an enclosing form", () => {
+		render();
+		const keys = Array.from(container.querySelectorAll("button")).filter(button =>
+			!button.hasAttribute("aria-label")
+		);
+		expect(keys.every(key => key.type == "button")).toBe(true);
 	});
 
 	test("disables the digit keys once maxLength is reached", () => {
@@ -143,7 +170,6 @@ describe("CodeField", () => {
 		click(getToggle()!);
 		expect(getInput().type).toBe("text");
 		expect(getToggle()?.getAttribute("aria-label")).toBe("Hide code");
-		expect(getToggle()?.getAttribute("aria-pressed")).toBe("true");
 	});
 
 	test("prevents the toggle from taking the focus", () => {
@@ -174,11 +200,25 @@ describe("CodeField", () => {
 	});
 
 	test("uses the given labels", () => {
-		const labels = {clear: "Löschen", delete: "Entfernen", showCode: "Code zeigen", hideCode: "Code verbergen"};
+		const labels = {
+			clear: "Löschen",
+			delete: "Entfernen",
+			showCode: "Code zeigen",
+			hideCode: "Code verbergen",
+			keypad: "Tastenfeld",
+		};
 		render({value: "1", labels: key => labels[key]});
 		expect(getKey("Löschen")).toBeTruthy();
 		expect(getKey("Entfernen")).toBeTruthy();
 		expect(getToggle()?.getAttribute("aria-label")).toBe("Code zeigen");
+		expect(container.querySelector("[role=group]")?.getAttribute("aria-label")).toBe("Tastenfeld");
+	});
+
+	test("labels the keypad as a group", () => {
+		render();
+		const group = container.querySelector("[role=group]");
+		expect(group?.getAttribute("aria-label")).toBe("Keypad");
+		expect(group?.contains(getKey("1"))).toBe(true);
 	});
 
 	test("renders the label, helper text and actions", () => {
@@ -249,6 +289,56 @@ describe("CodeField", () => {
 
 			render({autoFocus: true, disabled: false});
 			expect(document.activeElement).toBe(getInput());
+		});
+
+		// Browsers blur a focused input when it is disabled, jsdom keeps the focus on it. The tests therefore
+		// dispatch the blur themselves and check that the field calls `focus()` when it is enabled again.
+		function blurDisabled() {
+			act(() => {
+				getInput().dispatchEvent(new FocusEvent("focusout", {bubbles: true}));
+			});
+		}
+
+		test("gives the focus back after being disabled when the field had it", () => {
+			render();
+			act(() => getInput().focus());
+			render({disabled: true});
+			blurDisabled();
+			const focus = jest.spyOn(getInput(), "focus");
+
+			render({disabled: false});
+			expect(focus).toHaveBeenCalled();
+		});
+
+		test("does not take the focus back when the field lost it before being disabled", () => {
+			render();
+			act(() => getInput().focus());
+			act(() => getInput().blur());
+			render({disabled: true});
+			const focus = jest.spyOn(getInput(), "focus");
+
+			render({disabled: false});
+			expect(focus).not.toHaveBeenCalled();
+		});
+
+		test("does not take the focus back from another control", () => {
+			const other = document.createElement("button");
+			document.body.appendChild(other);
+			render();
+			act(() => getInput().focus());
+			render({disabled: true});
+			act(() => other.focus());
+
+			render({disabled: false});
+			expect(document.activeElement).toBe(other);
+			other.remove();
+		});
+
+		test("does not take the focus when the field didn't have it", () => {
+			render();
+			render({disabled: true});
+			render({disabled: false});
+			expect(document.activeElement).not.toBe(getInput());
 		});
 
 		test("does not focus the field without autoFocus", () => {

@@ -4,19 +4,25 @@ import {Box, Button, IconButton, InputAdornment, SxProps, TextField, Theme} from
 import {InputBaseComponentProps} from "@mui/material/InputBase";
 import {useForkRef} from "@mui/material/utils";
 import * as React from "react";
-import {FormEvent, ReactNode, Ref, useEffect, useRef, useState} from "react";
+import {FormEvent, ReactNode, Ref, RefObject, useEffect, useLayoutEffect, useRef, useState} from "react";
 import {Labels} from "../localization";
 
-export type CodeFieldLabel = "clear" | "delete" | "showCode" | "hideCode";
+export type CodeFieldLabel = "clear" | "delete" | "showCode" | "hideCode" | "keypad";
 
 const DEFAULT_LABELS: Record<CodeFieldLabel, string> = {
 	clear: "Clear",
 	delete: "Delete",
 	showCode: "Show code",
 	hideCode: "Hide code",
+	keypad: "Keypad",
 };
 
 const DIGITS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+
+/**
+ * Below this container width, the keypad goes below the field.
+ */
+const NARROW_WIDTH_REM = 32;
 
 export interface CodeFieldProps {
 	/**
@@ -34,21 +40,28 @@ export interface CodeFieldProps {
 	 * Called when the code is submitted with Enter or a `type="submit"` button in `actions`.
 	 * When set, the component renders its own `<form>`, so it must not be placed inside another form.
 	 * Without it, Enter submits the enclosing form, if any.
+	 *
+	 * Pass it always or never: switching between the two renders a different root element, which
+	 * remounts the component and loses the focus.
 	 */
 	onSubmit?: () => void;
 
 	/**
 	 * Buttons rendered below the field, e.g. *Cancel* and a `type="submit"` *Continue*.
+	 * When the keypad goes below the field, they go below the keypad.
 	 */
 	actions?: ReactNode;
 
 	/**
 	 * The maximum length of the code. The digit keys are disabled once it is reached.
+	 * Defaults to `inputProps.maxLength`.
 	 */
 	maxLength?: number;
 
 	/**
 	 * Disables the field and the keypad, e.g. while the app checks the code.
+	 * If the field had the focus, it gets it back when it becomes enabled again,
+	 * unless the focus has moved to another control in the meantime.
 	 */
 	disabled?: boolean;
 
@@ -90,7 +103,7 @@ export interface CodeFieldProps {
 	inputRef?: Ref<HTMLInputElement>;
 
 	/**
-	 * Labels of the keys and the reveal toggle. Defaults to English.
+	 * Labels of the keys, the reveal toggle and the keypad. Defaults to English.
 	 */
 	labels?: Labels<CodeFieldLabel>;
 
@@ -112,7 +125,6 @@ export function CodeField(props: CodeFieldProps) {
 		onChange,
 		onSubmit,
 		actions,
-		maxLength,
 		disabled = false,
 		masked = true,
 		revealable = true,
@@ -130,9 +142,16 @@ export function CodeField(props: CodeFieldProps) {
 		className,
 		sx,
 	} = props;
+	const maxLength = props.maxLength ?? inputProps?.maxLength;
+
+	const rootRef = useRef<HTMLElement>(null);
+	const narrow = useNarrow(rootRef);
 
 	const inputRef = useRef<HTMLInputElement>(null);
 	const handleInputRef = useForkRef(inputRef, inputRefProp);
+
+	// Whether the field had the focus, kept while it is disabled: disabling a focused input blurs it.
+	const focusedRef = useRef(false);
 
 	const [revealed, setRevealed] = useState(false);
 
@@ -143,8 +162,9 @@ export function CodeField(props: CodeFieldProps) {
 	}, [value]);
 
 	useEffect(() => {
-		if (autoFocus && !disabled) {
-			inputRef.current?.focus();
+		const input = inputRef.current;
+		if (input && !disabled && (autoFocus || (focusedRef.current && !isFocusElsewhere(input)))) {
+			input.focus();
 		}
 	}, [autoFocus, disabled]);
 
@@ -159,6 +179,12 @@ export function CodeField(props: CodeFieldProps) {
 		}
 	}
 
+	function handleBlur(event: React.FocusEvent<HTMLInputElement>) {
+		if (!event.target.disabled) {
+			focusedRef.current = false;
+		}
+	}
+
 	function handleSubmit(event: FormEvent) {
 		event.preventDefault();
 		if (onSubmit && !disabled) {
@@ -170,69 +196,75 @@ export function CodeField(props: CodeFieldProps) {
 
 	return (
 		<Box
+			ref={rootRef}
 			component={onSubmit ? "form" : "div"}
 			onSubmit={onSubmit ? handleSubmit : undefined}
 			className={className}
 			sx={[
 				{
-					display: "flex",
-					flexWrap: "wrap",
-					alignItems: "flex-start",
+					display: "grid",
+					alignItems: "start",
 					gap: 2,
 					touchAction: "manipulation",
 				},
+				narrow
+					? {
+						gridTemplateColumns: "minmax(0, 1fr)",
+						gridTemplateAreas: actions ? `"field" "keypad" "actions"` : `"field" "keypad"`,
+					}
+					: {
+						gridTemplateColumns: "minmax(0, 1fr) minmax(0, min(24rem, 50%))",
+						gridTemplateRows: actions ? "auto 1fr" : undefined,
+						gridTemplateAreas: actions ? `"field keypad" "actions keypad"` : `"field keypad"`,
+					},
 				...(Array.isArray(sx) ? sx : [sx]),
 			]}
 		>
-			<Box sx={{flex: "1 1 16rem", minWidth: 0, display: "flex", flexDirection: "column", gap: 2}}>
-				<TextField
-					id={id}
-					name={name}
-					label={label}
-					placeholder={placeholder}
-					helperText={helperText}
-					error={error}
-					value={value}
-					onChange={e => onChange(e.target.value)}
-					disabled={disabled}
-					type={masked && !revealed ? "password" : "text"}
-					autoComplete="off"
-					fullWidth
-					inputRef={handleInputRef}
-					inputProps={{
-						...inputProps,
-						maxLength,
-						inputMode: softKeyboard ? inputProps?.inputMode : "none",
-					}}
-					InputProps={{
-						endAdornment: showToggle && (
-							<InputAdornment position="end">
-								<IconButton
-									edge="end"
-									onMouseDown={preventFocusChange}
-									onClick={() => setRevealed(prev => !prev)}
-									disabled={disabled}
-									aria-label={labels(revealed ? "hideCode" : "showCode")}
-									aria-pressed={revealed}
-								>
-									{revealed ? <VisibilityOffIcon /> : <VisibilityIcon />}
-								</IconButton>
-							</InputAdornment>
-						),
-					}}
-				/>
-				{actions && (
-					<Box sx={{display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: 1}}>
-						{actions}
-					</Box>
-				)}
-			</Box>
+			<TextField
+				id={id}
+				name={name}
+				label={label}
+				placeholder={placeholder}
+				helperText={helperText}
+				error={error}
+				value={value}
+				onChange={e => onChange(e.target.value)}
+				onFocus={() => focusedRef.current = true}
+				onBlur={handleBlur}
+				disabled={disabled}
+				type={masked && !revealed ? "password" : "text"}
+				autoComplete="off"
+				fullWidth
+				inputRef={handleInputRef}
+				inputProps={{
+					...inputProps,
+					maxLength,
+					inputMode: softKeyboard ? inputProps?.inputMode : "none",
+				}}
+				InputProps={{
+					endAdornment: showToggle && (
+						<InputAdornment position="end">
+							<IconButton
+								edge="end"
+								onMouseDown={preventFocusChange}
+								onClick={() => setRevealed(prev => !prev)}
+								disabled={disabled}
+								aria-label={labels(revealed ? "hideCode" : "showCode")}
+							>
+								{revealed ? <VisibilityOffIcon /> : <VisibilityIcon />}
+							</IconButton>
+						</InputAdornment>
+					),
+				}}
+				sx={{gridArea: "field"}}
+			/>
 			<Box
+				role="group"
+				aria-label={labels("keypad")}
 				sx={{
-					flex: "1 1 15rem",
-					maxWidth: "24rem",
+					gridArea: "keypad",
 					display: "grid",
-					gridTemplateColumns: "repeat(3, 1fr)",
+					gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
 					gap: 1,
 				}}
 			>
@@ -255,6 +287,11 @@ export function CodeField(props: CodeFieldProps) {
 					{labels("delete")}
 				</KeypadButton>
 			</Box>
+			{actions && (
+				<Box sx={{gridArea: "actions", display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: 1}}>
+					{actions}
+				</Box>
+			)}
 		</Box>
 	);
 }
@@ -269,6 +306,7 @@ interface KeypadButtonProps {
 function KeypadButton({onClick, disabled, text, children}: KeypadButtonProps) {
 	return (
 		<Button
+			type="button"
 			variant="outlined"
 			color="secondary"
 			// Hardware keyboard users type digits directly, so the keys stay out of the tab order.
@@ -281,6 +319,42 @@ function KeypadButton({onClick, disabled, text, children}: KeypadButtonProps) {
 			{children}
 		</Button>
 	);
+}
+
+/**
+ * Returns whether the container of `element` is narrower than `NARROW_WIDTH_REM`.
+ * Measured before paint, so the wide layout never flashes on a narrow screen.
+ */
+function useNarrow(ref: RefObject<HTMLElement>) {
+	const [narrow, setNarrow] = useState(false);
+
+	useLayoutEffect(() => {
+		const element = ref.current;
+		if (!element) {
+			return;
+		}
+		function update() {
+			const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+			setNarrow(element!.getBoundingClientRect().width < NARROW_WIDTH_REM * rem);
+		}
+		update();
+		if (typeof ResizeObserver != "undefined") {
+			const observer = new ResizeObserver(update);
+			observer.observe(element);
+			return () => observer.disconnect();
+		}
+	}, [ref]);
+
+	return narrow;
+}
+
+/**
+ * Returns whether another control than `input` has the focus. A container of the input, e.g. the
+ * root of a `Dialog` that took the focus while the input was disabled, doesn't count.
+ */
+function isFocusElsewhere(input: HTMLInputElement) {
+	const active = document.activeElement;
+	return active != null && active != document.body && !active.contains(input);
 }
 
 /**
