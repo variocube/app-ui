@@ -200,7 +200,9 @@ Many Input components wrap MUI components with enhancements:
   - `keypad="popup"` shows the keypad in a MUI `Popper` below the field and puts `actions` next to the field. It
     opens on a tap into the field, deliberately not on focus: kiosk screens use `autoFocus` for scanners, so a
     focus-triggered keypad would always be open. It closes on blur, Escape (without closing an enclosing dialog),
-    Enter and when disabled. The `Popper` is portaled with `zIndex.modal + 1`, so it works inside a `Dialog`.
+    Enter and when disabled; taps while disabled are ignored. The `Popper` is anchored to the whole row, so it
+    never covers actions that wrapped below the field, and portaled with `zIndex.modal + 1`, so it works inside a
+    `Dialog`. Its default `tooltip` role is replaced, because a tooltip must not contain buttons.
   - Labels default to English and are overridden with `labels`: app-ui ships no translations, and kiosk apps switch
     the language at runtime through their own localization, so a navigator-based default would not follow it.
   - `type="password"` is safe on the kiosk: there is no "Save password?" prompt on either kiosk stack. The current

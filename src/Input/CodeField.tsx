@@ -167,7 +167,6 @@ export function CodeField(props: CodeFieldProps) {
 	const handleInputRef = useForkRef(inputRef, inputRefProp);
 
 	const popup = keypad == "popup";
-	const fieldRef = useRef<HTMLDivElement>(null);
 	const keypadId = useId();
 	const [popupOpen, setPopupOpen] = useState(false);
 	const showPopup = popup && popupOpen && !disabled;
@@ -215,8 +214,11 @@ export function CodeField(props: CodeFieldProps) {
 	}
 
 	function handleFieldClick(event: React.MouseEvent) {
-		// a tap on the reveal toggle doesn't open the keypad
-		if (popup && !(event.target as Element).closest("button")) {
+		// A tap on the reveal toggle doesn't open the keypad. Neither does a tap while disabled: the disabled
+		// toggle lets taps through to the field, and the keypad would open once the field is enabled again.
+		if (popup && !disabled && !(event.target as Element).closest("button")) {
+			// The keypad closes when the field loses the focus, so the field must have it.
+			inputRef.current?.focus();
 			setPopupOpen(true);
 		}
 	}
@@ -289,7 +291,6 @@ export function CodeField(props: CodeFieldProps) {
 			]}
 		>
 			<TextField
-				ref={fieldRef}
 				id={id}
 				name={name}
 				label={label}
@@ -334,8 +335,11 @@ export function CodeField(props: CodeFieldProps) {
 				? (
 					<Popper
 						open={showPopup}
-						anchorEl={fieldRef.current}
+						// The whole row, so that the keypad doesn't cover actions that wrapped below the field
+						anchorEl={rootRef.current}
 						placement="bottom-start"
+						// MUI's default `tooltip` role must not contain interactive controls
+						role="presentation"
 						modifiers={[{name: "offset", options: {offset: [0, 8]}}]}
 						// above an enclosing dialog
 						sx={{zIndex: theme => theme.zIndex.modal + 1}}

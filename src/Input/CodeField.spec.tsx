@@ -546,6 +546,29 @@ describe("CodeField", () => {
 			expect(getKeypad()).toBeNull();
 		});
 
+		test("does not render the keypad in a tooltip", () => {
+			render({keypad: "popup"});
+			open();
+			expect(document.querySelector("[role=tooltip]")).toBeNull();
+			expect(getKeypad()!.closest("[role=presentation]")).not.toBeNull();
+		});
+
+		test("focuses the field when the keypad opens", () => {
+			render({keypad: "popup"});
+			click(getInput());
+			expect(getKeypad()).not.toBeNull();
+			expect(document.activeElement).toBe(getInput());
+		});
+
+		test("does not open on a tap while disabled, not even once enabled again", () => {
+			render({keypad: "popup", disabled: true, value: "12"});
+			// the disabled toggle lets taps through to the field
+			click(getToggle()!.parentElement!);
+			click(getInput());
+			render({keypad: "popup", disabled: false, value: "12"});
+			expect(getKeypad()).toBeNull();
+		});
+
 		test("renders the actions next to the field", () => {
 			render({keypad: "popup", actions: <button type="submit">Continue</button>});
 			const root = container.firstElementChild!;

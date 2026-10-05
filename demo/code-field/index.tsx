@@ -298,6 +298,7 @@ function PopupDemo() {
 	const [checking, setChecking] = useState(false);
 	const [invalid, setInvalid] = useState(false);
 	const [opened, setOpened] = useState(false);
+	const [autoFocus, setAutoFocus] = useState(false);
 
 	return (
 		<Box>
@@ -318,6 +319,7 @@ function PopupDemo() {
 							<CardContent>
 								<CodeField
 									keypad="popup"
+									autoFocus={autoFocus}
 									label="Pickup code"
 									value={code}
 									onChange={value => {
@@ -351,6 +353,14 @@ function PopupDemo() {
 					</DemoSource>
 					{opened && <Alert severity="success">Code accepted, the door opens.</Alert>}
 				</Stack>
+				<DemoControls>
+					<DemoSwitch label="autoFocus" checked={autoFocus} onChange={setAutoFocus} />
+					<Typography variant="body2" color="text.secondary">
+						Recommended for kiosk start screens: the field has the focus without the keypad being open, and
+						gets it back after each check, even when <em>Continue</em>{" "}
+						was tapped. Off by default here, so the page doesn't scroll to this demo when it loads.
+					</Typography>
+				</DemoControls>
 			</Demo>
 		</Box>
 	);
