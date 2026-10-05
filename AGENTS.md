@@ -53,7 +53,7 @@ The library follows a flat module structure with categorical organization:
 
 - **Core Infrastructure**: `VCThemeProvider`, `AppShell`, `layout`, `storage`
 - **Data Display**: `data-table`, `content-table`, `filter`, `tabs`, `list`
-- **Forms & Input**: `forms`, `Input/*` (TextField, NumberField, Select, Checkbox, etc.)
+- **Forms & Input**: `forms`, `Input/*` (TextField, NumberField, CodeField, Select, Checkbox, etc.)
 - **Interactions**: `confirm/*` (ConfirmButton, ConfirmDialog, ConfirmMenuItem)
 - **Utilities**: `fetch`, `localization`, `formats`, `temporal`, `utils`
 - **UI Components**: `logo`, `icons`, `country`, `help`, `code`, `ErrorAlert`
@@ -185,6 +185,19 @@ Many Input components wrap MUI components with enhancements:
 - `TextField`: Custom validation, lazy validation (after first interaction)
 - `Select`, `Checkbox`, `Switch`, `RadioGroup`: Type-safe MUI wrappers
 - `Confirm*` components: Wrap Button/IconButton/MenuItem with confirmation dialogs
+- `CodeField`: access code entry for touch terminals (kiosks), a MUI `TextField` with an on-screen keypad. Demo page:
+  `demo/code-field/`. Design decisions worth knowing before changing it:
+  - It is controlled and does not check codes: the app disables it while checking and sets `error`/`helperText`.
+    Brute-force protection (lockout after failed attempts) is deliberately the backend's job (issue #92).
+  - With `onSubmit` it renders its own `<form>`, so Enter submits natively and does nothing while the app's submit
+    button is disabled. Without `onSubmit`, Enter submits the enclosing form.
+  - Keypad keys and the reveal toggle must never take the focus (`preventDefault` on `mousedown`), otherwise a
+    barcode scanner or hardware keyboard types into nothing after a tap.
+  - Labels default to English and are overridden with `labels`: app-ui ships no translations, and kiosk apps switch
+    the language at runtime through their own localization, so a navigator-based default would not follow it.
+  - `type="password"` is safe on the kiosk: its Chromium disables the password manager by policy
+    (`kiosk/chromium/debian/etc/chromium-browser/policies/managed/chrome.json`), so there is no "Save password?"
+    prompt.
 
 ### Provider Chain and Integration
 

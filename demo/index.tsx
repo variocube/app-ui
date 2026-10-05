@@ -2,6 +2,7 @@ import {
 	Article,
 	AspectRatio,
 	CalendarMonth,
+	Dialpad,
 	DynamicForm,
 	Edit,
 	Error,
@@ -53,6 +54,7 @@ import {
 } from "../src";
 import {AuditDemo} from "./audit";
 import {BrandingProvider} from "./branding";
+import {CodeFieldDemo} from "./code-field";
 import {ConfirmDemo} from "./confirm";
 import {ContentTableDemo} from "./content-table";
 import {CubeDemo} from "./cube";
@@ -86,6 +88,7 @@ function Demo() {
 					<Route path="content-table" element={<ContentTableDemo />} />
 					<Route path="data-table" element={<DataTableDemo />} />
 					<Route path="inputs" element={<Inputs />} />
+					<Route path="code-field" element={<CodeFieldDemo />} />
 					<Route path="list" element={<ListDemo />} />
 					<Route path="forms" element={<Forms />} />
 					<Route path="error" element={<ErrorBoundaryDemo />} />
@@ -179,6 +182,7 @@ const MenuItems: MenuItemProps[] = [
 	{text: "Data table", to: "data-table", icon: ViewList},
 	{text: "Forms", to: "forms", icon: DynamicForm},
 	{text: "Inputs", to: "inputs", icon: Edit},
+	{text: "Code field", to: "code-field", icon: Dialpad},
 	{text: "List", to: "list", icon: ListAlt},
 	{text: "Error", to: "error", icon: Error},
 	{text: "Error Alert", to: "error-alert", icon: AlertIcon},
