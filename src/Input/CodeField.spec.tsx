@@ -451,20 +451,26 @@ describe("CodeField", () => {
 			expect(onParentKeyDown).toHaveBeenCalledTimes(1);
 		});
 
-		test("closes on Enter", () => {
-			renderPopup();
-			focus();
-			keyDown("Enter");
-			expect(getKeypad()).toBeNull();
-		});
-
-		test("closes on submit", () => {
+		test("stays open on Enter and submit, for the next attempt should the check fail", () => {
 			renderPopup({value: "12", onSubmit: jest.fn()});
 			focus();
+			keyDown("Enter");
 			act(() => {
 				Simulate.submit(container.querySelector("form")!);
 			});
-			expect(getKeypad()).toBeNull();
+			expect(getKeypad()).not.toBeNull();
+		});
+
+		test("does not open when the field can't take the focus, e.g. while hidden", () => {
+			const focusSpy = jest.spyOn(HTMLInputElement.prototype, "focus").mockImplementation(() => {});
+			try {
+				renderPopup({autoFocus: true});
+				expect(document.activeElement).not.toBe(getInput());
+				expect(getKeypad()).toBeNull();
+			}
+			finally {
+				focusSpy.mockRestore();
+			}
 		});
 
 		test("opens again on a tap into the focused field", () => {

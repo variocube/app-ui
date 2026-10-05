@@ -65,8 +65,8 @@ function BasicDemo() {
 			<Typography variant="h2" gutterBottom>Basic use</Typography>
 			<Typography variant="subtitle1" gutterBottom>
 				The value is controlled with <Code>value</Code> and{" "}
-				<Code>onChange</Code>. Tap the field to open the keypad; it closes when the field loses the focus, on
-				Escape and on Enter. <Code>action</Code>{" "}
+				<Code>onChange</Code>. Tap the field to open the keypad; it stays open while the field has the focus,
+				and Escape closes it. <Code>action</Code>{" "}
 				renders a control inside the field at its right edge, typically the <Code>type="submit"</Code>{" "}
 				button. With <Code>onSubmit</Code>{" "}
 				the component renders its own form: pressing Enter or the submit button submits the code. Enter does

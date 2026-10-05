@@ -190,9 +190,12 @@ Many Input components wrap MUI components with enhancements:
   - It is controlled and does not check codes: the app disables it while checking and sets `error`/`helperText`.
     Brute-force protection (lockout after failed attempts) is deliberately the backend's job (issue #92).
   - `keypad="popup"` (default) shows the keypad in a MUI `Popper` below the field, as wide as the field, while the
-    field has the focus. It closes on blur, Escape (without closing an enclosing dialog), Enter and submit, and when
-    disabled; a tap into the focused field reopens it, taps while disabled are ignored. The `Popper` is anchored to
-    the whole `TextField`, so it never covers the helper text (e.g. "Invalid code"), and portaled with
+    field has the focus and is enabled. Escape closes it (without closing an enclosing dialog), a tap into the focused
+    field reopens it, taps while disabled are ignored. It stays open on Enter and submit, so it is there for the next
+    attempt should a check fail without disabling the field. It only opens when the field really has the focus: a
+    hidden field can't take it and would never close the keypad. The `Popper` is anchored to the whole `TextField`,
+    so it never covers the helper text (e.g. "Invalid code"), follows the field's width through a `ResizeObserver`
+    (Popper itself only reacts to scrolling and window resizes), and is portaled with
     `zIndex.modal + 1`, so it works inside a `Dialog`. Its default `tooltip` role is replaced, because a tooltip
     must not contain buttons. It covers whatever is below the field, so dialogs with actions use `keypad="inline"`,
     which keeps the keypad permanently below the field.

@@ -65,8 +65,8 @@ export interface CodeFieldProps {
 
 	/**
 	 * How the keypad is shown:
-	 * - `popup` (default): in a pop-up below the field, as wide as the field, while the field has the focus.
-	 *   It closes when the field loses the focus, on Escape and on Enter; tapping the field opens it again.
+	 * - `popup` (default): in a pop-up below the field, as wide as the field, while the field has the focus and is
+	 *   enabled. Escape closes it; tapping the field opens it again.
 	 * - `inline`: always below the field, taking up its space.
 	 */
 	keypad?: "popup" | "inline";
@@ -171,6 +171,17 @@ export function CodeField(props: CodeFieldProps) {
 	const keypadId = useId();
 	const [popupOpen, setPopupOpen] = useState(false);
 	const showPopup = popup && popupOpen && !disabled;
+	const popperRef = useRef<PopperInstance>(null);
+
+	useEffect(() => {
+		const field = fieldRef.current;
+		if (showPopup && field && typeof ResizeObserver != "undefined") {
+			// Popper only follows scrolling and window resizes, not a field that changes its width with its container.
+			const observer = new ResizeObserver(() => popperRef.current?.update());
+			observer.observe(field);
+			return () => observer.disconnect();
+		}
+	}, [showPopup]);
 
 	useEffect(() => {
 		if (disabled) {
@@ -194,7 +205,10 @@ export function CodeField(props: CodeFieldProps) {
 		if (input && !disabled && (autoFocus || (focusedRef.current && !isFocusElsewhere(input)))) {
 			input.focus();
 			// Opened explicitly: a browser that keeps the focus on a disabled input fires no focus event here.
-			setPopupOpen(true);
+			// Only when the focus arrived, though: a hidden field can't take it and would never close the keypad.
+			if (document.activeElement === input) {
+				setPopupOpen(true);
+			}
 		}
 	}, [autoFocus, disabled]);
 
@@ -238,15 +252,11 @@ export function CodeField(props: CodeFieldProps) {
 			event.stopPropagation();
 			setPopupOpen(false);
 		}
-		else if (event.key == "Enter") {
-			setPopupOpen(false);
-		}
 	}
 
 	function handleSubmit(event: FormEvent) {
 		event.preventDefault();
 		if (onSubmit && !disabled) {
-			setPopupOpen(false);
 			onSubmit();
 		}
 	}
@@ -335,6 +345,7 @@ export function CodeField(props: CodeFieldProps) {
 						open={showPopup}
 						// The whole text field, so that the keypad doesn't cover the helper text, e.g. an error.
 						anchorEl={fieldRef.current}
+						popperRef={popperRef}
 						placement="bottom-start"
 						// MUI's default `tooltip` role must not contain interactive controls
 						role="presentation"
@@ -358,6 +369,7 @@ export function CodeField(props: CodeFieldProps) {
 }
 
 type PopperModifier = NonNullable<PopperProps["modifiers"]>[number];
+type PopperInstance = NonNullable<Extract<PopperProps["popperRef"], { current: unknown }>["current"]>;
 
 const POPPER_MODIFIERS: PopperModifier[] = [
 	{name: "offset", options: {offset: [0, 8]}},
