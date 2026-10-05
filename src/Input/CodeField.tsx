@@ -1,8 +1,8 @@
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import {Box, Button, IconButton, InputAdornment, SxProps, TextField, Theme} from "@mui/material";
+import {Box, Button, IconButton, InputAdornment, Paper, Popper, SxProps, TextField, Theme} from "@mui/material";
 import {InputBaseComponentProps} from "@mui/material/InputBase";
-import {useForkRef} from "@mui/material/utils";
+import {unstable_useId as useId, useForkRef} from "@mui/material/utils";
 import * as React from "react";
 import {FormEvent, ReactNode, Ref, RefObject, useEffect, useLayoutEffect, useRef, useState} from "react";
 import {Labels} from "../localization";
@@ -23,6 +23,11 @@ const DIGITS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
  * Below this container width, the keypad goes below the field.
  */
 const NARROW_WIDTH_REM = 32;
+
+/**
+ * Three keys of 64px plus two gaps.
+ */
+const KEYPAD_MIN_WIDTH = 3 * 64 + 2 * 8;
 
 export interface CodeFieldProps {
 	/**
@@ -47,10 +52,20 @@ export interface CodeFieldProps {
 	onSubmit?: () => void;
 
 	/**
-	 * Buttons rendered below the field, e.g. *Cancel* and a `type="submit"` *Continue*.
-	 * When the keypad goes below the field, they go below the keypad.
+	 * Buttons, e.g. *Cancel* and a `type="submit"` *Continue*. With the inline keypad they go below the
+	 * field, or below the keypad when it goes below the field. With the pop-up keypad they go next to the field.
 	 */
 	actions?: ReactNode;
+
+	/**
+	 * Where the keypad is shown:
+	 * - `inline` (default): next to the field, or below it when the container is narrow.
+	 * - `popup`: in a pop-up below the field, opened by tapping the field. The screen shows only the field and
+	 *   `actions`, which go next to it. The pop-up closes when the field loses the focus, on Escape and on Enter.
+	 *   It doesn't open on focus alone, so `autoFocus` keeps the field ready for a scanner without covering the
+	 *   screen with the keypad.
+	 */
+	keypad?: "inline" | "popup";
 
 	/**
 	 * The maximum length of the code. The digit keys are disabled once it is reached.
@@ -125,6 +140,7 @@ export function CodeField(props: CodeFieldProps) {
 		onChange,
 		onSubmit,
 		actions,
+		keypad = "inline",
 		disabled = false,
 		masked = true,
 		revealable = true,
@@ -149,6 +165,18 @@ export function CodeField(props: CodeFieldProps) {
 
 	const inputRef = useRef<HTMLInputElement>(null);
 	const handleInputRef = useForkRef(inputRef, inputRefProp);
+
+	const popup = keypad == "popup";
+	const fieldRef = useRef<HTMLDivElement>(null);
+	const keypadId = useId();
+	const [popupOpen, setPopupOpen] = useState(false);
+	const showPopup = popup && popupOpen && !disabled;
+
+	useEffect(() => {
+		if (disabled) {
+			setPopupOpen(false);
+		}
+	}, [disabled]);
 
 	// Whether the field had the focus, kept while it is disabled: disabling a focused input blurs it.
 	const focusedRef = useRef(false);
@@ -180,8 +208,27 @@ export function CodeField(props: CodeFieldProps) {
 	}
 
 	function handleBlur(event: React.FocusEvent<HTMLInputElement>) {
+		setPopupOpen(false);
 		if (!event.target.disabled) {
 			focusedRef.current = false;
+		}
+	}
+
+	function handleFieldClick(event: React.MouseEvent) {
+		// a tap on the reveal toggle doesn't open the keypad
+		if (popup && !(event.target as Element).closest("button")) {
+			setPopupOpen(true);
+		}
+	}
+
+	function handleKeyDown(event: React.KeyboardEvent) {
+		if (event.key == "Escape" && showPopup) {
+			// close only the keypad, not an enclosing dialog
+			event.stopPropagation();
+			setPopupOpen(false);
+		}
+		else if (event.key == "Enter") {
+			setPopupOpen(false);
 		}
 	}
 
@@ -191,6 +238,17 @@ export function CodeField(props: CodeFieldProps) {
 			onSubmit();
 		}
 	}
+
+	const keypadElement = (
+		<Keypad
+			id={keypadId}
+			value={value}
+			full={full}
+			disabled={disabled}
+			labels={labels}
+			onKey={handleKey}
+		/>
+	);
 
 	const showToggle = masked && revealable;
 
@@ -202,14 +260,22 @@ export function CodeField(props: CodeFieldProps) {
 			className={className}
 			sx={[
 				{
-					display: "grid",
-					alignItems: "start",
 					gap: 2,
-					// keeps the keys at their minimum size of 64px (three keys plus two gaps) in a shrinking container
-					minWidth: 3 * 64 + 2 * 8,
 					touchAction: "manipulation",
 				},
-				narrow
+				popup
+					? {
+						display: "flex",
+						flexWrap: "wrap",
+						alignItems: "flex-start",
+					}
+					: {
+						display: "grid",
+						alignItems: "start",
+						// keeps the keys at their minimum size of 64px (three keys plus two gaps) in a shrinking container
+						minWidth: KEYPAD_MIN_WIDTH,
+					},
+				popup ? {} : narrow
 					? {
 						gridTemplateColumns: "minmax(0, 1fr)",
 						gridTemplateAreas: actions ? `"field" "keypad" "actions"` : `"field" "keypad"`,
@@ -223,6 +289,7 @@ export function CodeField(props: CodeFieldProps) {
 			]}
 		>
 			<TextField
+				ref={fieldRef}
 				id={id}
 				name={name}
 				label={label}
@@ -233,6 +300,7 @@ export function CodeField(props: CodeFieldProps) {
 				onChange={e => onChange(e.target.value)}
 				onFocus={() => focusedRef.current = true}
 				onBlur={handleBlur}
+				onKeyDown={handleKeyDown}
 				disabled={disabled}
 				type={masked && !revealed ? "password" : "text"}
 				autoComplete="off"
@@ -242,8 +310,10 @@ export function CodeField(props: CodeFieldProps) {
 					...inputProps,
 					maxLength,
 					inputMode: softKeyboard ? inputProps?.inputMode : "none",
+					"aria-controls": showPopup ? keypadId : inputProps?.["aria-controls"],
 				}}
 				InputProps={{
+					onClick: handleFieldClick,
 					endAdornment: showToggle && (
 						<InputAdornment position="end">
 							<IconButton
@@ -258,42 +328,87 @@ export function CodeField(props: CodeFieldProps) {
 						</InputAdornment>
 					),
 				}}
-				sx={{gridArea: "field"}}
+				sx={popup ? {flex: "1 1 12rem", minWidth: 0} : {gridArea: "field"}}
 			/>
-			<Box
-				role="group"
-				aria-label={labels("keypad")}
-				sx={{
-					gridArea: "keypad",
-					display: "grid",
-					gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-					gap: 1,
-				}}
-			>
-				{DIGITS.map(digit => (
-					<KeypadButton
-						key={digit}
-						onClick={() => handleKey(value + digit)}
-						disabled={disabled || full}
+			{popup
+				? (
+					<Popper
+						open={showPopup}
+						anchorEl={fieldRef.current}
+						placement="bottom-start"
+						modifiers={[{name: "offset", options: {offset: [0, 8]}}]}
+						// above an enclosing dialog
+						sx={{zIndex: theme => theme.zIndex.modal + 1}}
 					>
-						{digit}
-					</KeypadButton>
-				))}
-				<KeypadButton onClick={() => handleKey("")} disabled={disabled || !value} text>
-					{labels("clear")}
-				</KeypadButton>
-				<KeypadButton onClick={() => handleKey(value + "0")} disabled={disabled || full}>
-					0
-				</KeypadButton>
-				<KeypadButton onClick={() => handleKey(value.slice(0, -1))} disabled={disabled || !value} text>
-					{labels("delete")}
-				</KeypadButton>
-			</Box>
+						<Paper
+							elevation={8}
+							// a tap between the keys must not take the focus from the field either
+							onMouseDown={preventFocusChange}
+							sx={{
+								p: 1,
+								width: `min(18rem, calc(100vw - 16px))`,
+								minWidth: KEYPAD_MIN_WIDTH + 16,
+								touchAction: "manipulation",
+							}}
+						>
+							{keypadElement}
+						</Paper>
+					</Popper>
+				)
+				: <Box sx={{gridArea: "keypad"}}>{keypadElement}</Box>}
 			{actions && (
-				<Box sx={{gridArea: "actions", display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: 1}}>
+				<Box
+					sx={popup
+						// vertically centered next to the input, which is 56px high
+						? {display: "flex", alignItems: "center", flexWrap: "wrap", gap: 1, minHeight: 56}
+						: {gridArea: "actions", display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: 1}}
+				>
 					{actions}
 				</Box>
 			)}
+		</Box>
+	);
+}
+
+interface KeypadProps {
+	id: string | undefined;
+	value: string;
+	full: boolean;
+	disabled: boolean;
+	labels: Labels<CodeFieldLabel>;
+	onKey: (next: string) => void;
+}
+
+function Keypad({id, value, full, disabled, labels, onKey}: KeypadProps) {
+	return (
+		<Box
+			id={id}
+			role="group"
+			aria-label={labels("keypad")}
+			sx={{
+				display: "grid",
+				gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+				gap: 1,
+			}}
+		>
+			{DIGITS.map(digit => (
+				<KeypadButton
+					key={digit}
+					onClick={() => onKey(value + digit)}
+					disabled={disabled || full}
+				>
+					{digit}
+				</KeypadButton>
+			))}
+			<KeypadButton onClick={() => onKey("")} disabled={disabled || !value} text>
+				{labels("clear")}
+			</KeypadButton>
+			<KeypadButton onClick={() => onKey(value + "0")} disabled={disabled || full}>
+				0
+			</KeypadButton>
+			<KeypadButton onClick={() => onKey(value.slice(0, -1))} disabled={disabled || !value} text>
+				{labels("delete")}
+			</KeypadButton>
 		</Box>
 	);
 }

@@ -43,6 +43,7 @@ export function CodeFieldDemo() {
 			<Stack spacing={8} mt={4}>
 				<BasicDemo />
 				<VerifyDemo />
+				<PopupDemo />
 				<EmbeddingDemo />
 				<ResponsiveDemo />
 				<OptionsDemo />
@@ -289,7 +290,71 @@ const GERMAN_LABELS: Record<CodeFieldLabel, string> = {
 	delete: "Entfernen",
 	showCode: "Code anzeigen",
 	hideCode: "Code verbergen",
+	keypad: "Tastenfeld",
 };
+
+function PopupDemo() {
+	const [code, setCode] = useState("");
+	const [checking, setChecking] = useState(false);
+	const [invalid, setInvalid] = useState(false);
+	const [opened, setOpened] = useState(false);
+
+	return (
+		<Box>
+			<Typography variant="h2" gutterBottom>Pop-up keypad</Typography>
+			<Typography variant="subtitle1" gutterBottom>
+				With <Code>keypad="popup"</Code>{" "}
+				the keypad opens in a pop-up below the field when the field is tapped, and <Code>actions</Code>{" "}
+				go next to the field. This keeps start screens clean. The keypad closes when the field loses the focus,
+				on Escape and on Enter. It doesn't open on focus alone: a kiosk screen can use <Code>autoFocus</Code>
+				{" "}
+				for scanners without covering the screen with the keypad. The demo accepts <Code>1234</Code>.
+			</Typography>
+			<Demo source={source} id="code-field-popup">
+				<Stack spacing={2} p={2}>
+					<DemoSource for="#code-field-popup">
+						<Card>
+							<CardHeader title="Pick up your parcel" subheader="Enter your pickup code or scan it." />
+							<CardContent>
+								<CodeField
+									keypad="popup"
+									label="Pickup code"
+									value={code}
+									onChange={value => {
+										setCode(value);
+										setInvalid(false);
+									}}
+									onSubmit={async () => {
+										setChecking(true);
+										const valid = await checkCode(code);
+										setChecking(false);
+										setCode("");
+										setInvalid(!valid);
+										setOpened(valid);
+									}}
+									disabled={checking}
+									error={invalid}
+									helperText={invalid ? "Invalid code. Please try again." : undefined}
+									actions={
+										<Button
+											type="submit"
+											variant="contained"
+											size="large"
+											disabled={checking || !code}
+										>
+											Continue
+										</Button>
+									}
+								/>
+							</CardContent>
+						</Card>
+					</DemoSource>
+					{opened && <Alert severity="success">Code accepted, the door opens.</Alert>}
+				</Stack>
+			</Demo>
+		</Box>
+	);
+}
 
 function OptionsDemo() {
 	const [code, setCode] = useState("");
@@ -299,12 +364,17 @@ function OptionsDemo() {
 	const [revealable, setRevealable] = useState(true);
 	const [softKeyboard, setSoftKeyboard] = useState(false);
 	const [german, setGerman] = useState(false);
+	const [keypad, setKeypad] = useState<"inline" | "popup">("inline");
 
 	return (
 		<Box>
 			<Typography variant="h2" gutterBottom>Options</Typography>
 			<Typography variant="subtitle1" gutterBottom>
-				<Code>maxLength</Code> disables the digit keys once the code is complete. <Code>masked</Code>{" "}
+				<Code>keypad</Code>{" "}
+				places the keypad next to the field (<Code>inline</Code>, the default) or in a pop-up (<Code>
+					popup
+				</Code>). <Code>maxLength</Code> disables the digit keys once the code is complete. <Code>masked</Code>
+				{" "}
 				(default on) hides the code like a password, and <Code>revealable</Code>{" "}
 				(default on) adds a toggle to show it. A revealed code is masked again when the value is emptied, so it
 				doesn't stay revealed for the next person. <Code>softKeyboard</Code>{" "}
@@ -323,6 +393,7 @@ function OptionsDemo() {
 							masked={masked}
 							revealable={revealable}
 							softKeyboard={softKeyboard}
+							keypad={keypad}
 							labels={german ? (key => GERMAN_LABELS[key]) : undefined}
 						/>
 					</DemoSource>
@@ -346,6 +417,11 @@ function OptionsDemo() {
 						<DemoSwitch label="masked" checked={masked} onChange={setMasked} />
 						<DemoSwitch label="revealable" checked={revealable} onChange={setRevealable} />
 						<DemoSwitch label="softKeyboard" checked={softKeyboard} onChange={setSoftKeyboard} />
+						<DemoSwitch
+							label="popup keypad"
+							checked={keypad == "popup"}
+							onChange={checked => setKeypad(checked ? "popup" : "inline")}
+						/>
 						<DemoSwitch label="German labels" checked={german} onChange={setGerman} />
 					</Stack>
 				</DemoControls>

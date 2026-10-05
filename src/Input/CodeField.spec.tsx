@@ -437,6 +437,124 @@ describe("CodeField", () => {
 		});
 	});
 
+	describe("popup keypad", () => {
+		function getKeypad() {
+			return document.querySelector<HTMLElement>("[role=group]");
+		}
+
+		function getPopupKey(label: string) {
+			const key = Array.from(getKeypad()?.querySelectorAll("button") ?? []).find(button =>
+				button.textContent == label
+			);
+			if (!key) {
+				throw new Error(`key ${label} not found`);
+			}
+			return key;
+		}
+
+		function open() {
+			act(() => getInput().focus());
+			click(getInput());
+		}
+
+		function keyDown(key: string) {
+			act(() => {
+				Simulate.keyDown(getInput(), {key});
+			});
+		}
+
+		test("shows no keypad until the field is tapped", () => {
+			render({keypad: "popup"});
+			expect(getKeypad()).toBeNull();
+
+			open();
+			expect(getKeypad()).not.toBeNull();
+			expect(container.contains(getKeypad())).toBe(false);
+			expect(getInput().getAttribute("aria-controls")).toBe(getKeypad()!.id);
+		});
+
+		test("does not open on focus alone", () => {
+			render({keypad: "popup", autoFocus: true});
+			expect(document.activeElement).toBe(getInput());
+			expect(getKeypad()).toBeNull();
+			expect(getInput().hasAttribute("aria-controls")).toBe(false);
+		});
+
+		test("does not open on a tap on the reveal toggle", () => {
+			render({keypad: "popup", value: "1"});
+			click(getToggle()!);
+			expect(getKeypad()).toBeNull();
+		});
+
+		test("types into the field and stays open", () => {
+			render({keypad: "popup", value: "1"});
+			open();
+			click(getPopupKey("2"));
+			expect(onChange).toHaveBeenCalledWith("12");
+			expect(getKeypad()).not.toBeNull();
+			expect(document.activeElement).toBe(getInput());
+		});
+
+		test("prevents a tap between the keys from taking the focus", () => {
+			render({keypad: "popup"});
+			open();
+			const event = new MouseEvent("mousedown", {bubbles: true, cancelable: true});
+			getKeypad()!.parentElement!.dispatchEvent(event);
+			expect(event.defaultPrevented).toBe(true);
+		});
+
+		test("closes when the field loses the focus", () => {
+			render({keypad: "popup"});
+			open();
+			act(() => getInput().blur());
+			expect(getKeypad()).toBeNull();
+		});
+
+		test("closes on Escape without closing an enclosing dialog", () => {
+			const onParentKeyDown = jest.fn();
+			act(() => {
+				ReactDOM.render(
+					<div onKeyDown={onParentKeyDown}>
+						<CodeField value="" onChange={onChange} keypad="popup" />
+					</div>,
+					container,
+				);
+			});
+			open();
+			keyDown("Escape");
+			expect(getKeypad()).toBeNull();
+			expect(onParentKeyDown).not.toHaveBeenCalled();
+
+			keyDown("Escape");
+			expect(onParentKeyDown).toHaveBeenCalledTimes(1);
+		});
+
+		test("closes on Enter", () => {
+			render({keypad: "popup"});
+			open();
+			keyDown("Enter");
+			expect(getKeypad()).toBeNull();
+		});
+
+		test("closes when disabled and stays closed when enabled again", () => {
+			render({keypad: "popup"});
+			open();
+			render({keypad: "popup", disabled: true});
+			expect(getKeypad()).toBeNull();
+
+			render({keypad: "popup", disabled: false});
+			expect(getKeypad()).toBeNull();
+		});
+
+		test("renders the actions next to the field", () => {
+			render({keypad: "popup", actions: <button type="submit">Continue</button>});
+			const root = container.firstElementChild!;
+			expect(getComputedStyle(root).display).toBe("flex");
+			expect(root.children).toHaveLength(2);
+			expect(root.children[1].textContent).toBe("Continue");
+		});
+	});
+
 	test("works as a controlled component", () => {
 		function Controlled() {
 			const [value, setValue] = useState("");
