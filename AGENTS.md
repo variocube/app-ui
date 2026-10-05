@@ -53,7 +53,7 @@ The library follows a flat module structure with categorical organization:
 
 - **Core Infrastructure**: `VCThemeProvider`, `AppShell`, `layout`, `storage`
 - **Data Display**: `data-table`, `content-table`, `filter`, `tabs`, `list`
-- **Forms & Input**: `forms`, `Input/*` (TextField, NumberField, Select, Checkbox, etc.)
+- **Forms & Input**: `forms`, `Input/*` (TextField, NumberField, CodeField, Select, Checkbox, etc.)
 - **Interactions**: `confirm/*` (ConfirmButton, ConfirmDialog, ConfirmMenuItem)
 - **Utilities**: `fetch`, `localization`, `formats`, `temporal`, `utils`
 - **UI Components**: `logo`, `icons`, `country`, `help`, `code`, `ErrorAlert`
@@ -185,6 +185,46 @@ Many Input components wrap MUI components with enhancements:
 - `TextField`: Custom validation, lazy validation (after first interaction)
 - `Select`, `Checkbox`, `Switch`, `RadioGroup`: Type-safe MUI wrappers
 - `Confirm*` components: Wrap Button/IconButton/MenuItem with confirmation dialogs
+- `CodeField`: access code entry for touch terminals (kiosks), a MUI `TextField` with an on-screen keypad. Demo page:
+  `demo/code-field/`. Design decisions worth knowing before changing it:
+  - It is controlled and does not check codes: the app disables it while checking and sets `error`/`helperText`.
+    Brute-force protection (lockout after failed attempts) is deliberately the backend's job (issue #92).
+  - `keypad="popup"` (default) shows the keypad in a MUI `Popper` below the field, as wide as the field, while the
+    field has the focus and is enabled. Escape closes it (without closing an enclosing dialog), a tap into the focused
+    field reopens it, taps while disabled are ignored. It stays open on Enter and submit, so it is there for the next
+    attempt should a check fail without disabling the field. It only opens when the field really has the focus: a
+    hidden field can't take it and would never close the keypad. The `Popper` is anchored to the whole `TextField`,
+    so it never covers the helper text (e.g. "Invalid code"), follows the field's width through a `ResizeObserver`
+    (Popper itself only reacts to scrolling and window resizes), and is portaled with
+    `zIndex.modal + 1`, so it works inside a `Dialog`. Its default `tooltip` role is replaced, because a tooltip
+    must not contain buttons. It covers whatever is below the field, so dialogs with actions use `keypad="inline"`,
+    which keeps the keypad permanently below the field.
+  - Opening on focus is fine for kiosks: their browsers have no OS soft keyboard, and scanners and NFC readers don't
+    type into form fields (they arrive as separate events), so nothing else needs the focus.
+  - Keypad keys, the reveal toggle and `action` must never take the focus (`preventDefault` on `mousedown`):
+    otherwise a tap closes the pop-up, and a hardware keyboard types into nothing. As a fallback, a key tap also
+    focuses the field (unless `softKeyboard` is set). A field that had the focus gets it back, and the pop-up
+    reopens, when it is enabled again after a check: disabling a focused input blurs it.
+  - `action` renders inside the field at the right edge (after the reveal toggle, outside MUI's `InputAdornment`,
+    whose height is capped), typically the `type="submit"` button. It fills the field up to its border on the top,
+    right and bottom, with square corners on the left; the outline is drawn over it. Those styles use a doubled
+    `&&` selector, because a MUI `Button`'s own radius and shadows have the same specificity and are inserted later
+    (jsdom ignores specificity, so only a browser can verify this). With `onSubmit` the component
+    renders its own `<form>`, so Enter submits natively and does nothing while the submit button is disabled.
+    Without `onSubmit`, Enter submits the enclosing form.
+  - `status` shows messages like "Checking code…" / "Invalid code" inside the field, laid over the input by a
+    custom `inputComponent` that wraps only the input (so it doesn't cover the toggle and the action). Unlike
+    `helperText`, it doesn't change the field's height, so the pop-up keypad doesn't jump. The label is forced to
+    shrink while a status is shown, and the live region is always rendered, so screen readers announce a status
+    that appears; it is also in the input's `aria-describedby`, next to the helper text.
+  - `size="large"` scales the field's text by 1.5. MUI's outlined field has no large size and positions the
+    label and padding in px, so `LARGE_FIELD_STYLES` adjusts those; the outline's gap for the label follows the
+    font size by itself. The keypad keeps its size.
+  - Labels default to English and are overridden with `labels`: app-ui ships no translations, and kiosk apps switch
+    the language at runtime through their own localization, so a navigator-based default would not follow it.
+  - `type="password"` is safe on the kiosk: there is no "Save password?" prompt on either kiosk stack. The current
+    stack, Cog (WPE WebKit), has no password manager UI; the legacy Chromium stack disables it by policy
+    (`kiosk/chromium/debian/etc/chromium-browser/policies/managed/chrome.json`).
 
 ### Provider Chain and Integration
 
