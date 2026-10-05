@@ -205,6 +205,8 @@ export function CodeField(props: CodeFieldProps) {
 					display: "grid",
 					alignItems: "start",
 					gap: 2,
+					// keeps the keys at their minimum size of 64px (three keys plus two gaps) in a shrinking container
+					minWidth: 3 * 64 + 2 * 8,
 					touchAction: "manipulation",
 				},
 				narrow
@@ -322,8 +324,8 @@ function KeypadButton({onClick, disabled, text, children}: KeypadButtonProps) {
 }
 
 /**
- * Returns whether the container of `element` is narrower than `NARROW_WIDTH_REM`.
- * Measured before paint, so the wide layout never flashes on a narrow screen.
+ * Returns whether the element is narrower than `NARROW_WIDTH_REM`. The first measurement happens before
+ * the first paint, so the wide layout never flashes on a narrow screen; later resizes apply a frame later.
  */
 function useNarrow(ref: RefObject<HTMLElement>) {
 	const [narrow, setNarrow] = useState(false);
@@ -339,9 +341,24 @@ function useNarrow(ref: RefObject<HTMLElement>) {
 		}
 		update();
 		if (typeof ResizeObserver != "undefined") {
-			const observer = new ResizeObserver(update);
+			// Switching the layout changes the height of the observed element. Doing that within the
+			// notification makes the browser report a "ResizeObserver loop" error, so it waits a frame.
+			let frame: number | undefined;
+			const observer = new ResizeObserver(() => {
+				if (frame === undefined) {
+					frame = requestAnimationFrame(() => {
+						frame = undefined;
+						update();
+					});
+				}
+			});
 			observer.observe(element);
-			return () => observer.disconnect();
+			return () => {
+				observer.disconnect();
+				if (frame !== undefined) {
+					cancelAnimationFrame(frame);
+				}
+			};
 		}
 	}, [ref]);
 

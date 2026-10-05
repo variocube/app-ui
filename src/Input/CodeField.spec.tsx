@@ -347,6 +347,96 @@ describe("CodeField", () => {
 		});
 	});
 
+	describe("layout", () => {
+		let width: number;
+		let observers: { callback: ResizeObserverCallback; disconnect: jest.Mock }[];
+		let frames: Map<number, FrameRequestCallback>;
+		let nextFrame: number;
+
+		beforeEach(() => {
+			width = 800;
+			observers = [];
+			frames = new Map();
+			nextFrame = 1;
+			jest.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(() => ({width} as DOMRect));
+			(window as any).ResizeObserver = class {
+				disconnect = jest.fn();
+				constructor(callback: ResizeObserverCallback) {
+					observers.push({callback, disconnect: this.disconnect});
+				}
+				observe() {}
+			};
+			jest.spyOn(window, "requestAnimationFrame").mockImplementation(callback => {
+				frames.set(nextFrame, callback);
+				return nextFrame++;
+			});
+			jest.spyOn(window, "cancelAnimationFrame").mockImplementation(id => frames.delete(id));
+		});
+
+		afterEach(() => {
+			jest.restoreAllMocks();
+			delete (window as any).ResizeObserver;
+		});
+
+		function getAreas() {
+			return getComputedStyle(container.firstElementChild!).gridTemplateAreas;
+		}
+
+		function resize(newWidth: number) {
+			width = newWidth;
+			act(() => observers.forEach(observer => observer.callback([], {} as ResizeObserver)));
+		}
+
+		function runFrames() {
+			act(() => {
+				const callbacks = Array.from(frames.values());
+				frames.clear();
+				callbacks.forEach(callback => callback(0));
+			});
+		}
+
+		test("puts the keypad next to the field and the actions below the field in a wide container", () => {
+			render({actions: <button type="submit">Continue</button>});
+			expect(getAreas()).toBe(`"field keypad" "actions keypad"`);
+		});
+
+		test("puts the keypad below the field and the actions below the keypad in a narrow container", () => {
+			width = 400;
+			render({actions: <button type="submit">Continue</button>});
+			expect(getAreas()).toBe(`"field" "keypad" "actions"`);
+		});
+
+		test("has no actions area without actions", () => {
+			render();
+			expect(getAreas()).toBe(`"field keypad"`);
+		});
+
+		test("switches the layout a frame after a resize", () => {
+			render();
+			resize(400);
+			expect(getAreas()).toBe(`"field keypad"`);
+
+			runFrames();
+			expect(getAreas()).toBe(`"field" "keypad"`);
+
+			resize(800);
+			runFrames();
+			expect(getAreas()).toBe(`"field keypad"`);
+		});
+
+		test("disconnects the observer and cancels a pending frame on unmount", () => {
+			render();
+			resize(400);
+			expect(frames.size).toBe(1);
+
+			act(() => {
+				ReactDOM.unmountComponentAtNode(container);
+			});
+			expect(observers[0].disconnect).toHaveBeenCalled();
+			expect(frames.size).toBe(0);
+		});
+	});
+
 	test("works as a controlled component", () => {
 		function Controlled() {
 			const [value, setValue] = useState("");
