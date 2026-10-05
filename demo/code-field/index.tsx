@@ -293,7 +293,7 @@ function WidthDemo() {
 			<Typography variant="h2" gutterBottom>Width</Typography>
 			<Typography variant="subtitle1" gutterBottom>
 				The component takes its width from the container, and the pop-up keypad is always as wide as the field.
-				Below about 240 px, the keys would get smaller than 64 px, so the keypad keeps that minimum width.
+				Below 224 px, the keys would get smaller than 64 px, so the keypad keeps that minimum width.
 			</Typography>
 			<Demo source={source} id="code-field-width">
 				<Box p={2}>
