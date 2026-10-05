@@ -244,11 +244,19 @@ describe("CodeField", () => {
 	});
 
 	test("makes the action fill the field up to its border, with square corners on the left", () => {
+		// A plain button: jsdom ignores CSS specificity, so it can't tell whether these styles outweigh a MUI Button's
+		// own (they do in browsers, thanks to the doubled `&&` selector).
 		render({action: <button type="submit">Continue</button>});
 		const style = getComputedStyle(getKey("Continue"));
 		expect(style.alignSelf).toBe("stretch");
 		expect(style.borderRadius).toBe("0 4px 4px 0");
+		expect(style.boxShadow).toBe("none");
 		expect(getComputedStyle(getInput().closest(".MuiInputBase-root")!).paddingRight).toBe("0px");
+	});
+
+	test("keeps the code off the action without the reveal toggle", () => {
+		render({action: <button type="submit">Continue</button>, masked: false});
+		expect(getComputedStyle(getInput()).paddingRight).toBe("var(--CodeField-padding-x)");
 	});
 
 	test("prevents the action from taking the focus", () => {
@@ -294,6 +302,17 @@ describe("CodeField", () => {
 			expect(container.querySelector("label")?.getAttribute("data-shrink")).toBe("true");
 			render({label: "Code"});
 			expect(container.querySelector("label")?.getAttribute("data-shrink")).toBe("false");
+		});
+
+		test("describes the input with the status and the helper text", () => {
+			render({status: "Invalid code", helperText: "Hint", id: "code"});
+			const describedBy = getInput().getAttribute("aria-describedby")!.split(" ");
+			expect(describedBy).toEqual(["code-status", "code-helper-text"]);
+			expect(document.getElementById("code-status")?.textContent).toBe("Invalid code");
+			expect(document.getElementById("code-helper-text")?.textContent).toBe("Hint");
+
+			render({helperText: "Hint", id: "code"});
+			expect(getInput().getAttribute("aria-describedby")).toBe("code-helper-text");
 		});
 
 		test("renders an empty live region without status, so that a status that appears is announced", () => {

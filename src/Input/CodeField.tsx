@@ -192,6 +192,14 @@ export function CodeField(props: CodeFieldProps) {
 
 	const popup = keypad == "popup";
 	const keypadId = useId();
+	// MUI derives the helper text's id from the field's id, so the field needs a known one
+	const fieldId = useId(id);
+	const statusId = fieldId && `${fieldId}-status`;
+	const describedBy = [
+		status ? statusId : undefined,
+		helperText && fieldId ? `${fieldId}-helper-text` : undefined,
+		inputProps?.["aria-describedby"],
+	].filter(Boolean).join(" ") || undefined;
 	const [popupOpen, setPopupOpen] = useState(false);
 	const showPopup = popup && popupOpen && !disabled;
 	const popperRef = useRef<PopperInstance>(null);
@@ -317,7 +325,7 @@ export function CodeField(props: CodeFieldProps) {
 		>
 			<TextField
 				ref={fieldRef}
-				id={id}
+				id={fieldId}
 				name={name}
 				label={label}
 				placeholder={placeholder}
@@ -340,7 +348,10 @@ export function CodeField(props: CodeFieldProps) {
 					maxLength,
 					inputMode: softKeyboard ? inputProps?.inputMode : "none",
 					"aria-controls": showPopup ? keypadId : inputProps?.["aria-controls"],
+					// also tells screen readers about the status when they come back to the field
+					"aria-describedby": describedBy,
 					status,
+					statusId,
 					statusError: error,
 				}}
 				InputProps={{
@@ -369,12 +380,16 @@ export function CodeField(props: CodeFieldProps) {
 										alignSelf: "stretch",
 										display: "flex",
 										// fills the field up to its border on the top, right and bottom
-										"& > *": {
+										// `&&` outweighs the action's own styles, e.g. a MUI Button's radius and shadows,
+										// which have the same specificity and are inserted later
+										"&& > *": {
 											alignSelf: "stretch",
 											height: "auto",
-											"&, &:hover, &:active, &.Mui-focusVisible": {boxShadow: "none"},
 											borderRadius: theme =>
 												`0 ${theme.shape.borderRadius}px ${theme.shape.borderRadius}px 0`,
+										},
+										"&& > *, && > *:hover, && > *:active, && > *.Mui-focusVisible": {
+											boxShadow: "none",
 										},
 									}}
 								>
@@ -389,6 +404,8 @@ export function CodeField(props: CodeFieldProps) {
 					// the outline is drawn over the action, as the action is flush with it
 					Boolean(action) && {"& .MuiOutlinedInput-root": {pr: 0}},
 					large && LARGE_FIELD_STYLES,
+					// without the reveal toggle in between, the code must not run into the action
+					Boolean(action) && !showToggle && {"& .MuiInputBase-input": {pr: "var(--CodeField-padding-x)"}},
 				]}
 			/>
 			{popup
@@ -428,7 +445,7 @@ export function CodeField(props: CodeFieldProps) {
 const LARGE_FIELD_STYLES = {
 	"--CodeField-padding-x": "18px",
 	"& .MuiInputBase-root": {fontSize: "1.5rem"},
-	"& .MuiInputBase-input": {padding: "18.75px var(--CodeField-padding-x)"},
+	"& .MuiInputBase-input": {py: "18.75px", pl: "var(--CodeField-padding-x)"},
 	"& .MuiInputLabel-root": {
 		fontSize: "1.5rem",
 		transform: "translate(var(--CodeField-padding-x), 18.75px) scale(1)",
@@ -446,6 +463,7 @@ const LARGE_FIELD_STYLES = {
 
 interface StatusInputProps extends InputHTMLAttributes<HTMLInputElement> {
 	status?: ReactNode;
+	statusId?: string;
 	statusError?: boolean;
 }
 
@@ -454,12 +472,13 @@ interface StatusInputProps extends InputHTMLAttributes<HTMLInputElement> {
  * doesn't cover the reveal toggle and the action.
  */
 const StatusInput = forwardRef<HTMLInputElement, StatusInputProps>(function StatusInput(props, ref) {
-	const {status, statusError, style, ...inputProps} = props;
+	const {status, statusId, statusError, style, ...inputProps} = props;
 	return (
 		<Box component="span" sx={{position: "relative", display: "flex", flex: "1 1 auto", minWidth: 0}}>
 			<input ref={ref} style={status ? {...style, opacity: 0} : style} {...inputProps} />
 			<Box
 				component="span"
+				id={statusId}
 				// always rendered, so that screen readers announce a status that appears
 				aria-live="polite"
 				sx={{
