@@ -1,3 +1,4 @@
+import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import {
 	Alert,
 	Box,
@@ -7,9 +8,11 @@ import {
 	CardHeader,
 	Container,
 	Dialog,
+	DialogActions,
 	DialogContent,
 	DialogTitle,
 	FormControlLabel,
+	IconButton,
 	MenuItem,
 	Paper,
 	Stack,
@@ -33,19 +36,19 @@ export function CodeFieldDemo() {
 			<PageTitle title="Code field" gutterBottom />
 			<Typography variant="subtitle1" gutterBottom>
 				<Code>CodeField</Code>{" "}
-				lets people enter an access code on a touch terminal without a hardware keyboard: a text field with an
-				on-screen keypad next to it. When its container is narrow, the keypad goes below the field. A hardware
-				keyboard, barcode scanner or keypad driver can still type into the field. The component draws no surface
-				of its own, so it fits into a <Code>Card</Code>, <Code>Paper</Code>, <Code>Dialog</Code>{" "}
+				lets people enter an access code on a touch terminal without a hardware keyboard. While the field has
+				the focus, an on-screen keypad pops up below it, as wide as the field. Optionally, the keypad stays
+				below the field permanently. A hardware keyboard can type into the field as well. The component draws no
+				surface of its own, so it fits into a <Code>Card</Code>, <Code>Paper</Code>, <Code>Dialog</Code>{" "}
 				or directly onto a page. Use the theme switch in the app bar to see it in light and dark mode.
 			</Typography>
 
 			<Stack spacing={8} mt={4}>
 				<BasicDemo />
 				<VerifyDemo />
-				<PopupDemo />
-				<EmbeddingDemo />
-				<ResponsiveDemo />
+				<InlineDemo />
+				<DialogDemo />
+				<WidthDemo />
 				<OptionsDemo />
 				<HardwareInputDemo />
 			</Stack>
@@ -61,11 +64,13 @@ function BasicDemo() {
 		<Box>
 			<Typography variant="h2" gutterBottom>Basic use</Typography>
 			<Typography variant="subtitle1" gutterBottom>
-				The value is controlled with <Code>value</Code> and <Code>onChange</Code>. With <Code>onSubmit</Code>
-				{" "}
-				the component renders its own form: pressing Enter or a <Code>type="submit"</Code> button in{" "}
-				<Code>actions</Code>{" "}
-				submits the code. Enter does nothing while the submit button is disabled, the same as in any HTML form.
+				The value is controlled with <Code>value</Code> and{" "}
+				<Code>onChange</Code>. Tap the field to open the keypad; it closes when the field loses the focus, on
+				Escape and on Enter. <Code>action</Code>{" "}
+				renders a control inside the field at its right edge, typically the <Code>type="submit"</Code>{" "}
+				button. With <Code>onSubmit</Code>{" "}
+				the component renders its own form: pressing Enter or the submit button submits the code. Enter does
+				nothing while the submit button is disabled, the same as in any HTML form.
 			</Typography>
 			<Demo source={source} id="code-field-basic">
 				<Box p={2}>
@@ -78,7 +83,7 @@ function BasicDemo() {
 								setSubmitted(code);
 								setCode("");
 							}}
-							actions={
+							action={
 								<Button type="submit" variant="contained" disabled={!code}>
 									Continue
 								</Button>
@@ -106,6 +111,7 @@ function VerifyDemo() {
 	const [checking, setChecking] = useState(false);
 	const [invalid, setInvalid] = useState(false);
 	const [opened, setOpened] = useState(false);
+	const [autoFocus, setAutoFocus] = useState(false);
 
 	return (
 		<Box>
@@ -113,51 +119,97 @@ function VerifyDemo() {
 			<Typography variant="subtitle1" gutterBottom>
 				The component doesn't check codes itself; the app owns that state. The recommended pattern: disable the
 				component while the check runs, clear the code when it fails and show why in{" "}
-				<Code>helperText</Code>, then clear the error on the next keypress. If the field had the focus, it gets
-				it back after the check, so a scanner can type the next code right away. The demo accepts{" "}
+				<Code>helperText</Code>, then clear the error on the next keypress. Tapping the action keeps the focus
+				in the field, so after a failed check the field gets the focus back and the keypad opens again for the
+				next attempt. The keypad opens below the helper text, so the error stays visible. The demo accepts{" "}
 				<Code>1234</Code>.
 			</Typography>
 			<Demo source={source} id="code-field-verify">
-				<Box p={2}>
+				<Stack spacing={2} p={2}>
 					<DemoSource for="#code-field-verify">
+						<Card>
+							<CardHeader title="Pick up your parcel" subheader="Enter your pickup code." />
+							<CardContent>
+								<CodeField
+									label="Pickup code"
+									value={code}
+									onChange={value => {
+										setCode(value);
+										setInvalid(false); // the error goes away on the next keypress
+									}}
+									onSubmit={async () => {
+										setChecking(true); // disables the component during the check
+										const valid = await checkCode(code);
+										setChecking(false);
+										setCode(""); // the next attempt starts empty
+										setInvalid(!valid);
+										setOpened(valid);
+									}}
+									disabled={checking}
+									error={invalid}
+									helperText={checking
+										? "Checking code…"
+										: invalid
+										? "Invalid code. Please try again."
+										: undefined}
+									autoFocus={autoFocus}
+									action={
+										<Button type="submit" variant="contained" disabled={checking || !code}>
+											Continue
+										</Button>
+									}
+								/>
+							</CardContent>
+						</Card>
+					</DemoSource>
+					{opened && <Alert severity="success">Code accepted, the door opens.</Alert>}
+				</Stack>
+				<DemoControls>
+					<DemoSwitch label="autoFocus" checked={autoFocus} onChange={setAutoFocus} />
+					<Typography variant="body2" color="text.secondary">
+						Focuses the field, which opens the keypad, when a start screen appears. Off by default here, so
+						the page doesn't scroll to this demo when it loads.
+					</Typography>
+				</DemoControls>
+			</Demo>
+		</Box>
+	);
+}
+
+function InlineDemo() {
+	const [pin, setPin] = useState("");
+
+	return (
+		<Box>
+			<Typography variant="h2" gutterBottom>Inline keypad</Typography>
+			<Typography variant="subtitle1" gutterBottom>
+				With <Code>keypad="inline"</Code>{" "}
+				the keypad stays below the field permanently and takes up its space, for screens that are only about
+				entering a code.
+			</Typography>
+			<Demo source={source} id="code-field-inline">
+				<Box p={2} maxWidth={400}>
+					<DemoSource for="#code-field-inline">
 						<CodeField
-							label="Code"
-							value={code}
-							onChange={value => {
-								setCode(value);
-								setInvalid(false); // the error goes away on the next keypress
-							}}
-							onSubmit={async () => {
-								setChecking(true); // disables the component during the check
-								const valid = await checkCode(code);
-								setChecking(false);
-								setCode(""); // the next attempt starts empty
-								setInvalid(!valid);
-								setOpened(valid);
-							}}
-							disabled={checking}
-							error={invalid}
-							helperText={checking
-								? "Checking code…"
-								: invalid
-								? "Invalid code. Please try again."
-								: "Please enter your code."}
-							actions={
-								<Button type="submit" variant="contained" disabled={checking || !code}>
-									Continue
+							keypad="inline"
+							label="PIN"
+							value={pin}
+							onChange={setPin}
+							onSubmit={() => setPin("")}
+							action={
+								<Button type="submit" variant="contained" disabled={!pin}>
+									Login
 								</Button>
 							}
 						/>
 					</DemoSource>
-					{opened && <Alert severity="success" sx={{mt: 2}}>Code accepted, the door opens.</Alert>}
 				</Box>
 			</Demo>
 		</Box>
 	);
 }
 
-function EmbeddingDemo() {
-	const [cardCode, setCardCode] = useState("");
+function DialogDemo() {
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [dialogCode, setDialogCode] = useState("");
 	const [checking, setChecking] = useState(false);
@@ -169,45 +221,22 @@ function EmbeddingDemo() {
 		setInvalid(false);
 	}
 
-	async function handleDialogSubmit() {
-		setChecking(true);
-		const valid = await checkCode(dialogCode);
-		setChecking(false);
-		if (valid) {
-			closeDialog();
-		}
-		else {
-			setDialogCode("");
-			setInvalid(true);
-		}
-	}
-
 	return (
 		<Box>
-			<Typography variant="h2" gutterBottom>Embedding</Typography>
+			<Typography variant="h2" gutterBottom>Dialog</Typography>
 			<Typography variant="subtitle1" gutterBottom>
-				Inside a <Code>Card</Code> or <Code>Paper</Code>, the component takes its width from the container. In a
-				{" "}
-				<Code>Dialog</Code>, <Code>actions</Code> holds <em>Cancel</em> and <em>Login</em>. The dialog uses{" "}
-				<Code>autoFocus</Code>: the field gets the focus when the dialog opens, so a scanner can type into it
-				right away. <em>Cancel</em>{" "}
-				is disabled during the check, so a late result can't show up in a closed dialog. The demos above show
-				the component directly on a page.
+				The pop-up keypad covers what is below the field, e.g. a dialog's actions. In a <Code>Dialog</Code>{" "}
+				with actions, the inline keypad avoids that. The pop-up keypad works in dialogs as well: it stays above
+				the dialog, and Escape first closes the keypad, then the dialog. <em>Cancel</em>{" "}
+				is disabled during the check, so a late result can't show up in a closed dialog.
 			</Typography>
-			<Demo source={source} id="code-field-embedding">
-				<Stack spacing={2} p={2}>
-					<DemoSource for="#code-field-embedding">
-						<Card>
-							<CardHeader title="Pick up your parcel" />
-							<CardContent>
-								<CodeField label="Pickup code" value={cardCode} onChange={setCardCode} />
-							</CardContent>
-						</Card>
-
+			<Demo source={source} id="code-field-dialog">
+				<Box p={2}>
+					<DemoSource for="#code-field-dialog">
 						<Button variant="outlined" onClick={() => setDialogOpen(true)}>
 							Open dialog
 						</Button>
-						<Dialog open={dialogOpen} onClose={checking ? undefined : closeDialog} maxWidth="sm" fullWidth>
+						<Dialog open={dialogOpen} onClose={checking ? undefined : closeDialog} maxWidth="xs" fullWidth>
 							<DialogTitle>Technician login</DialogTitle>
 							<DialogContent>
 								<CodeField
@@ -217,51 +246,58 @@ function EmbeddingDemo() {
 										setDialogCode(code);
 										setInvalid(false);
 									}}
-									onSubmit={handleDialogSubmit}
+									onSubmit={async () => {
+										setChecking(true);
+										const valid = await checkCode(dialogCode);
+										setChecking(false);
+										if (valid) {
+											closeDialog();
+										}
+										else {
+											setDialogCode("");
+											setInvalid(true);
+										}
+									}}
 									disabled={checking}
 									error={invalid}
-									helperText={invalid ? "Invalid PIN" : " "}
+									helperText={invalid ? "Invalid PIN" : undefined}
+									keypad="inline"
 									autoFocus
 									sx={{pt: 1}}
-									actions={
-										<>
-											<Button onClick={closeDialog} disabled={checking}>Cancel</Button>
-											<Button
-												type="submit"
-												variant="contained"
-												disabled={checking || !dialogCode}
-											>
-												Login
-											</Button>
-										</>
+									action={
+										<Button type="submit" variant="contained" disabled={checking || !dialogCode}>
+											Login
+										</Button>
 									}
 								/>
 							</DialogContent>
+							<DialogActions>
+								<Button onClick={closeDialog} disabled={checking}>Cancel</Button>
+							</DialogActions>
 						</Dialog>
 					</DemoSource>
-				</Stack>
+				</Box>
 			</Demo>
 		</Box>
 	);
 }
 
-type DemoWidth = "320px" | "480px" | "100%";
+type DemoWidth = "280px" | "480px" | "100%";
 
-function ResponsiveDemo() {
-	const [width, setWidth] = useState<DemoWidth>("320px");
+function WidthDemo() {
+	const [width, setWidth] = useState<DemoWidth>("280px");
 	const [code, setCode] = useState("");
 
 	return (
 		<Box>
-			<Typography variant="h2" gutterBottom>Responsive layout</Typography>
+			<Typography variant="h2" gutterBottom>Width</Typography>
 			<Typography variant="subtitle1" gutterBottom>
-				The layout follows the width of the container, not the viewport: the keypad sits to the right of the
-				field when there is room, and goes below it otherwise. This also works in a narrow dialog or column on a
-				wide screen.
+				The component takes its width from the container, and the pop-up keypad is always as wide as the field.
+				Below about 240 px, the keys would get smaller than 64 px, so the keypad keeps that minimum width.
 			</Typography>
-			<Demo source={source} id="code-field-responsive">
+			<Demo source={source} id="code-field-width">
 				<Box p={2}>
-					<DemoSource for="#code-field-responsive">
+					<DemoSource for="#code-field-width">
 						<Paper variant="outlined" sx={{width, p: 2}}>
 							<CodeField label="Code" value={code} onChange={setCode} />
 						</Paper>
@@ -275,7 +311,7 @@ function ResponsiveDemo() {
 						onChange={(_, value: DemoWidth | null) => value && setWidth(value)}
 						aria-label="Container width"
 					>
-						<ToggleButton value="320px">320 px</ToggleButton>
+						<ToggleButton value="280px">280 px</ToggleButton>
 						<ToggleButton value="480px">480 px</ToggleButton>
 						<ToggleButton value="100%">100 %</ToggleButton>
 					</ToggleButtonGroup>
@@ -293,102 +329,42 @@ const GERMAN_LABELS: Record<CodeFieldLabel, string> = {
 	keypad: "Tastenfeld",
 };
 
-function PopupDemo() {
-	const [code, setCode] = useState("");
-	const [checking, setChecking] = useState(false);
-	const [invalid, setInvalid] = useState(false);
-	const [opened, setOpened] = useState(false);
-	const [autoFocus, setAutoFocus] = useState(false);
-
-	return (
-		<Box>
-			<Typography variant="h2" gutterBottom>Pop-up keypad</Typography>
-			<Typography variant="subtitle1" gutterBottom>
-				With <Code>keypad="popup"</Code>{" "}
-				the keypad opens in a pop-up below the field when the field is tapped, and <Code>actions</Code>{" "}
-				go next to the field. This keeps start screens clean. The keypad closes when the field loses the focus,
-				on Escape and on Enter. It doesn't open on focus alone: a kiosk screen can use <Code>autoFocus</Code>
-				{" "}
-				for scanners without covering the screen with the keypad. The demo accepts <Code>1234</Code>.
-			</Typography>
-			<Demo source={source} id="code-field-popup">
-				<Stack spacing={2} p={2}>
-					<DemoSource for="#code-field-popup">
-						<Card>
-							<CardHeader title="Pick up your parcel" subheader="Enter your pickup code or scan it." />
-							<CardContent>
-								<CodeField
-									keypad="popup"
-									autoFocus={autoFocus}
-									label="Pickup code"
-									value={code}
-									onChange={value => {
-										setCode(value);
-										setInvalid(false);
-									}}
-									onSubmit={async () => {
-										setChecking(true);
-										const valid = await checkCode(code);
-										setChecking(false);
-										setCode("");
-										setInvalid(!valid);
-										setOpened(valid);
-									}}
-									disabled={checking}
-									error={invalid}
-									helperText={invalid ? "Invalid code. Please try again." : undefined}
-									actions={
-										<Button
-											type="submit"
-											variant="contained"
-											size="large"
-											disabled={checking || !code}
-										>
-											Continue
-										</Button>
-									}
-								/>
-							</CardContent>
-						</Card>
-					</DemoSource>
-					{opened && <Alert severity="success">Code accepted, the door opens.</Alert>}
-				</Stack>
-				<DemoControls>
-					<DemoSwitch label="autoFocus" checked={autoFocus} onChange={setAutoFocus} />
-					<Typography variant="body2" color="text.secondary">
-						Recommended for kiosk start screens: the field has the focus without the keypad being open, and
-						gets it back after each check, even when <em>Continue</em>{" "}
-						was tapped. Off by default here, so the page doesn't scroll to this demo when it loads.
-					</Typography>
-				</DemoControls>
-			</Demo>
-		</Box>
-	);
-}
+type DemoAction = "none" | "button" | "icon";
 
 function OptionsDemo() {
 	const [code, setCode] = useState("");
+	const [keypad, setKeypad] = useState<"popup" | "inline">("popup");
+	const [actionType, setActionType] = useState<DemoAction>("button");
 	const [maxLength, setMaxLength] = useState<number>();
 	const [disabled, setDisabled] = useState(false);
 	const [masked, setMasked] = useState(true);
 	const [revealable, setRevealable] = useState(true);
 	const [softKeyboard, setSoftKeyboard] = useState(false);
 	const [german, setGerman] = useState(false);
-	const [keypad, setKeypad] = useState<"inline" | "popup">("inline");
+
+	const action = actionType == "button"
+		? <Button type="submit" variant="contained" disabled={!code}>Continue</Button>
+		: actionType == "icon"
+		? (
+			<IconButton type="submit" color="primary" disabled={!code} aria-label="Enter">
+				<KeyboardReturnIcon />
+			</IconButton>
+		)
+		: undefined;
 
 	return (
 		<Box>
 			<Typography variant="h2" gutterBottom>Options</Typography>
 			<Typography variant="subtitle1" gutterBottom>
 				<Code>keypad</Code>{" "}
-				places the keypad next to the field (<Code>inline</Code>, the default) or in a pop-up (<Code>
-					popup
-				</Code>). <Code>maxLength</Code> disables the digit keys once the code is complete. <Code>masked</Code>
-				{" "}
+				shows the keypad in a pop-up (<Code>popup</Code>, the default) or permanently below the field (<Code>
+					inline
+				</Code>). <Code>action</Code> can be any control, e.g. a button or an icon button.{" "}
+				<Code>maxLength</Code> disables the digit keys once the code is complete. <Code>masked</Code>{" "}
 				(default on) hides the code like a password, and <Code>revealable</Code>{" "}
 				(default on) adds a toggle to show it. A revealed code is masked again when the value is emptied, so it
 				doesn't stay revealed for the next person. <Code>softKeyboard</Code>{" "}
-				(default off) lets the field open the OS soft keyboard. <Code>labels</Code>{" "}
+				(default off) lets the field open the OS soft keyboard, e.g. on a tablet. <Code>labels</Code>{" "}
 				overrides the English key and toggle labels, typically with the app's own translations.
 			</Typography>
 			<Demo source={source} id="code-field-options">
@@ -398,12 +374,14 @@ function OptionsDemo() {
 							label="Code"
 							value={code}
 							onChange={setCode}
+							onSubmit={() => setCode("")}
+							action={action}
+							keypad={keypad}
 							maxLength={maxLength}
 							disabled={disabled}
 							masked={masked}
 							revealable={revealable}
 							softKeyboard={softKeyboard}
-							keypad={keypad}
 							labels={german ? (key => GERMAN_LABELS[key]) : undefined}
 						/>
 					</DemoSource>
@@ -413,10 +391,33 @@ function OptionsDemo() {
 						<TextField
 							select
 							size="small"
+							label="keypad"
+							value={keypad}
+							onChange={e => setKeypad(e.target.value as "popup" | "inline")}
+							sx={{minWidth: 120}}
+						>
+							<MenuItem value="popup">popup</MenuItem>
+							<MenuItem value="inline">inline</MenuItem>
+						</TextField>
+						<TextField
+							select
+							size="small"
+							label="action"
+							value={actionType}
+							onChange={e => setActionType(e.target.value as DemoAction)}
+							sx={{minWidth: 120}}
+						>
+							<MenuItem value="none">none</MenuItem>
+							<MenuItem value="button">button</MenuItem>
+							<MenuItem value="icon">icon button</MenuItem>
+						</TextField>
+						<TextField
+							select
+							size="small"
 							label="maxLength"
 							value={maxLength ?? ""}
 							onChange={e => setMaxLength(e.target.value ? Number(e.target.value) : undefined)}
-							sx={{minWidth: 140}}
+							sx={{minWidth: 120}}
 						>
 							<MenuItem value="">none</MenuItem>
 							<MenuItem value="4">4</MenuItem>
@@ -427,11 +428,6 @@ function OptionsDemo() {
 						<DemoSwitch label="masked" checked={masked} onChange={setMasked} />
 						<DemoSwitch label="revealable" checked={revealable} onChange={setRevealable} />
 						<DemoSwitch label="softKeyboard" checked={softKeyboard} onChange={setSoftKeyboard} />
-						<DemoSwitch
-							label="popup keypad"
-							checked={keypad == "popup"}
-							onChange={checked => setKeypad(checked ? "popup" : "inline")}
-						/>
 						<DemoSwitch label="German labels" checked={german} onChange={setGerman} />
 					</Stack>
 				</DemoControls>
@@ -463,18 +459,18 @@ function HardwareInputDemo() {
 
 	return (
 		<Box>
-			<Typography variant="h2" gutterBottom>Hardware input</Typography>
+			<Typography variant="h2" gutterBottom>Hardware keyboard</Typography>
 			<Typography variant="subtitle1" gutterBottom>
-				The keypad is an extra input method, not the only one. Click into the field, type on your keyboard and
-				tap keys on the keypad in between: the keys don't take the focus, so typing continues in the field and
-				Enter still submits. A barcode scanner that ends a scan with Enter submits the same way. Here the code
-				isn't masked, so you can see which input went where.
+				The keypad is an extra input method, not the only one, e.g. for a technician with a laptop. Click into
+				the field, type on your keyboard and tap keys on the keypad in between: the keys don't take the focus,
+				so the keypad stays open, typing continues in the field and Enter still submits. Here the code isn't
+				masked, so you can see which input went where.
 			</Typography>
 			<Demo source={source} id="code-field-hardware">
 				<Box p={2}>
 					<DemoSource for="#code-field-hardware">
 						<CodeField
-							label="Item code"
+							label="Code"
 							value={code}
 							onChange={setCode}
 							onSubmit={() => {

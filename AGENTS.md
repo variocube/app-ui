@@ -189,20 +189,22 @@ Many Input components wrap MUI components with enhancements:
   `demo/code-field/`. Design decisions worth knowing before changing it:
   - It is controlled and does not check codes: the app disables it while checking and sets `error`/`helperText`.
     Brute-force protection (lockout after failed attempts) is deliberately the backend's job (issue #92).
-  - With `onSubmit` it renders its own `<form>`, so Enter submits natively and does nothing while the app's submit
-    button is disabled. Without `onSubmit`, Enter submits the enclosing form.
-  - Keypad keys and the reveal toggle must never take the focus (`preventDefault` on `mousedown`), otherwise a
-    barcode scanner or hardware keyboard types into nothing after a tap. As a fallback, a key tap also focuses the
-    field (unless `softKeyboard` is set). For the same reason, a field that had the focus gets it back when it is
-    enabled again after a check: disabling a focused input blurs it.
-  - The layout depends on the component's own width (measured with a `ResizeObserver`), not the viewport: below
-    32rem the keypad goes below the field and `actions` below the keypad, so it also works in a narrow dialog.
-  - `keypad="popup"` shows the keypad in a MUI `Popper` below the field and puts `actions` next to the field. It
-    opens on a tap into the field, deliberately not on focus: kiosk screens use `autoFocus` for scanners, so a
-    focus-triggered keypad would always be open. It closes on blur, Escape (without closing an enclosing dialog),
-    Enter and when disabled; taps while disabled are ignored. The `Popper` is anchored to the whole row, so it
-    never covers actions that wrapped below the field, and portaled with `zIndex.modal + 1`, so it works inside a
-    `Dialog`. Its default `tooltip` role is replaced, because a tooltip must not contain buttons.
+  - `keypad="popup"` (default) shows the keypad in a MUI `Popper` below the field, as wide as the field, while the
+    field has the focus. It closes on blur, Escape (without closing an enclosing dialog), Enter and submit, and when
+    disabled; a tap into the focused field reopens it, taps while disabled are ignored. The `Popper` is anchored to
+    the whole `TextField`, so it never covers the helper text (e.g. "Invalid code"), and portaled with
+    `zIndex.modal + 1`, so it works inside a `Dialog`. Its default `tooltip` role is replaced, because a tooltip
+    must not contain buttons. It covers whatever is below the field, so dialogs with actions use `keypad="inline"`,
+    which keeps the keypad permanently below the field.
+  - Opening on focus is fine for kiosks: their browsers have no OS soft keyboard, and scanners and NFC readers don't
+    type into form fields (they arrive as separate events), so nothing else needs the focus.
+  - Keypad keys, the reveal toggle and `action` must never take the focus (`preventDefault` on `mousedown`):
+    otherwise a tap closes the pop-up, and a hardware keyboard types into nothing. As a fallback, a key tap also
+    focuses the field (unless `softKeyboard` is set). A field that had the focus gets it back, and the pop-up
+    reopens, when it is enabled again after a check: disabling a focused input blurs it.
+  - `action` renders inside the field at the right edge (end adornment, after the reveal toggle), typically the
+    `type="submit"` button. With `onSubmit` the component renders its own `<form>`, so Enter submits natively and
+    does nothing while the submit button is disabled. Without `onSubmit`, Enter submits the enclosing form.
   - Labels default to English and are overridden with `labels`: app-ui ships no translations, and kiosk apps switch
     the language at runtime through their own localization, so a navigator-based default would not follow it.
   - `type="password"` is safe on the kiosk: there is no "Save password?" prompt on either kiosk stack. The current

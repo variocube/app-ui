@@ -1,10 +1,21 @@
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import {Box, Button, IconButton, InputAdornment, Paper, Popper, SxProps, TextField, Theme} from "@mui/material";
+import {
+	Box,
+	Button,
+	IconButton,
+	InputAdornment,
+	Paper,
+	Popper,
+	PopperProps,
+	SxProps,
+	TextField,
+	Theme,
+} from "@mui/material";
 import {InputBaseComponentProps} from "@mui/material/InputBase";
 import {unstable_useId as useId, useForkRef} from "@mui/material/utils";
 import * as React from "react";
-import {FormEvent, ReactNode, Ref, RefObject, useEffect, useLayoutEffect, useRef, useState} from "react";
+import {FormEvent, ReactNode, Ref, useEffect, useRef, useState} from "react";
 import {Labels} from "../localization";
 
 export type CodeFieldLabel = "clear" | "delete" | "showCode" | "hideCode" | "keypad";
@@ -20,11 +31,6 @@ const DEFAULT_LABELS: Record<CodeFieldLabel, string> = {
 const DIGITS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
 /**
- * Below this container width, the keypad goes below the field.
- */
-const NARROW_WIDTH_REM = 32;
-
-/**
  * Three keys of 64px plus two gaps.
  */
 const KEYPAD_MIN_WIDTH = 3 * 64 + 2 * 8;
@@ -36,13 +42,12 @@ export interface CodeFieldProps {
 	value: string;
 
 	/**
-	 * Called with the new code, for keypad taps as well as for input from a hardware keyboard,
-	 * barcode scanner or keypad driver.
+	 * Called with the new code, for keypad taps as well as for input from a hardware keyboard.
 	 */
 	onChange: (value: string) => void;
 
 	/**
-	 * Called when the code is submitted with Enter or a `type="submit"` button in `actions`.
+	 * Called when the code is submitted with Enter or a `type="submit"` button as `action`.
 	 * When set, the component renders its own `<form>`, so it must not be placed inside another form.
 	 * Without it, Enter submits the enclosing form, if any.
 	 *
@@ -52,20 +57,19 @@ export interface CodeFieldProps {
 	onSubmit?: () => void;
 
 	/**
-	 * Buttons, e.g. *Cancel* and a `type="submit"` *Continue*. With the inline keypad they go below the
-	 * field, or below the keypad when it goes below the field. With the pop-up keypad they go next to the field.
+	 * A control rendered inside the field at its right edge, typically a `type="submit"` *Continue* button.
+	 * Tapping it keeps the focus in the field, so the field gets the focus back, and the keypad opens again,
+	 * after a failed check.
 	 */
-	actions?: ReactNode;
+	action?: ReactNode;
 
 	/**
-	 * Where the keypad is shown:
-	 * - `inline` (default): next to the field, or below it when the container is narrow.
-	 * - `popup`: in a pop-up below the field, opened by tapping the field. The screen shows only the field and
-	 *   `actions`, which go next to it. The pop-up closes when the field loses the focus, on Escape and on Enter.
-	 *   It doesn't open on focus alone, so `autoFocus` keeps the field ready for a scanner without covering the
-	 *   screen with the keypad.
+	 * How the keypad is shown:
+	 * - `popup` (default): in a pop-up below the field, as wide as the field, while the field has the focus.
+	 *   It closes when the field loses the focus, on Escape and on Enter; tapping the field opens it again.
+	 * - `inline`: always below the field, taking up its space.
 	 */
-	keypad?: "inline" | "popup";
+	keypad?: "popup" | "inline";
 
 	/**
 	 * The maximum length of the code. The digit keys are disabled once it is reached.
@@ -93,14 +97,13 @@ export interface CodeFieldProps {
 	revealable?: boolean;
 
 	/**
-	 * Lets the field open the OS soft keyboard on focus. Default: `false`, because the keypad
-	 * replaces it on touch terminals.
+	 * Lets the field open the OS soft keyboard on focus, e.g. on a tablet. Default: `false`, because the
+	 * keypad replaces it.
 	 */
 	softKeyboard?: boolean;
 
 	/**
-	 * Focuses the field on mount and whenever it becomes enabled again, so that a barcode scanner
-	 * or hardware keyboard can type into it right away.
+	 * Focuses the field on mount, which opens the pop-up keypad, and whenever it becomes enabled again.
 	 */
 	autoFocus?: boolean;
 
@@ -127,9 +130,9 @@ export interface CodeFieldProps {
 }
 
 /**
- * A field for entering an access code on a touch terminal: a text field with an on-screen keypad
- * next to it, or below it when its container is narrow. A hardware keyboard, barcode scanner or keypad
- * driver can type into the field as well.
+ * A field for entering an access code on a touch terminal, with an on-screen keypad that pops up below the
+ * field while it has the focus, or stays below it permanently. A hardware keyboard can type into the field
+ * as well.
  *
  * The component draws no surface of its own, so it can be placed in a `Card`, `Paper`, `Dialog` or
  * directly on a page.
@@ -139,8 +142,8 @@ export function CodeField(props: CodeFieldProps) {
 		value,
 		onChange,
 		onSubmit,
-		actions,
-		keypad = "inline",
+		action,
+		keypad = "popup",
 		disabled = false,
 		masked = true,
 		revealable = true,
@@ -160,9 +163,7 @@ export function CodeField(props: CodeFieldProps) {
 	} = props;
 	const maxLength = props.maxLength ?? inputProps?.maxLength;
 
-	const rootRef = useRef<HTMLElement>(null);
-	const narrow = useNarrow(rootRef);
-
+	const fieldRef = useRef<HTMLDivElement>(null);
 	const inputRef = useRef<HTMLInputElement>(null);
 	const handleInputRef = useForkRef(inputRef, inputRefProp);
 
@@ -192,6 +193,8 @@ export function CodeField(props: CodeFieldProps) {
 		const input = inputRef.current;
 		if (input && !disabled && (autoFocus || (focusedRef.current && !isFocusElsewhere(input)))) {
 			input.focus();
+			// Opened explicitly: a browser that keeps the focus on a disabled input fires no focus event here.
+			setPopupOpen(true);
 		}
 	}, [autoFocus, disabled]);
 
@@ -200,10 +203,16 @@ export function CodeField(props: CodeFieldProps) {
 	function handleKey(next: string) {
 		onChange(next);
 		if (!softKeyboard) {
-			// Keep typing from a scanner or hardware keyboard going into the field. With the soft keyboard
-			// enabled, focusing would open it on every tap, so the focus is only kept, not moved.
+			// Keep the focus in the field, as a fallback should a tap have moved it: the pop-up closes without
+			// it, and a hardware keyboard would type into nothing. With the soft keyboard enabled, focusing would
+			// open it on every tap, so the focus is only kept, not moved.
 			inputRef.current?.focus();
 		}
+	}
+
+	function handleFocus() {
+		focusedRef.current = true;
+		setPopupOpen(true);
 	}
 
 	function handleBlur(event: React.FocusEvent<HTMLInputElement>) {
@@ -214,10 +223,10 @@ export function CodeField(props: CodeFieldProps) {
 	}
 
 	function handleFieldClick(event: React.MouseEvent) {
-		// A tap on the reveal toggle doesn't open the keypad. Neither does a tap while disabled: the disabled
-		// toggle lets taps through to the field, and the keypad would open once the field is enabled again.
-		if (popup && !disabled && !(event.target as Element).closest("button")) {
-			// The keypad closes when the field loses the focus, so the field must have it.
+		// Opens the keypad again after Escape or Enter closed it. A tap on the reveal toggle or the action
+		// doesn't open it. Neither does a tap while disabled: the disabled toggle lets taps through to the field,
+		// and the keypad would open once the field is enabled again.
+		if (!disabled && !(event.target as Element).closest("button")) {
 			inputRef.current?.focus();
 			setPopupOpen(true);
 		}
@@ -237,6 +246,7 @@ export function CodeField(props: CodeFieldProps) {
 	function handleSubmit(event: FormEvent) {
 		event.preventDefault();
 		if (onSubmit && !disabled) {
+			setPopupOpen(false);
 			onSubmit();
 		}
 	}
@@ -256,41 +266,23 @@ export function CodeField(props: CodeFieldProps) {
 
 	return (
 		<Box
-			ref={rootRef}
 			component={onSubmit ? "form" : "div"}
 			onSubmit={onSubmit ? handleSubmit : undefined}
 			className={className}
 			sx={[
-				{
+				{touchAction: "manipulation"},
+				!popup && {
+					display: "flex",
+					flexDirection: "column",
 					gap: 2,
-					touchAction: "manipulation",
+					// keeps the keys at their minimum size of 64px in a shrinking container
+					minWidth: KEYPAD_MIN_WIDTH,
 				},
-				popup
-					? {
-						display: "flex",
-						flexWrap: "wrap",
-						alignItems: "flex-start",
-					}
-					: {
-						display: "grid",
-						alignItems: "start",
-						// keeps the keys at their minimum size of 64px (three keys plus two gaps) in a shrinking container
-						minWidth: KEYPAD_MIN_WIDTH,
-					},
-				popup ? {} : narrow
-					? {
-						gridTemplateColumns: "minmax(0, 1fr)",
-						gridTemplateAreas: actions ? `"field" "keypad" "actions"` : `"field" "keypad"`,
-					}
-					: {
-						gridTemplateColumns: "minmax(0, 1fr) minmax(0, min(24rem, 50%))",
-						gridTemplateRows: actions ? "auto 1fr" : undefined,
-						gridTemplateAreas: actions ? `"field keypad" "actions keypad"` : `"field keypad"`,
-					},
 				...(Array.isArray(sx) ? sx : [sx]),
 			]}
 		>
 			<TextField
+				ref={fieldRef}
 				id={id}
 				name={name}
 				label={label}
@@ -299,7 +291,7 @@ export function CodeField(props: CodeFieldProps) {
 				error={error}
 				value={value}
 				onChange={e => onChange(e.target.value)}
-				onFocus={() => focusedRef.current = true}
+				onFocus={handleFocus}
 				onBlur={handleBlur}
 				onKeyDown={handleKeyDown}
 				disabled={disabled}
@@ -314,33 +306,39 @@ export function CodeField(props: CodeFieldProps) {
 					"aria-controls": showPopup ? keypadId : inputProps?.["aria-controls"],
 				}}
 				InputProps={{
-					onClick: handleFieldClick,
-					endAdornment: showToggle && (
+					onClick: popup ? handleFieldClick : undefined,
+					endAdornment: (showToggle || action) && (
 						<InputAdornment position="end">
-							<IconButton
-								edge="end"
-								onMouseDown={preventFocusChange}
-								onClick={() => setRevealed(prev => !prev)}
-								disabled={disabled}
-								aria-label={labels(revealed ? "hideCode" : "showCode")}
-							>
-								{revealed ? <VisibilityOffIcon /> : <VisibilityIcon />}
-							</IconButton>
+							{showToggle && (
+								<IconButton
+									edge={action ? undefined : "end"}
+									onMouseDown={preventFocusChange}
+									onClick={() => setRevealed(prev => !prev)}
+									disabled={disabled}
+									aria-label={labels(revealed ? "hideCode" : "showCode")}
+								>
+									{revealed ? <VisibilityOffIcon /> : <VisibilityIcon />}
+								</IconButton>
+							)}
+							{action && (
+								<Box onMouseDown={preventFocusChange} sx={{display: "flex", ml: 1, mr: -0.75}}>
+									{action}
+								</Box>
+							)}
 						</InputAdornment>
 					),
 				}}
-				sx={popup ? {flex: "1 1 12rem", minWidth: 0} : {gridArea: "field"}}
 			/>
 			{popup
 				? (
 					<Popper
 						open={showPopup}
-						// The whole row, so that the keypad doesn't cover actions that wrapped below the field
-						anchorEl={rootRef.current}
+						// The whole text field, so that the keypad doesn't cover the helper text, e.g. an error.
+						anchorEl={fieldRef.current}
 						placement="bottom-start"
 						// MUI's default `tooltip` role must not contain interactive controls
 						role="presentation"
-						modifiers={[{name: "offset", options: {offset: [0, 8]}}]}
+						modifiers={POPPER_MODIFIERS}
 						// above an enclosing dialog
 						sx={{zIndex: theme => theme.zIndex.modal + 1}}
 					>
@@ -348,31 +346,35 @@ export function CodeField(props: CodeFieldProps) {
 							elevation={8}
 							// a tap between the keys must not take the focus from the field either
 							onMouseDown={preventFocusChange}
-							sx={{
-								p: 1,
-								width: `min(18rem, calc(100vw - 16px))`,
-								minWidth: KEYPAD_MIN_WIDTH + 16,
-								touchAction: "manipulation",
-							}}
+							sx={{p: 1, minWidth: KEYPAD_MIN_WIDTH + 16, touchAction: "manipulation"}}
 						>
 							{keypadElement}
 						</Paper>
 					</Popper>
 				)
-				: <Box sx={{gridArea: "keypad"}}>{keypadElement}</Box>}
-			{actions && (
-				<Box
-					sx={popup
-						// vertically centered next to the input, which is 56px high
-						? {display: "flex", alignItems: "center", flexWrap: "wrap", gap: 1, minHeight: 56}
-						: {gridArea: "actions", display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: 1}}
-				>
-					{actions}
-				</Box>
-			)}
+				: keypadElement}
 		</Box>
 	);
 }
+
+type PopperModifier = NonNullable<PopperProps["modifiers"]>[number];
+
+const POPPER_MODIFIERS: PopperModifier[] = [
+	{name: "offset", options: {offset: [0, 8]}},
+	{
+		// makes the pop-up as wide as the field
+		name: "sameWidth",
+		enabled: true,
+		phase: "beforeWrite",
+		requires: ["computeStyles"],
+		fn: ({state}) => {
+			state.styles.popper.width = `${state.rects.reference.width}px`;
+		},
+		effect: ({state}) => {
+			state.elements.popper.style.width = `${(state.elements.reference as HTMLElement).offsetWidth}px`;
+		},
+	},
+];
 
 interface KeypadProps {
 	id: string | undefined;
@@ -448,48 +450,6 @@ function KeypadButton({onClick, disabled, text, children}: KeypadButtonProps) {
 }
 
 /**
- * Returns whether the element is narrower than `NARROW_WIDTH_REM`. The first measurement happens before
- * the first paint, so the wide layout never flashes on a narrow screen; later resizes apply a frame later.
- */
-function useNarrow(ref: RefObject<HTMLElement>) {
-	const [narrow, setNarrow] = useState(false);
-
-	useLayoutEffect(() => {
-		const element = ref.current;
-		if (!element) {
-			return;
-		}
-		function update() {
-			const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-			setNarrow(element!.getBoundingClientRect().width < NARROW_WIDTH_REM * rem);
-		}
-		update();
-		if (typeof ResizeObserver != "undefined") {
-			// Switching the layout changes the height of the observed element. Doing that within the
-			// notification makes the browser report a "ResizeObserver loop" error, so it waits a frame.
-			let frame: number | undefined;
-			const observer = new ResizeObserver(() => {
-				if (frame === undefined) {
-					frame = requestAnimationFrame(() => {
-						frame = undefined;
-						update();
-					});
-				}
-			});
-			observer.observe(element);
-			return () => {
-				observer.disconnect();
-				if (frame !== undefined) {
-					cancelAnimationFrame(frame);
-				}
-			};
-		}
-	}, [ref]);
-
-	return narrow;
-}
-
-/**
  * Returns whether another control than `input` has the focus. A container of the input, e.g. the
  * root of a `Dialog` that took the focus while the input was disabled, doesn't count.
  */
@@ -499,8 +459,8 @@ function isFocusElsewhere(input: HTMLInputElement) {
 }
 
 /**
- * Prevents a tap or click from moving the focus away from the field, which would make
- * a scanner or hardware keyboard type into nothing and Enter stop submitting.
+ * Prevents a tap or click from moving the focus away from the field, which would close the pop-up keypad
+ * and make a hardware keyboard type into nothing.
  */
 function preventFocusChange(event: React.MouseEvent) {
 	event.preventDefault();

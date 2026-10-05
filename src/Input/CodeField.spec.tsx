@@ -27,7 +27,8 @@ describe("CodeField", () => {
 
 	function render(props: Partial<CodeFieldProps> = {}) {
 		act(() => {
-			ReactDOM.render(<CodeField value="" onChange={onChange} {...props} />, container);
+			// The inline keypad renders its keys into the container. The pop-up keypad is tested separately.
+			ReactDOM.render(<CodeField value="" onChange={onChange} keypad="inline" {...props} />, container);
 		});
 	}
 
@@ -221,18 +222,32 @@ describe("CodeField", () => {
 		expect(group?.contains(getKey("1"))).toBe(true);
 	});
 
-	test("renders the label, helper text and actions", () => {
+	test("renders the label, helper text and action", () => {
 		render({
 			label: "Code",
 			helperText: "Invalid code",
 			error: true,
-			actions: <button type="button">Continue</button>,
+			action: <button type="submit">Continue</button>,
 		});
 		expect(container.querySelector("label")?.textContent).toContain("Code");
 		expect(container.querySelector("label")?.getAttribute("for")).toBe(getInput().id);
 		expect(container.textContent).toContain("Invalid code");
 		expect(getInput().getAttribute("aria-invalid")).toBe("true");
-		expect(getKey("Continue")).toBeTruthy();
+	});
+
+	test("renders the action inside the field, after the reveal toggle", () => {
+		render({action: <button type="submit">Continue</button>});
+		const inputRoot = getInput().parentElement!;
+		const buttons = Array.from(inputRoot.querySelectorAll("button"));
+		expect(buttons.map(button => button.getAttribute("aria-label") ?? button.textContent))
+			.toEqual(["Show code", "Continue"]);
+	});
+
+	test("prevents the action from taking the focus", () => {
+		render({action: <button type="submit">Continue</button>});
+		const event = new MouseEvent("mousedown", {bubbles: true, cancelable: true});
+		getKey("Continue").dispatchEvent(event);
+		expect(event.defaultPrevented).toBe(true);
 	});
 
 	test("applies inputProps and inputRef to the input", () => {
@@ -347,97 +362,12 @@ describe("CodeField", () => {
 		});
 	});
 
-	describe("layout", () => {
-		let width: number;
-		let observers: { callback: ResizeObserverCallback; disconnect: jest.Mock }[];
-		let frames: Map<number, FrameRequestCallback>;
-		let nextFrame: number;
-
-		beforeEach(() => {
-			width = 800;
-			observers = [];
-			frames = new Map();
-			nextFrame = 1;
-			jest.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(() => ({width} as DOMRect));
-			(window as any).ResizeObserver = class {
-				disconnect = jest.fn();
-				constructor(callback: ResizeObserverCallback) {
-					observers.push({callback, disconnect: this.disconnect});
-				}
-				observe() {}
-			};
-			jest.spyOn(window, "requestAnimationFrame").mockImplementation(callback => {
-				frames.set(nextFrame, callback);
-				return nextFrame++;
-			});
-			jest.spyOn(window, "cancelAnimationFrame").mockImplementation(id => frames.delete(id));
-		});
-
-		afterEach(() => {
-			jest.restoreAllMocks();
-			delete (window as any).ResizeObserver;
-		});
-
-		function getAreas() {
-			return getComputedStyle(container.firstElementChild!).gridTemplateAreas;
-		}
-
-		function resize(newWidth: number) {
-			width = newWidth;
-			act(() => observers.forEach(observer => observer.callback([], {} as ResizeObserver)));
-		}
-
-		function runFrames() {
-			act(() => {
-				const callbacks = Array.from(frames.values());
-				frames.clear();
-				callbacks.forEach(callback => callback(0));
-			});
-		}
-
-		test("puts the keypad next to the field and the actions below the field in a wide container", () => {
-			render({actions: <button type="submit">Continue</button>});
-			expect(getAreas()).toBe(`"field keypad" "actions keypad"`);
-		});
-
-		test("puts the keypad below the field and the actions below the keypad in a narrow container", () => {
-			width = 400;
-			render({actions: <button type="submit">Continue</button>});
-			expect(getAreas()).toBe(`"field" "keypad" "actions"`);
-		});
-
-		test("has no actions area without actions", () => {
-			render();
-			expect(getAreas()).toBe(`"field keypad"`);
-		});
-
-		test("switches the layout a frame after a resize", () => {
-			render();
-			resize(400);
-			expect(getAreas()).toBe(`"field keypad"`);
-
-			runFrames();
-			expect(getAreas()).toBe(`"field" "keypad"`);
-
-			resize(800);
-			runFrames();
-			expect(getAreas()).toBe(`"field keypad"`);
-		});
-
-		test("disconnects the observer and cancels a pending frame on unmount", () => {
-			render();
-			resize(400);
-			expect(frames.size).toBe(1);
-
-			act(() => {
-				ReactDOM.unmountComponentAtNode(container);
-			});
-			expect(observers[0].disconnect).toHaveBeenCalled();
-			expect(frames.size).toBe(0);
-		});
-	});
-
 	describe("popup keypad", () => {
+		function renderPopup(props: Partial<CodeFieldProps> = {}) {
+			// no `keypad`, so that the default is tested
+			render({keypad: undefined, ...props});
+		}
+
 		function getKeypad() {
 			return document.querySelector<HTMLElement>("[role=group]");
 		}
@@ -452,9 +382,8 @@ describe("CodeField", () => {
 			return key;
 		}
 
-		function open() {
+		function focus() {
 			act(() => getInput().focus());
-			click(getInput());
 		}
 
 		function keyDown(key: string) {
@@ -463,32 +392,25 @@ describe("CodeField", () => {
 			});
 		}
 
-		test("shows no keypad until the field is tapped", () => {
-			render({keypad: "popup"});
+		test("shows no keypad until the field has the focus", () => {
+			renderPopup();
 			expect(getKeypad()).toBeNull();
 
-			open();
+			focus();
 			expect(getKeypad()).not.toBeNull();
 			expect(container.contains(getKeypad())).toBe(false);
 			expect(getInput().getAttribute("aria-controls")).toBe(getKeypad()!.id);
 		});
 
-		test("does not open on focus alone", () => {
-			render({keypad: "popup", autoFocus: true});
+		test("opens with autoFocus", () => {
+			renderPopup({autoFocus: true});
 			expect(document.activeElement).toBe(getInput());
-			expect(getKeypad()).toBeNull();
-			expect(getInput().hasAttribute("aria-controls")).toBe(false);
-		});
-
-		test("does not open on a tap on the reveal toggle", () => {
-			render({keypad: "popup", value: "1"});
-			click(getToggle()!);
-			expect(getKeypad()).toBeNull();
+			expect(getKeypad()).not.toBeNull();
 		});
 
 		test("types into the field and stays open", () => {
-			render({keypad: "popup", value: "1"});
-			open();
+			renderPopup({value: "1"});
+			focus();
 			click(getPopupKey("2"));
 			expect(onChange).toHaveBeenCalledWith("12");
 			expect(getKeypad()).not.toBeNull();
@@ -496,16 +418,16 @@ describe("CodeField", () => {
 		});
 
 		test("prevents a tap between the keys from taking the focus", () => {
-			render({keypad: "popup"});
-			open();
+			renderPopup();
+			focus();
 			const event = new MouseEvent("mousedown", {bubbles: true, cancelable: true});
 			getKeypad()!.parentElement!.dispatchEvent(event);
 			expect(event.defaultPrevented).toBe(true);
 		});
 
 		test("closes when the field loses the focus", () => {
-			render({keypad: "popup"});
-			open();
+			renderPopup();
+			focus();
 			act(() => getInput().blur());
 			expect(getKeypad()).toBeNull();
 		});
@@ -515,12 +437,12 @@ describe("CodeField", () => {
 			act(() => {
 				ReactDOM.render(
 					<div onKeyDown={onParentKeyDown}>
-						<CodeField value="" onChange={onChange} keypad="popup" />
+						<CodeField value="" onChange={onChange} />
 					</div>,
 					container,
 				);
 			});
-			open();
+			focus();
 			keyDown("Escape");
 			expect(getKeypad()).toBeNull();
 			expect(onParentKeyDown).not.toHaveBeenCalled();
@@ -530,58 +452,97 @@ describe("CodeField", () => {
 		});
 
 		test("closes on Enter", () => {
-			render({keypad: "popup"});
-			open();
+			renderPopup();
+			focus();
 			keyDown("Enter");
 			expect(getKeypad()).toBeNull();
 		});
 
-		test("closes when disabled and stays closed when enabled again", () => {
-			render({keypad: "popup"});
-			open();
-			render({keypad: "popup", disabled: true});
+		test("closes on submit", () => {
+			renderPopup({value: "12", onSubmit: jest.fn()});
+			focus();
+			act(() => {
+				Simulate.submit(container.querySelector("form")!);
+			});
 			expect(getKeypad()).toBeNull();
+		});
 
-			render({keypad: "popup", disabled: false});
+		test("opens again on a tap into the focused field", () => {
+			renderPopup();
+			focus();
+			keyDown("Escape");
+			click(getInput());
+			expect(getKeypad()).not.toBeNull();
+		});
+
+		test("does not open again on a tap on the reveal toggle or the action", () => {
+			renderPopup({value: "1", action: <button type="submit">Continue</button>});
+			focus();
+			keyDown("Escape");
+			click(getToggle()!);
+			click(getKey("Continue"));
+			expect(getKeypad()).toBeNull();
+		});
+
+		test("closes when disabled", () => {
+			renderPopup();
+			focus();
+			renderPopup({disabled: true});
+			expect(getKeypad()).toBeNull();
+		});
+
+		test("opens again when the field gets the focus back after being disabled", () => {
+			renderPopup();
+			focus();
+			renderPopup({disabled: true});
+			// jsdom keeps the focus on the disabled input, like some browsers, so no focus event follows
+			renderPopup({disabled: false});
+			expect(document.activeElement).toBe(getInput());
+			expect(getKeypad()).not.toBeNull();
+		});
+
+		test("does not open on a tap while disabled, not even once enabled again", () => {
+			renderPopup({disabled: true, value: "12"});
+			// the disabled toggle lets taps through to the field
+			click(getToggle()!.parentElement!);
+			click(getInput());
+			renderPopup({disabled: false, value: "12"});
 			expect(getKeypad()).toBeNull();
 		});
 
 		test("does not render the keypad in a tooltip", () => {
-			render({keypad: "popup"});
-			open();
+			renderPopup();
+			focus();
 			expect(document.querySelector("[role=tooltip]")).toBeNull();
 			expect(getKeypad()!.closest("[role=presentation]")).not.toBeNull();
 		});
+	});
 
-		test("focuses the field when the keypad opens", () => {
-			render({keypad: "popup"});
-			click(getInput());
-			expect(getKeypad()).not.toBeNull();
-			expect(document.activeElement).toBe(getInput());
-		});
-
-		test("does not open on a tap while disabled, not even once enabled again", () => {
-			render({keypad: "popup", disabled: true, value: "12"});
-			// the disabled toggle lets taps through to the field
-			click(getToggle()!.parentElement!);
-			click(getInput());
-			render({keypad: "popup", disabled: false, value: "12"});
-			expect(getKeypad()).toBeNull();
-		});
-
-		test("renders the actions next to the field", () => {
-			render({keypad: "popup", actions: <button type="submit">Continue</button>});
+	describe("inline keypad", () => {
+		test("shows the keypad below the field without the focus", () => {
+			render({keypad: "inline"});
 			const root = container.firstElementChild!;
-			expect(getComputedStyle(root).display).toBe("flex");
 			expect(root.children).toHaveLength(2);
-			expect(root.children[1].textContent).toBe("Continue");
+			expect(root.children[1].getAttribute("role")).toBe("group");
+			expect(getComputedStyle(root).flexDirection).toBe("column");
+			expect(getInput().hasAttribute("aria-controls")).toBe(false);
+		});
+
+		test("keeps the keypad open on Escape and blur", () => {
+			render({keypad: "inline"});
+			act(() => getInput().focus());
+			act(() => {
+				Simulate.keyDown(getInput(), {key: "Escape"});
+			});
+			act(() => getInput().blur());
+			expect(container.querySelector("[role=group]")).not.toBeNull();
 		});
 	});
 
 	test("works as a controlled component", () => {
 		function Controlled() {
 			const [value, setValue] = useState("");
-			return <CodeField value={value} onChange={setValue} masked={false} />;
+			return <CodeField value={value} onChange={setValue} masked={false} keypad="inline" />;
 		}
 		act(() => {
 			ReactDOM.render(<Controlled />, container);
