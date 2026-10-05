@@ -316,7 +316,12 @@ function KeypadButton({onClick, disabled, text, children}: KeypadButtonProps) {
 			onMouseDown={preventFocusChange}
 			onClick={onClick}
 			disabled={disabled}
-			sx={{minWidth: 0, minHeight: 64, fontSize: text ? "1rem" : "1.5rem"}}
+			sx={[
+				{minWidth: 0, minHeight: 64, fontSize: "1.5rem"},
+				// Translated labels like "Entfernen" must fit narrow keys: hyphenate where the language is
+				// known, otherwise wrap instead of clipping.
+				text === true && {fontSize: "0.875rem", px: 0.5, hyphens: "auto", overflowWrap: "anywhere"},
+			]}
 		>
 			{children}
 		</Button>
