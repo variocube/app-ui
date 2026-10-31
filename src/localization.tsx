@@ -145,7 +145,6 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
 			try {
 				const messages = await load(language);
 				if (messages) {
-					document.documentElement.setAttribute("lang", language);
 					return {messages, language};
 				}
 			} catch (error) {
@@ -190,11 +189,22 @@ export function createLocalizationContext<T extends MessageObject>(options: Loca
 			}
 		}, []);
 
-		// Loads the best matching language and stores the result in `loaded`.
+		// Loads the best matching language and stores the result in `loaded`. The result of a language the provider has
+		// moved past is ignored: it may settle after a later language's (a slow load, or the next candidate tried after
+		// a failed one) and would otherwise replace it on screen and in `<html lang>`.
 		useEffect(() => {
+			let cancelled = false;
 			loadBestMatch([language, ...getNavigatorLanguages(), fallback])
-				.then(setLoaded)
+				.then(result => {
+					if (!cancelled) {
+						document.documentElement.setAttribute("lang", result.language);
+						setLoaded(result);
+					}
+				})
 				.catch(error => console.error(error));
+			return () => {
+				cancelled = true;
+			};
 		}, [language]);
 
 		// Update context value when `loaded` or `overrides` change.
