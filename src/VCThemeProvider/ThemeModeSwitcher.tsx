@@ -4,12 +4,19 @@ import {FormControlLabel, FormGroup, Switch} from "@mui/material";
 import React, {useCallback} from "react";
 import {usePaletteMode} from "./VCThemeProvider";
 
+/**
+ * Switches between light and dark mode. Renders nothing when only one mode is supported (a branding v2 with one mode).
+ */
 export const ThemeModeSwitcher = () => {
-	const {mode, setMode} = usePaletteMode();
+	const {mode, setMode, supportedModes} = usePaletteMode();
 
 	const handleModeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		setMode(e.currentTarget.checked ? "light" : "dark");
 	}, [setMode]);
+
+	if (supportedModes.length < 2) {
+		return null;
+	}
 
 	return (
 		<FormGroup sx={{display: "flex", flexDirection: "row"}}>
