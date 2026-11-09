@@ -35,7 +35,7 @@ export function UserNav(props: Props) {
 	} = props;
 
 	const theme = useTheme();
-	const {mode, setMode} = usePaletteMode();
+	const {mode, setMode, supportedModes} = usePaletteMode();
 
 	const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
@@ -82,7 +82,7 @@ export function UserNav(props: Props) {
 						<ListItemText>{changePassword ?? "Change password"}</ListItemText>
 					</MenuItem>
 				)}
-				{showDarkModeSwitch && (
+				{showDarkModeSwitch && supportedModes.length > 1 && (
 					<MenuItem onClick={() => setMode((mode === "dark") ? "light" : "dark")}>
 						<ListItemIcon>
 							<DarkModeIcon fontSize="small" />

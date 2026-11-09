@@ -1,3 +1,4 @@
+export * from "./brandingV2";
 export * from "./code-colors";
 export * from "./JetbrainsMonoFont";
 export * from "./RobotoFont";

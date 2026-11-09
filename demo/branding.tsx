@@ -1,5 +1,5 @@
 import {createContext, useContext} from "react";
-import {Branding} from "../src";
+import {Branding, BrandingV2} from "../src";
 
 export type SetBrandingFunc = (branding: Branding) => void;
 
@@ -13,4 +13,14 @@ export function useSetBranding() {
 		throw new Error("Could not find branding context. Are you missing a BrandingProvider in your component tree?");
 	}
 	return context;
+}
+
+export type SetBrandingV2Func = (branding: BrandingV2 | undefined) => void;
+
+const BrandingV2Context = createContext<SetBrandingV2Func>(() => void 0);
+
+export const BrandingV2Provider = BrandingV2Context.Provider;
+
+export function useSetBrandingV2() {
+	return useContext(BrandingV2Context);
 }

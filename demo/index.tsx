@@ -16,6 +16,7 @@ import {
 	SvgIconComponent,
 	Tab,
 	ViewList,
+	Wallpaper,
 	Widgets,
 } from "@mui/icons-material";
 import AlertIcon from "@mui/icons-material/NotificationImportant";
@@ -41,6 +42,7 @@ import {
 	AppShell,
 	AuditIcon,
 	Branding,
+	BrandingV2,
 	ContainerLayout,
 	ContainerSettingsContextProvider,
 	ContainerWidthControl,
@@ -53,7 +55,8 @@ import {
 	VCThemeProvider,
 } from "../src";
 import {AuditDemo} from "./audit";
-import {BrandingProvider} from "./branding";
+import {BrandingProvider, BrandingV2Provider} from "./branding";
+import {BrandingV2Demo} from "./branding-v2";
 import {CodeFieldDemo} from "./code-field";
 import {ConfirmDemo} from "./confirm";
 import {ContentTableDemo} from "./content-table";
@@ -83,6 +86,7 @@ function Demo() {
 				<Route path={rootPath} element={<App />}>
 					<Route index element={<Start />} />
 					<Route path="theme" element={<Theme />} />
+					<Route path="branding-v2" element={<BrandingV2Demo />} />
 					<Route path="localization" element={<Localization />} />
 					<Route path="date-pickers" element={<Pickers />} />
 					<Route path="content-table" element={<ContentTableDemo />} />
@@ -120,20 +124,23 @@ function Demo() {
 
 function App() {
 	const [branding, setBranding] = useState<Branding>();
+	const [brandingV2, setBrandingV2] = useState<BrandingV2>();
 
 	return (
 		<BrandingProvider value={setBranding}>
-			<VCThemeProvider branding={branding}>
-				<AppShell
-					appName={"UI docs"}
-					sideNav={<SideNav />}
-					topNav={<TopNav />}
-					sideNavWidth={240}
-					footer={<Footer />}
-				>
-					<Outlet />
-				</AppShell>
-			</VCThemeProvider>
+			<BrandingV2Provider value={setBrandingV2}>
+				<VCThemeProvider branding={branding} brandingV2={brandingV2}>
+					<AppShell
+						appName={"UI docs"}
+						sideNav={<SideNav />}
+						topNav={<TopNav />}
+						sideNavWidth={240}
+						footer={<Footer />}
+					>
+						<Outlet />
+					</AppShell>
+				</VCThemeProvider>
+			</BrandingV2Provider>
 		</BrandingProvider>
 	);
 }
@@ -176,6 +183,7 @@ interface MenuItemProps {
 
 const MenuItems: MenuItemProps[] = [
 	{text: "Theme", to: `theme`, icon: Palette},
+	{text: "Branding v2", to: "branding-v2", icon: Wallpaper},
 	{text: "Localization", to: "localization", icon: Language},
 	{text: "Date & time pickers", to: "date-pickers", icon: CalendarMonth},
 	{text: "Content table", to: "content-table", icon: ViewList},

@@ -243,10 +243,32 @@ VCThemeProvider (theme + branding)
 `VCThemeProvider` provides:
 
 - Light/dark mode with system preference detection
-- Custom primary/secondary colors (mode-specific)
-- Custom logo support (mode-specific URLs)
+- Branding v1 (`branding`): custom primary/secondary colors, logos (mode-specific URLs), raw MUI theme options
+- Branding v2 (`brandingV2`, wins over v1): a structured theme per mode from Center (variocube/center#518), built by
+  the pure `createBrandingV2Theme` in `src/VCThemeProvider/brandingV2.ts`
 - Roboto and JetBrains Mono font integration
 - Deep MUI theme merging with `deepmerge`
+
+Both versions build on `createVariocubeThemeOptions` (`variocubeTheme.ts`). v1's output must stay unchanged for
+existing consumers. The README (_Theming with `VCThemeProvider`_) documents v2: the card vs. floating paper rules,
+the mode selection (stored choice → system preference unless `ignoreSystemMode` → `defaultMode`), the anchor helper
+and previews. Design decisions worth knowing before changing it:
+
+- Card rules (no shadow without `shadows`, border with `outlines`) apply to a `Paper` of elevation 1..3 only, through
+  a `MuiPaper` `styleOverrides.root` function reading `ownerState`. Floating paper (elevation ≥ 4, and the
+  `Autocomplete` list, which floats at elevation 1) keeps its shadow and gets the surface composited opaque over the
+  page background: a translucent or edgeless menu or dialog is unreadable. `theme.shadows` is untouched, so
+  switches and the like keep theirs (buttons: see below). A raised `Card` (elevation 8) gets the card rules back
+  through a `MuiCard` override, an inline `Autocomplete` list with elevation 0 stays plain paper, and with outlines
+  the `Accordion`'s `::before` divider is hidden (the borders already separate stacked accordions).
+- Without shadows, contained buttons, button groups and FABs are flat too (product decision): `disableElevation`
+  default props, so an app's `MuiButton` `defaultProps` merge with it, and a `MuiFab` style override, since `Fab` has
+  no such prop. Menus, dialogs and popovers keep their shadows.
+- A function override (not class selectors) so an app's `sx` or `styled` overrides of a card still win.
+- `selectPaletteMode` is used for v1 too, with both modes supported and default `light`, which is exactly v1's old rule.
+- `setMode` stores `null` (follow the system again) for v1 when the choice equals the automatic mode, as before; for
+  v2 only when it equals a known system preference, so an explicit choice survives a branding with another
+  `defaultMode`.
 
 ### Type-Safe Localization
 
