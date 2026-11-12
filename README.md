@@ -88,6 +88,13 @@ The theme is the Variocube look except for what the branding sets:
 - **Buttons** — without `shadows`, contained buttons, button groups and floating action buttons are flat as well
   (`disableElevation` as a default prop of `MuiButton` and `MuiButtonGroup`, which merges with an app's own defaults
   such as `size`; a style override for `MuiFab`). Menus, dialogs and popovers keep their shadows.
+- **Button corner radius** — the optional `buttonBorderRadius` (`number | null`) sets the corners of `Button`,
+  `ButtonGroup`, `ToggleButton` and `ToggleButtonGroup` alone; text fields, chips, alerts, cards, dialogs and menus keep
+  `borderRadius`, and `Fab` is round already. `0..24` is that many px; above 24 is fully rounded (`999`, a pill at any
+  height); unset, `null` or invalid (negative, not a number) follows `borderRadius`. Groups round only their outer
+  corners. It is a style override of the `root` of those four components and merges with an app's own object-style
+  `styleOverrides.root`; an app that passes a **function** as `styleOverrides.root` for one of them replaces it, so
+  that component loses the branding's button radius.
 - MUI's dark-mode elevation gradient is off, as in the Variocube look, so the surface is exactly the branding's
   colour.
 
