@@ -15,6 +15,11 @@ import {
 export interface BrandingV2 {
 	/** Corner radius in px for buttons, cards, fields and the like, 0..24. */
 	borderRadius: number;
+	/**
+	 * Corner radius of buttons alone (`Button`, `ButtonGroup`, `ToggleButton`, `ToggleButtonGroup`): 0..24 px, or
+	 * 999 for fully rounded (pill) buttons at any height. Absent or `null`, buttons follow `borderRadius`.
+	 */
+	buttonBorderRadius?: number | null;
 	/** Whether cards and tiles cast a shadow. Without, they are flat. */
 	shadows: boolean;
 	/** Whether cards and tiles have an outline in the mode's divider colour, independent of `shadows`. */
@@ -122,6 +127,8 @@ export function selectPaletteMode({supportedModes, defaultMode, storedMode, syst
 
 const DEFAULT_BORDER_RADIUS = 4; // MUI's own, which the Variocube look uses
 const MAX_BORDER_RADIUS = 24;
+/** A radius above half the height of a box is clamped by CSS, so this is a pill at any height. */
+const FULLY_ROUNDED = 999;
 
 /**
  * Elevation from which a `Paper` is taken to float over the content (MUI: app bar 4, snackbar 6, menu and popover 8,
@@ -135,7 +142,8 @@ const HEX_WITH_OPTIONAL_ALPHA = /^#[0-9a-f]{6}([0-9a-f]{2})?$/i;
 
 /**
  * The theme options of a branding v2 in a mode. It is the Variocube look, except for what the branding sets:
- * - `shape.borderRadius`;
+ * - `shape.borderRadius`, and with `buttonBorderRadius` the corner radius of buttons, button groups, toggle buttons and
+ *   toggle button groups (0..24 px, anything above is fully rounded; invalid or unset: they follow `shape.borderRadius`);
  * - `palette.primary`, `palette.secondary`, `palette.background.default` (the mode's background) and
  *   `palette.background.paper` (the mode's surface, possibly translucent);
  * - on cards (a `Paper` of the elevation variant with elevation 1..3, including `Card`, also when `raised`): no
@@ -166,6 +174,45 @@ export function createBrandingV2ThemeOptions(branding: BrandingV2, mode: Palette
 		outlines: branding.outlines === true,
 		floatingSurface,
 	};
+	const buttonRadius = sanitizeButtonBorderRadius(branding.buttonBorderRadius);
+	const components: ThemeOptions["components"] = {
+		...base.components,
+		MuiPaper: {
+			styleOverrides: {
+				root: ({ownerState, theme}) => paperStyles(ownerState, theme, surfaces),
+			},
+		},
+		MuiCard: {
+			styleOverrides: {
+				// A raised card is a Paper of elevation 8, which would make it floating: it stays a card.
+				root: ({ownerState, theme}) =>
+					ownerState.raised
+						? {backgroundColor: theme.palette.background.paper, ...cardStyles(theme, surfaces)}
+						: {},
+			},
+		},
+		MuiAutocomplete: {
+			styleOverrides: {
+				// The list floats, although it is a Paper of elevation 1: look like MUI's own, but opaque. An app
+				// that renders it inline with elevation 0, or gives it a floating elevation, gets the Paper rules.
+				paper: ({elevation = 1, theme}: { elevation?: number; theme: Pick<Theme, "shadows"> }) =>
+					elevation >= 1 && elevation < FLOATING_ELEVATION
+						? {backgroundColor: floatingSurface, boxShadow: theme.shadows[elevation], border: "none"}
+						: {},
+			},
+		},
+		...(surfaces.shadows ? {} : FLAT_CONTROLS),
+		...(surfaces.outlines
+			? {
+				MuiAccordion: {
+					styleOverrides: {
+						// Outlined accordions are separated by their border: MUI's divider line would double it.
+						root: {"&::before": {display: "none"}},
+					},
+				},
+			}
+			: {}),
+	};
 	return {
 		...base,
 		shape: {borderRadius: sanitizeBorderRadius(branding.borderRadius)},
@@ -173,45 +220,20 @@ export function createBrandingV2ThemeOptions(branding: BrandingV2, mode: Palette
 			...base.palette,
 			background: {default: background, paper: surface},
 		},
-		components: {
-			...base.components,
-			MuiPaper: {
-				styleOverrides: {
-					root: ({ownerState, theme}) => paperStyles(ownerState, theme, surfaces),
-				},
-			},
-			MuiCard: {
-				styleOverrides: {
-					// A raised card is a Paper of elevation 8, which would make it floating: it stays a card.
-					root: ({ownerState, theme}) =>
-						ownerState.raised
-							? {backgroundColor: theme.palette.background.paper, ...cardStyles(theme, surfaces)}
-							: {},
-				},
-			},
-			MuiAutocomplete: {
-				styleOverrides: {
-					// The list floats, although it is a Paper of elevation 1: look like MUI's own, but opaque. An app
-					// that renders it inline with elevation 0, or gives it a floating elevation, gets the Paper rules.
-					paper: ({elevation = 1, theme}: { elevation?: number; theme: Pick<Theme, "shadows"> }) =>
-						elevation >= 1 && elevation < FLOATING_ELEVATION
-							? {backgroundColor: floatingSurface, boxShadow: theme.shadows[elevation], border: "none"}
-							: {},
-				},
-			},
-			...(surfaces.shadows ? {} : FLAT_CONTROLS),
-			...(surfaces.outlines
-				? {
-					MuiAccordion: {
-						styleOverrides: {
-							// Outlined accordions are separated by their border: MUI's divider line would double it.
-							root: {"&::before": {display: "none"}},
-						},
-					},
-				}
-				: {}),
-		},
+		components: buttonRadius === undefined ? components : mergeThemeOptions({components}, {
+			components: buttonRadiusOverrides(buttonRadius),
+		}).components,
 	};
+}
+
+/**
+ * The button radius as style overrides of the root of each button component, so it merges with the app's own overrides
+ * of those roots (objects merge; an app's function replaces it, as with any style override). The groups' inner corners
+ * stay square: MUI zeroes them with `.MuiButtonGroup-firstButton` and the like, which outrank a button's own rule.
+ */
+function buttonRadiusOverrides(borderRadius: number): ThemeOptions["components"] {
+	const root = {styleOverrides: {root: {borderRadius}}};
+	return {MuiButton: root, MuiButtonGroup: root, MuiToggleButton: root, MuiToggleButtonGroup: root};
 }
 
 /**
@@ -287,6 +309,14 @@ function sanitizeBorderRadius(radius: unknown) {
 		return DEFAULT_BORDER_RADIUS;
 	}
 	return Math.min(MAX_BORDER_RADIUS, Math.max(0, Math.round(radius)));
+}
+
+/** `undefined` (buttons follow `borderRadius`) unless a finite, non-negative number: 0..24 px, above that fully rounded. */
+function sanitizeButtonBorderRadius(radius: unknown): number | undefined {
+	if (typeof radius != "number" || !Number.isFinite(radius) || radius < 0) {
+		return undefined;
+	}
+	return radius > MAX_BORDER_RADIUS ? FULLY_ROUNDED : Math.round(radius);
 }
 
 /** An opaque `#rrggbb` of a `#rrggbb[aa]` colour laid over an opaque `#rrggbb` one. */

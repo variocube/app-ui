@@ -105,6 +105,37 @@ describe("the branding v2 theme", () => {
 		expect(raised.components?.MuiFab).toBeUndefined();
 	});
 
+	describe("the button radius", () => {
+		const BUTTONS = ["MuiButton", "MuiButtonGroup", "MuiToggleButton", "MuiToggleButtonGroup"] as const;
+		const rootOf = (theme: Theme, name: typeof BUTTONS[number]) => theme.components?.[name]?.styleOverrides?.root;
+
+		test("unset, null or invalid: buttons follow the radius, no override", () => {
+			for (const buttonBorderRadius of [undefined, null, -1, NaN, Infinity, "8" as never]) {
+				const theme = createBrandingV2Theme(branding({buttonBorderRadius}), "light");
+				BUTTONS.forEach(name => expect(theme.components?.[name]).toBeUndefined());
+			}
+		});
+
+		test.each([[0, 0], [16, 16], [24, 24], [25, 999], [999, 999]])(
+			"%d is %d px on buttons, button groups, toggle buttons and toggle button groups only",
+			(buttonBorderRadius, expected) => {
+				const theme = createBrandingV2Theme(branding({borderRadius: 4, buttonBorderRadius}), "light");
+				BUTTONS.forEach(name => expect(rootOf(theme, name)).toEqual({borderRadius: expected}));
+				expect(theme.shape.borderRadius).toBe(4);
+				expect(theme.components?.MuiAutocomplete).toBeDefined();
+				expect(theme.components?.MuiChip).toBeUndefined();
+			},
+		);
+
+		test("merges with the app's button style overrides and the flat defaults", () => {
+			const theme = createBrandingV2Theme(branding({shadows: false, buttonBorderRadius: 12}), "light", {
+				components: {MuiButton: {styleOverrides: {root: {textTransform: "none"}}}},
+			});
+			expect(rootOf(theme, "MuiButton")).toEqual({borderRadius: 12, textTransform: "none"});
+			expect(theme.components?.MuiButton?.defaultProps).toEqual({disableElevation: true});
+		});
+	});
+
 	test("with outlines a card has a border in the divider colour, independent of the shadows", () => {
 		const outlined = createBrandingV2Theme(branding({outlines: true, shadows: true}), "dark");
 		expect(paperStyles(outlined, {elevation: 2})).toEqual({
