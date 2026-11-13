@@ -63,6 +63,38 @@ describe("the branding v2 theme", () => {
 		},
 	);
 
+	test("a secondary that is absent or null is the mode's primary, an invalid one the Variocube colour", () => {
+		const secondaryOf = (secondary?: string | null) =>
+			createBrandingV2Theme(branding({light: {...LIGHT, secondary}}), "light").palette.secondary.main;
+		expect(secondaryOf(undefined)).toBe(LIGHT.primary);
+		expect(secondaryOf(null)).toBe(LIGHT.primary);
+		expect(secondaryOf("red")).toBe("#009dd8");
+	});
+
+	describe("alerts", () => {
+		function alertStyles(theme: Theme, ownerState: { severity?: "error" | "info"; variant?: string }): CSSObject {
+			const root = theme.components?.MuiAlert?.styleOverrides?.root as (props: unknown) => CSSObject;
+			return root({ownerState: {severity: "error", variant: "standard", ...ownerState}, theme});
+		}
+
+		test("with outlines an alert has a 1 px border in its severity's colour, not doubled on the outlined variant", () => {
+			const theme = createBrandingV2Theme(branding({outlines: true}), "light");
+			expect(alertStyles(theme, {severity: "error"}).border).toBe(`1px solid ${theme.palette.error.main}`);
+			expect(alertStyles(theme, {severity: "info"}).border).toBe(`1px solid ${theme.palette.info.main}`);
+			expect(alertStyles(theme, {variant: "outlined"})).not.toHaveProperty("border");
+			const without = createBrandingV2Theme(branding({outlines: false}), "light");
+			expect(alertStyles(without, {})).not.toHaveProperty("border");
+		});
+
+		test("with shadows an alert has the card shadow, without it none; the radius is the branding's", () => {
+			const shadowed = createBrandingV2Theme(branding({shadows: true}), "light");
+			expect(alertStyles(shadowed, {})).toMatchObject({boxShadow: shadowed.shadows[1], borderRadius: 8});
+			expect(alertStyles(createBrandingV2Theme(branding({shadows: false}), "light"), {})).not.toHaveProperty(
+				"boxShadow",
+			);
+		});
+	});
+
 	test("everything the branding does not set is the Variocube look of the mode", () => {
 		const options = createBrandingV2ThemeOptions(branding(), "dark");
 		expect(options.typography).toEqual(expect.objectContaining({h1: {fontSize: 46, fontWeight: 300}}));

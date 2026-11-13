@@ -3,6 +3,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import {
 	Box,
 	Button,
+	ButtonProps,
 	IconButton,
 	InputAdornment,
 	Paper,
@@ -71,6 +72,17 @@ export interface CodeFieldProps {
 	 * - `inline`: always below the field, taking up its space.
 	 */
 	keypad?: "popup" | "inline";
+
+	/**
+	 * The colour of the keypad's keys, a MUI button colour; `inherit` is the text colour. Default: `secondary`.
+	 */
+	keypadColor?: ButtonProps["color"];
+
+	/**
+	 * The height of every key of the keypad in px, e.g. to fit a small kiosk screen. The gaps between the keys stay
+	 * 8px; the keys' minimum width stays 64px. Default: 64.
+	 */
+	keypadKeyHeight?: number;
 
 	/**
 	 * The maximum length of the code. The digit keys are disabled once it is reached.
@@ -165,6 +177,8 @@ export function CodeField(props: CodeFieldProps) {
 		onSubmit,
 		action,
 		keypad = "popup",
+		keypadColor = "secondary",
+		keypadKeyHeight,
 		disabled = false,
 		masked = true,
 		revealable = true,
@@ -299,6 +313,8 @@ export function CodeField(props: CodeFieldProps) {
 			full={full}
 			disabled={disabled}
 			labels={labels}
+			color={keypadColor}
+			keyHeight={keypadKeyHeight}
 			onKey={handleKey}
 		/>
 	);
@@ -526,10 +542,12 @@ interface KeypadProps {
 	full: boolean;
 	disabled: boolean;
 	labels: Labels<CodeFieldLabel>;
+	color: ButtonProps["color"];
+	keyHeight: number | undefined;
 	onKey: (next: string) => void;
 }
 
-function Keypad({id, value, full, disabled, labels, onKey}: KeypadProps) {
+function Keypad({id, value, full, disabled, labels, color, keyHeight, onKey}: KeypadProps) {
 	return (
 		<Box
 			id={id}
@@ -544,19 +562,38 @@ function Keypad({id, value, full, disabled, labels, onKey}: KeypadProps) {
 			{DIGITS.map(digit => (
 				<KeypadButton
 					key={digit}
+					color={color}
+					keyHeight={keyHeight}
 					onClick={() => onKey(value + digit)}
 					disabled={disabled || full}
 				>
 					{digit}
 				</KeypadButton>
 			))}
-			<KeypadButton onClick={() => onKey("")} disabled={disabled || !value} text>
+			<KeypadButton
+				color={color}
+				keyHeight={keyHeight}
+				onClick={() => onKey("")}
+				disabled={disabled || !value}
+				text
+			>
 				{labels("clear")}
 			</KeypadButton>
-			<KeypadButton onClick={() => onKey(value + "0")} disabled={disabled || full}>
+			<KeypadButton
+				color={color}
+				keyHeight={keyHeight}
+				onClick={() => onKey(value + "0")}
+				disabled={disabled || full}
+			>
 				0
 			</KeypadButton>
-			<KeypadButton onClick={() => onKey(value.slice(0, -1))} disabled={disabled || !value} text>
+			<KeypadButton
+				color={color}
+				keyHeight={keyHeight}
+				onClick={() => onKey(value.slice(0, -1))}
+				disabled={disabled || !value}
+				text
+			>
 				{labels("delete")}
 			</KeypadButton>
 		</Box>
@@ -564,25 +601,29 @@ function Keypad({id, value, full, disabled, labels, onKey}: KeypadProps) {
 }
 
 interface KeypadButtonProps {
+	color: ButtonProps["color"];
+	keyHeight: number | undefined;
 	onClick: () => void;
 	disabled: boolean;
 	text?: boolean;
 	children: ReactNode;
 }
 
-function KeypadButton({onClick, disabled, text, children}: KeypadButtonProps) {
+function KeypadButton({color, keyHeight, onClick, disabled, text, children}: KeypadButtonProps) {
 	return (
 		<Button
 			type="button"
 			variant="outlined"
-			color="secondary"
+			color={color}
 			// Hardware keyboard users type digits directly, so the keys stay out of the tab order.
 			tabIndex={-1}
 			onMouseDown={preventFocusChange}
 			onClick={onClick}
 			disabled={disabled}
 			sx={[
-				{minWidth: 0, minHeight: 64, fontSize: "1.5rem"},
+				{minWidth: 0, minHeight: keyHeight ?? 64, fontSize: "1.5rem"},
+				// A given height is exact, also below what the label and MUI's padding need (default: grows with the label).
+				keyHeight !== undefined && {height: keyHeight, py: 0},
 				// Translated labels like "Entfernen" must fit narrow keys: hyphenate where the language is
 				// known, otherwise wrap instead of clipping.
 				text === true && {fontSize: "0.875rem", px: 0.5, hyphens: "auto", overflowWrap: "anywhere"},

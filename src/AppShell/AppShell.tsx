@@ -1,5 +1,5 @@
 import {AppBar, Box, Breakpoint, Drawer, IconButton, useMediaQuery, useTheme} from "@mui/material";
-import React, {PropsWithChildren, useEffect} from "react";
+import React, {PropsWithChildren, ReactNode, useEffect} from "react";
 import {MenuIcon} from "../icons";
 import {LayoutProvider} from "../layout";
 import {VCAppLogo} from "../logo/VCAppLogo";
@@ -12,6 +12,15 @@ interface AppShellProps {
 	sideNavFixed?: Breakpoint;
 	topNav?: JSX.Element | null | undefined;
 	footer?: JSX.Element | null | undefined;
+	/**
+	 * Shown in the top bar instead of the Variocube logo and the app name, in the same place. The caller sizes it.
+	 */
+	logo?: ReactNode;
+	/**
+	 * The background of the top bar, a palette path such as `background.default` or a CSS colour, applied opaque.
+	 * Default: the theme's `background.paper`.
+	 */
+	barBackground?: string;
 }
 
 export function AppShell(props: PropsWithChildren<AppShellProps>) {
@@ -23,6 +32,8 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
 		topNav,
 		sideNavFixed = "md",
 		footer,
+		logo,
+		barBackground,
 	} = props;
 
 	const [drawerOpen, setDrawerOpen, clearDrawerOpen, toggleDrawerOpen] = useFlag(false);
@@ -30,6 +41,16 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
 	const theme = useTheme();
 
 	const drawerPermanent = useMediaQuery(theme.breakpoints.up(sideNavFixed));
+	// The logo's place: in the flow beside a permanent drawer, else centred over the bar.
+	const logoPositionSx = {
+		py: 1,
+		...(!drawerPermanent && {
+			position: "absolute",
+			top: "50%",
+			left: "50%",
+			transform: "translate(-50%, -50%)",
+		}),
+	} as const;
 	useEffect(() => {
 		if (drawerPermanent) {
 			setDrawerOpen();
@@ -59,7 +80,8 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
 					sx={{
 						borderBottom: 1,
 						borderColor: "divider",
-						backgroundColor: "paper.elevation1",
+						// What the bar shows without `barBackground`: the Paper's default (`color="inherit"` sets none).
+						backgroundColor: barBackground ?? "background.paper",
 						color: "text.primary",
 						displayPrint: "none",
 					}}
@@ -87,18 +109,9 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
 								<MenuIcon />
 							</IconButton>
 						)}
-						<VCAppLogo
-							appName={drawerPermanent ? appName : undefined}
-							sx={{
-								py: 1,
-								...(!drawerPermanent && {
-									position: "absolute",
-									top: "50%",
-									left: "50%",
-									transform: "translate(-50%, -50%)",
-								}),
-							}}
-						/>
+						{logo !== undefined && logo !== null
+							? <Box sx={logoPositionSx}>{logo}</Box>
+							: <VCAppLogo appName={drawerPermanent ? appName : undefined} sx={logoPositionSx} />}
 						{topNav}
 						{!topNav && <Box />}
 					</Box>
@@ -123,7 +136,8 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
 									boxSizing: "border-box",
 								},
 								["& .MuiPaper-elevation0"]: {
-									backgroundColor: "paper.elevation1",
+									// what a permanent drawer (elevation 0) shows: the Paper's default
+									backgroundColor: "background.paper",
 								},
 							}}
 							open={drawerOpen}

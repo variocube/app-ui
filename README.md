@@ -56,9 +56,11 @@ serves side by side (variocube/center#518):
 ```ts
 const brandingV2: BrandingV2 = {
 	borderRadius: 8, // px, 0..24
+	buttonBorderRadius: null, // px, 0..24, or 999 for pills; null: buttons follow borderRadius
 	shadows: false, // cards and tiles cast a shadow
 	outlines: true, // cards and tiles have an outline in the mode's divider colour
 	defaultMode: "light",
+	// `secondary` may be left out or null: it is then the primary colour
 	light: {primary: "#00507a", secondary: "#b3261e", background: "#e8eef2", surface: "#ffffffcc", logoUrl: null},
 	dark: null, // light only
 	backgroundImage: {url: "https://example.com/hall.jpg", anchor: "bottom-left"},
@@ -74,7 +76,12 @@ The theme is the Variocube look except for what the branding sets:
 
 - `shape.borderRadius`, clamped to 0..24.
 - `palette.primary`, `palette.secondary`, `palette.background.default` (the mode's `background`) and
-  `palette.background.paper` (the mode's `surface`, which may be translucent: `#rrggbbaa`).
+  `palette.background.paper` (the mode's `surface`, which may be translucent: `#rrggbbaa`). A mode's `secondary` is
+  optional: absent or `null`, `palette.secondary` is the mode's primary colour. An invalid one (not `#rrggbb`) is a
+  mistake and gets the Variocube colour.
+- **Alerts** are drawn like cards, in their own colour: with `outlines` a `1px` border in the severity's colour (the
+  `outlined` variant has one already), with `shadows` the shadow of a card at elevation 1, and the branding's radius.
+  The `standard` variant keeps its tinted background, `filled` its solid one.
 - **Cards** — a `Paper` of the elevation variant with elevation 1 to 3, which includes `Card` (also `raised`),
   `Paper` and `Accordion` at their defaults — lose their shadow without `shadows` and get a `1px` border in
   `palette.divider` with `outlines`, which also hides the `Accordion` divider line. Use these defaults for branded

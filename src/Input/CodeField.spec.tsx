@@ -66,6 +66,30 @@ describe("CodeField", () => {
 		expect(keys).toEqual(["1", "2", "3", "4", "5", "6", "7", "8", "9", "Clear", "0", "Delete"]);
 	});
 
+	test("the keys are secondary, or in keypadColor", () => {
+		const keyClasses = () =>
+			Array.from(container.querySelectorAll("button"))
+				.filter(button => !button.hasAttribute("aria-label"))
+				.map(button => button.className);
+		render();
+		expect(keyClasses().every(classes => /Secondary/.test(classes))).toBe(true);
+		render({keypadColor: "inherit"});
+		expect(keyClasses()).toHaveLength(12);
+		expect(keyClasses().every(classes => /Inherit/.test(classes) && !/Secondary/.test(classes))).toBe(true);
+	});
+
+	test("the keys are 64px high, or keypadKeyHeight", () => {
+		const heights = () =>
+			Array.from(container.querySelectorAll("button"))
+				.filter(button => !button.hasAttribute("aria-label"))
+				.map(button => getComputedStyle(button).minHeight);
+		render();
+		expect(heights()).toEqual(Array(12).fill("64px"));
+		render({keypadKeyHeight: 48});
+		expect(heights()).toEqual(Array(12).fill("48px"));
+		expect(getComputedStyle(getKey("5")).height).toBe("48px");
+	});
+
 	test("appends the tapped digit", () => {
 		render({value: "12"});
 		click(getKey("3"));

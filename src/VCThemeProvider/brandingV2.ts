@@ -1,4 +1,4 @@
-import {createTheme, CSSObject, PaletteMode, PaperProps, Theme, ThemeOptions} from "@mui/material";
+import {AlertProps, createTheme, CSSObject, PaletteMode, PaperProps, Theme, ThemeOptions} from "@mui/material";
 import {
 	BACKGROUND,
 	createVariocubeThemeOptions,
@@ -35,7 +35,8 @@ export interface BrandingV2 {
 /** The colours and logo of one mode. Colours are `#rrggbb`, case-insensitive. */
 export interface BrandingV2Mode {
 	primary: string;
-	secondary: string;
+	/** Absent or `null`: the theme uses the mode's primary colour as the secondary one. */
+	secondary?: string | null;
 	/** The page background. */
 	background: string;
 	/** The background of cards and tiles: `#rrggbb` or, translucent so a background image shows through, `#rrggbbaa`. */
@@ -149,6 +150,8 @@ const HEX_WITH_OPTIONAL_ALPHA = /^#[0-9a-f]{6}([0-9a-f]{2})?$/i;
  * - on cards (a `Paper` of the elevation variant with elevation 1..3, including `Card`, also when `raised`): no
  *   shadow without `shadows`, and an outline in `palette.divider` with `outlines` (which also hides the `Accordion`
  *   divider line);
+ * - on alerts: like a card, in the severity's colour: a 1 px border in it with `outlines` (not on the `outlined`
+ *   variant, which has one), the card shadow (elevation 1) with `shadows`, and `shape.borderRadius`;
  * - without `shadows`, contained buttons, button groups and floating action buttons are flat as well.
  *
  * Floating paper (elevation 4 and more, and the `Autocomplete` list) keeps its shadow and is opaque: the surface
@@ -156,7 +159,7 @@ const HEX_WITH_OPTIONAL_ALPHA = /^#[0-9a-f]{6}([0-9a-f]{2})?$/i;
  * unreadable. A `Paper` with elevation 0 or the outlined variant is left as MUI draws it.
  *
  * Invalid input does not break the theme: a colour that is not `#rrggbb` (or `#rrggbbaa` for the surface) falls back
- * to the Variocube colour, the radius is clamped to 0..24, and a mode the branding does not set uses the Variocube
+ * to the Variocube colour (a secondary that is absent or `null` is not invalid: it is the mode's primary), the radius is clamped to 0..24, and a mode the branding does not set uses the Variocube
  * colours.
  */
 export function createBrandingV2ThemeOptions(branding: BrandingV2, mode: PaletteMode): ThemeOptions {
@@ -164,11 +167,12 @@ export function createBrandingV2ThemeOptions(branding: BrandingV2, mode: Palette
 	const background = sanitizeHex(palette?.background, OPAQUE_HEX, BACKGROUND[mode]);
 	const surface = sanitizeHex(palette?.surface, HEX_WITH_OPTIONAL_ALPHA, PAPER[mode]);
 	const floatingSurface = compositeOver(surface, background);
-	const base = createVariocubeThemeOptions(
-		mode,
-		sanitizeHex(palette?.primary, OPAQUE_HEX, DEFAULT_PRIMARY),
-		sanitizeHex(palette?.secondary, OPAQUE_HEX, DEFAULT_SECONDARY),
-	);
+	const primary = sanitizeHex(palette?.primary, OPAQUE_HEX, DEFAULT_PRIMARY);
+	// An absent secondary is the tenant's choice of none: it follows the primary. An invalid one is an error.
+	const secondary = palette?.secondary == null
+		? primary
+		: sanitizeHex(palette.secondary, OPAQUE_HEX, DEFAULT_SECONDARY);
+	const base = createVariocubeThemeOptions(mode, primary, secondary);
 	const surfaces: SurfaceRules = {
 		shadows: branding.shadows !== false,
 		outlines: branding.outlines === true,
@@ -189,6 +193,11 @@ export function createBrandingV2ThemeOptions(branding: BrandingV2, mode: Palette
 					ownerState.raised
 						? {backgroundColor: theme.palette.background.paper, ...cardStyles(theme, surfaces)}
 						: {},
+			},
+		},
+		MuiAlert: {
+			styleOverrides: {
+				root: ({ownerState, theme}) => alertStyles(ownerState, theme, surfaces),
 			},
 		},
 		MuiAutocomplete: {
@@ -292,6 +301,23 @@ function cardStyles(theme: Pick<Theme, "palette">, {shadows, outlines}: SurfaceR
 	return {
 		...(shadows ? {} : {boxShadow: "none"}),
 		...(outlines ? {border: `1px solid ${theme.palette.divider}`} : {}),
+	};
+}
+
+/**
+ * An alert drawn like a card (elevation 1) in its own colour: the severity's colour as the outline, the card shadow, the
+ * branding's radius. The `standard` variant keeps its tinted background; the `outlined` one has its border already.
+ */
+function alertStyles(
+	ownerState: Pick<AlertProps, "color" | "severity" | "variant">,
+	theme: Pick<Theme, "palette" | "shadows" | "shape">,
+	{shadows, outlines}: SurfaceRules,
+): CSSObject {
+	const severity = ownerState.color ?? ownerState.severity ?? "success";
+	return {
+		borderRadius: theme.shape.borderRadius,
+		...(shadows ? {boxShadow: theme.shadows[1]} : {}),
+		...(outlines && ownerState.variant != "outlined" ? {border: `1px solid ${theme.palette[severity].main}`} : {}),
 	};
 }
 
