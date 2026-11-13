@@ -622,11 +622,13 @@ function KeypadButton({color, keyHeight, onClick, disabled, text, children}: Key
 			disabled={disabled}
 			sx={[
 				{minWidth: 0, minHeight: keyHeight ?? 64, fontSize: "1.5rem"},
-				// A given height is exact, also below what the label and MUI's padding need (default: grows with the label).
+				// A given height is exact, also below what the label and MUI's padding need; the default grows with it.
 				keyHeight !== undefined && {height: keyHeight, py: 0},
 				// Translated labels like "Entfernen" must fit narrow keys: hyphenate where the language is
 				// known, otherwise wrap instead of clipping.
 				text === true && {fontSize: "0.875rem", px: 0.5, hyphens: "auto", overflowWrap: "anywhere"},
+				// A wrapped two-line label must fit a short key: 1.25 x 14px = 17.5px a line.
+				text === true && keyHeight !== undefined && {lineHeight: 1.25},
 			]}
 		>
 			{children}

@@ -77,7 +77,7 @@ describe("the branding v2 theme", () => {
 			return root({ownerState: {severity: "error", variant: "standard", ...ownerState}, theme});
 		}
 
-		test("with outlines an alert has a 1 px border in its severity's colour, not doubled on the outlined variant", () => {
+		test("with outlines an alert has a 1 px border in its severity's colour, not on the outlined variant", () => {
 			const theme = createBrandingV2Theme(branding({outlines: true}), "light");
 			expect(alertStyles(theme, {severity: "error"}).border).toBe(`1px solid ${theme.palette.error.main}`);
 			expect(alertStyles(theme, {severity: "info"}).border).toBe(`1px solid ${theme.palette.info.main}`);
@@ -100,6 +100,12 @@ describe("the branding v2 theme", () => {
 		expect(options.typography).toEqual(expect.objectContaining({h1: {fontSize: 46, fontWeight: 300}}));
 		expect(options.palette?.success).toEqual({main: "#58cc5c"});
 		expect(options.palette?.text).toEqual({primary: "#fdfaf7"});
+	});
+
+	test("a mode the branding does not set keeps the Variocube secondary, not its primary", () => {
+		const {palette} = createBrandingV2Theme(branding({dark: null}), "dark");
+		expect(palette.primary.main).toBe("#ff6a00");
+		expect(palette.secondary.main).toBe("#009dd8");
 	});
 
 	test("a translucent #rrggbbaa surface is kept as it is", () => {

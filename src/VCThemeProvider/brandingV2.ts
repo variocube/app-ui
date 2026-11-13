@@ -159,8 +159,8 @@ const HEX_WITH_OPTIONAL_ALPHA = /^#[0-9a-f]{6}([0-9a-f]{2})?$/i;
  * unreadable. A `Paper` with elevation 0 or the outlined variant is left as MUI draws it.
  *
  * Invalid input does not break the theme: a colour that is not `#rrggbb` (or `#rrggbbaa` for the surface) falls back
- * to the Variocube colour (a secondary that is absent or `null` is not invalid: it is the mode's primary), the radius is clamped to 0..24, and a mode the branding does not set uses the Variocube
- * colours.
+ * to the Variocube colour, the radius is clamped to 0..24, and a mode the branding does not set uses the Variocube
+ * colours. A secondary that is absent or `null` in a mode that is set is not invalid: it is the mode's primary.
  */
 export function createBrandingV2ThemeOptions(branding: BrandingV2, mode: PaletteMode): ThemeOptions {
 	const palette = getModePalette(branding, mode);
@@ -169,9 +169,10 @@ export function createBrandingV2ThemeOptions(branding: BrandingV2, mode: Palette
 	const floatingSurface = compositeOver(surface, background);
 	const primary = sanitizeHex(palette?.primary, OPAQUE_HEX, DEFAULT_PRIMARY);
 	// An absent secondary is the tenant's choice of none: it follows the primary. An invalid one is an error.
-	const secondary = palette?.secondary == null
+	// A mode the branding does not set is not a tenant's choice: it keeps the Variocube colours.
+	const secondary = palette !== undefined && palette.secondary == null
 		? primary
-		: sanitizeHex(palette.secondary, OPAQUE_HEX, DEFAULT_SECONDARY);
+		: sanitizeHex(palette?.secondary, OPAQUE_HEX, DEFAULT_SECONDARY);
 	const base = createVariocubeThemeOptions(mode, primary, secondary);
 	const surfaces: SurfaceRules = {
 		shadows: branding.shadows !== false,
@@ -305,8 +306,8 @@ function cardStyles(theme: Pick<Theme, "palette">, {shadows, outlines}: SurfaceR
 }
 
 /**
- * An alert drawn like a card (elevation 1) in its own colour: the severity's colour as the outline, the card shadow, the
- * branding's radius. The `standard` variant keeps its tinted background; the `outlined` one has its border already.
+ * An alert drawn like a card (elevation 1) in its own colour: the severity's colour as the outline, the card shadow,
+ * the branding's radius. The `standard` variant keeps its tinted background; the `outlined` one has its border already.
  */
 function alertStyles(
 	ownerState: Pick<AlertProps, "color" | "severity" | "variant">,

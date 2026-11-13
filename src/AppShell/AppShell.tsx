@@ -14,11 +14,12 @@ interface AppShellProps {
 	footer?: JSX.Element | null | undefined;
 	/**
 	 * Shown in the top bar instead of the Variocube logo and the app name, in the same place. The caller sizes it.
+	 * Only the top bar: the header of the temporary side navigation drawer keeps the Variocube logo and app name.
 	 */
 	logo?: ReactNode;
 	/**
-	 * The background of the top bar, a palette path such as `background.default` or a CSS colour, applied opaque.
-	 * Default: the theme's `background.paper`.
+	 * The background of the top bar, a palette path such as `background.default` or a CSS colour. Give an opaque
+	 * colour: the page scrolls under the bar. Default: the theme's `background.paper`.
 	 */
 	barBackground?: string;
 }
@@ -80,7 +81,7 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
 					sx={{
 						borderBottom: 1,
 						borderColor: "divider",
-						// What the bar shows without `barBackground`: the Paper's default (`color="inherit"` sets none).
+						// Without `barBackground`, what the bar showed: the Paper's default (`color="inherit"` sets none).
 						backgroundColor: barBackground ?? "background.paper",
 						color: "text.primary",
 						displayPrint: "none",
@@ -134,10 +135,6 @@ export function AppShell(props: PropsWithChildren<AppShellProps>) {
 									overflowX: "hidden",
 									width: sideNavWidth,
 									boxSizing: "border-box",
-								},
-								["& .MuiPaper-elevation0"]: {
-									// what a permanent drawer (elevation 0) shows: the Paper's default
-									backgroundColor: "background.paper",
 								},
 							}}
 							open={drawerOpen}
