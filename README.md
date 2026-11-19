@@ -80,15 +80,19 @@ The theme is the Variocube look except for what the branding sets:
   optional: absent or `null`, `palette.secondary` is the mode's primary colour. An invalid one (not `#rrggbb`) is a
   mistake and gets the Variocube colour.
 - **Text on surfaces** — every `Paper` root (cards, floating paper), a raised `Card` and the `Autocomplete` list — is
-  pure black or white, whichever has the higher WCAG contrast ratio with the surface (a translucent surface counts as
-  composited over the page background); `#fff02d` and `#fffac8` give black. It is set as `color`, so it is inherited
-  by everything on the surface that sets none. When the page background picks the same colour as the surface,
-  `palette.text` follows it too (solid primary, MUI's alphas for secondary and disabled). When they disagree (a dark
-  page with light tiles), `palette.text` stays as it is, so every colour MUI takes from the global palette instead of
-  inheriting keeps the global colour on a surface: `color="text.secondary"`, helper texts, placeholders, and also the
-  primary text of inputs, table cells and chips. Only text that sets no colour of its own follows the surface. A mode
-  the branding does not set, or whose surface is missing or invalid (for the global text also its background), keeps the
-  Variocube text colours.
+  dark or light, whichever of pure black or white has the higher WCAG contrast ratio with the surface (a translucent
+  surface counts as composited over the page background). Its colour is the neutral grey closest to the surface that
+  still reaches a contrast ratio of 16:1, a design choice above WCAG AAA (7:1): `#212121` on white, `#1c1c1c` on
+  `#fffac8`, `#fbfbfb` on `#1e1e1e`. Where even pure black or white falls short of 16:1 (`#e0e0e0`, `#282b33`), it
+  is pure black or white. It is set as `color`, so it is inherited by everything on the surface that sets none. When
+  the page background gets text in the same direction as the surface, `palette.text` follows: the grey of the two
+  with the higher contrast, so it reaches 16:1 on both where it can (solid primary, MUI's alphas for secondary and
+  disabled). When they disagree (a dark page with light tiles), `palette.text` stays as it is, so every colour MUI
+  takes from the global palette instead of inheriting keeps the global colour on a surface: `color="text.secondary"`,
+  helper texts, placeholders, the primary text of inputs, table cells and chips, and also the `AppShell` bar and
+  footer, which set `text.primary` (the bar is in the surface colour without `barBackground`). Only text that sets no
+  colour of its own follows the surface. A mode the branding does not set, or whose surface is missing or invalid (for
+  the global text also its background), keeps the Variocube text colours.
 - **Alerts** are drawn like cards, in their own colour: with `outlines` a `1px` border in the severity's colour (the
   `outlined` variant has one already), with `shadows` the shadow of a card at elevation 1, and the branding's radius.
   The `standard` variant keeps its tinted background, `filled` its solid one.
