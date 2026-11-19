@@ -152,7 +152,21 @@ const HEX_WITH_OPTIONAL_ALPHA = /^#[0-9a-f]{6}([0-9a-f]{2})?$/i;
  *   divider line);
  * - on alerts: like a card, in the severity's colour: a 1 px border in it with `outlines` (not on the `outlined`
  *   variant, which has one), the card shadow (elevation 1) with `shadows`, and `shape.borderRadius`;
- * - without `shadows`, contained buttons, button groups and floating action buttons are flat as well.
+ * - without `shadows`, contained buttons, button groups and floating action buttons are flat as well;
+ * - text on surfaces (every `Paper` root, a raised `Card`, the `Autocomplete` list) is dark or light, whichever of pure
+ *   `#000` or `#fff` has the higher WCAG contrast ratio with the surface (composited over the background when
+ *   translucent), and in that direction the neutral grey closest to the surface that reaches a ratio of 16:1 (`#212121`
+ *   on white), or pure black or white where none does. It is set as `color`, so that it is inherited. When the page
+ *   background gets text in the same direction, `palette.text` follows: the grey of the two with the higher contrast,
+ *   so it reaches 16:1 on both where it can (primary solid, secondary and disabled at MUI's alphas of the mode).
+ *   Limitation: when background and surface disagree (a dark page with light tiles), `palette.text` stays global, so
+ *   every text colour that MUI takes from the global palette instead of inheriting keeps the global colour on a
+ *   surface: secondary and disabled text (`color="text.secondary"`, helper texts, placeholders, list subheaders) and
+ *   also the primary text of inputs, table cells, chips and the like, and of the `AppShell` bar and footer, which set
+ *   `text.primary` (the bar is in the surface colour without `barBackground`). Only text that sets no colour of its own
+ *   follows the surface. `CssVarsProvider` or a surface wrapper with its own theme would lift it. A mode the branding
+ *   does not set, and one whose surface is missing or invalid (or, for the global text, whose background is), keeps
+ *   the Variocube text colours.
  *
  * Floating paper (elevation 4 and more, and the `Autocomplete` list) keeps its shadow and is opaque: the surface
  * composited over the page background, because a menu or dialog without shadow or through which the content shows is
@@ -178,7 +192,14 @@ export function createBrandingV2ThemeOptions(branding: BrandingV2, mode: Palette
 		shadows: branding.shadows !== false,
 		outlines: branding.outlines === true,
 		floatingSurface,
+		// A mode the branding does not set keeps the Variocube look, text colours included.
+		// A surface that fell back to the Variocube paper has the Variocube text.
+		surfaceText: isHex(palette?.surface, HEX_WITH_OPTIONAL_ALPHA) ? textGreyOn(floatingSurface) : undefined,
 	};
+	// Only where the page and its surfaces agree on dark or light text can the global text colours follow.
+	const globalText = surfaces.surfaceText !== undefined && isHex(palette?.background, OPAQUE_HEX)
+		? globalTextGrey(textGreyOn(background), surfaces.surfaceText)
+		: undefined;
 	const buttonRadius = sanitizeButtonBorderRadius(branding.buttonBorderRadius);
 	const components: ThemeOptions["components"] = {
 		...base.components,
@@ -192,7 +213,11 @@ export function createBrandingV2ThemeOptions(branding: BrandingV2, mode: Palette
 				// A raised card is a Paper of elevation 8, which would make it floating: it stays a card.
 				root: ({ownerState, theme}) =>
 					ownerState.raised
-						? {backgroundColor: theme.palette.background.paper, ...cardStyles(theme, surfaces)}
+						? {
+							backgroundColor: theme.palette.background.paper,
+							...textStyles(surfaces),
+							...cardStyles(theme, surfaces),
+						}
 						: {},
 			},
 		},
@@ -207,7 +232,12 @@ export function createBrandingV2ThemeOptions(branding: BrandingV2, mode: Palette
 				// that renders it inline with elevation 0, or gives it a floating elevation, gets the Paper rules.
 				paper: ({elevation = 1, theme}: { elevation?: number; theme: Pick<Theme, "shadows"> }) =>
 					elevation >= 1 && elevation < FLOATING_ELEVATION
-						? {backgroundColor: floatingSurface, boxShadow: theme.shadows[elevation], border: "none"}
+						? {
+							backgroundColor: floatingSurface,
+							...textStyles(surfaces),
+							boxShadow: theme.shadows[elevation],
+							border: "none",
+						}
 						: {},
 			},
 		},
@@ -228,6 +258,7 @@ export function createBrandingV2ThemeOptions(branding: BrandingV2, mode: Palette
 		shape: {borderRadius: sanitizeBorderRadius(branding.borderRadius)},
 		palette: {
 			...base.palette,
+			...(globalText === undefined ? {} : {text: textPalette(globalText, mode)}),
 			background: {default: background, paper: surface},
 		},
 		components: buttonRadius === undefined ? components : mergeThemeOptions({components}, {
@@ -278,6 +309,87 @@ interface SurfaceRules {
 	shadows: boolean;
 	outlines: boolean;
 	floatingSurface: string;
+	/** The text colour of the surface; undefined: leave the text colour as it is. */
+	surfaceText: TextGrey | undefined;
+}
+
+/** A neutral grey `#nnnnnn` as a text colour, n being `level`; `dark`: dark text on a light colour. */
+interface TextGrey {
+	dark: boolean;
+	level: number;
+}
+
+/**
+ * The WCAG contrast ratio text should reach. A design choice, not a WCAG level: `#323232` on `#fffac8` (12:1) passes
+ * AAA, but was judged too low.
+ */
+const TEXT_CONTRAST = 16;
+
+/** The text colour a surface root sets, inherited by whatever inside it sets none of its own. */
+function textStyles({surfaceText}: SurfaceRules): CSSObject {
+	return surfaceText === undefined ? {} : {color: greyHex(surfaceText.level)};
+}
+
+/**
+ * The global text colour, where the page and its surfaces agree on dark or light text: the one of the two with the
+ * higher contrast, the darker for dark text, so that it reaches the target on both where it can.
+ */
+function globalTextGrey(background: TextGrey, surface: TextGrey): TextGrey | undefined {
+	if (background.dark != surface.dark) {
+		return undefined;
+	}
+	const level = surface.dark ? Math.min(background.level, surface.level) : Math.max(background.level, surface.level);
+	return {dark: surface.dark, level};
+}
+
+/** MUI's alphas of the text colours per mode (`palette.text` of `createTheme`): primary is solid here. */
+const TEXT_ALPHAS = {
+	light: {secondary: 0.6, disabled: 0.38},
+	dark: {secondary: 0.7, disabled: 0.5},
+} as const;
+
+/** `palette.text` from a grey with MUI's alphas of the mode. */
+function textPalette({level}: TextGrey, mode: PaletteMode) {
+	const rgb = `${level}, ${level}, ${level}`;
+	const alphas = TEXT_ALPHAS[mode];
+	return {
+		primary: greyHex(level),
+		secondary: `rgba(${rgb}, ${alphas.secondary})`,
+		disabled: `rgba(${rgb}, ${alphas.disabled})`,
+		// MUI's dark palette also has `icon`, which would stay white on a dark grey.
+		...(mode == "dark" ? {icon: `rgba(${rgb}, 0.5)`} : {}),
+	};
+}
+
+/** WCAG 2 relative luminance of an opaque `#rrggbb`. */
+function relativeLuminance(color: string): number {
+	const [red, green, blue] = [1, 3, 5].map(index => {
+		const channel = parseInt(color.slice(index, index + 2), 16) / 255;
+		return channel <= 0.03928 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4);
+	});
+	return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+/**
+ * The text colour on an opaque `#rrggbb` colour (not MUI's `getContrastText`): dark or light text, whichever of pure
+ * black or white has the higher WCAG contrast ratio with the colour (black wins a tie), and in that direction the
+ * grey closest to the colour that reaches `TEXT_CONTRAST`, or pure black or white where none does.
+ */
+function textGreyOn(color: string): TextGrey {
+	const colorLuminance = relativeLuminance(color) + 0.05;
+	const dark = colorLuminance / 0.05 >= 1.05 / colorLuminance;
+	const ratio = (level: number) => {
+		const textLuminance = relativeLuminance(greyHex(level)) + 0.05;
+		return dark ? colorLuminance / textLuminance : textLuminance / colorLuminance;
+	};
+	// From white towards black for dark text, the other way for light text: the first level that reaches the target
+	// is the closest to the colour.
+	const levels = Array.from({length: 256}, (_, index) => dark ? 255 - index : index);
+	return {dark, level: levels.find(level => ratio(level) >= TEXT_CONTRAST) ?? (dark ? 0 : 255)};
+}
+
+function greyHex(level: number) {
+	return `#${level.toString(16).padStart(2, "0").repeat(3)}`;
 }
 
 function paperStyles(
@@ -286,7 +398,7 @@ function paperStyles(
 	surfaces: SurfaceRules,
 ): CSSObject {
 	// Keeps the base's override: MUI's dark-mode elevation gradient would tint the branding's surface colour.
-	const styles: CSSObject = {backgroundImage: "unset"};
+	const styles: CSSObject = {backgroundImage: "unset", ...textStyles(surfaces)};
 	const elevation = ownerState.elevation ?? 1;
 	if (ownerState.variant == "outlined" || elevation < 1) {
 		return styles;
@@ -327,8 +439,12 @@ function getModePalette(branding: BrandingV2, mode: PaletteMode): BrandingV2Mode
 	return palette && typeof palette == "object" ? palette as BrandingV2Mode : undefined;
 }
 
+function isHex(color: unknown, pattern: RegExp): color is string {
+	return typeof color == "string" && pattern.test(color);
+}
+
 function sanitizeHex(color: unknown, pattern: RegExp, fallback: string) {
-	return typeof color == "string" && pattern.test(color) ? color : fallback;
+	return isHex(color, pattern) ? color : fallback;
 }
 
 function sanitizeBorderRadius(radius: unknown) {

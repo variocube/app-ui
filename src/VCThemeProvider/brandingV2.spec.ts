@@ -99,7 +99,10 @@ describe("the branding v2 theme", () => {
 		const options = createBrandingV2ThemeOptions(branding(), "dark");
 		expect(options.typography).toEqual(expect.objectContaining({h1: {fontSize: 46, fontWeight: 300}}));
 		expect(options.palette?.success).toEqual({main: "#58cc5c"});
-		expect(options.palette?.text).toEqual({primary: "#fdfaf7"});
+		// The text colours follow a mode's surface: only a mode the branding does not set keeps the Variocube ones.
+		expect(createBrandingV2ThemeOptions(branding({dark: null}), "dark").palette?.text).toEqual({
+			primary: "#fdfaf7",
+		});
 	});
 
 	test("a mode the branding does not set keeps the Variocube secondary, not its primary", () => {
@@ -178,6 +181,7 @@ describe("the branding v2 theme", () => {
 		const outlined = createBrandingV2Theme(branding({outlines: true, shadows: true}), "dark");
 		expect(paperStyles(outlined, {elevation: 2})).toEqual({
 			backgroundImage: "unset",
+			color: "#fdfdfd",
 			border: `1px solid ${outlined.palette.divider}`,
 		});
 		expect(paperStyles(createBrandingV2Theme(branding({outlines: false}), "dark"), {})).not.toHaveProperty(
@@ -193,7 +197,113 @@ describe("the branding v2 theme", () => {
 			branding({shadows: false, outlines: true, light: {...LIGHT, background: "#000000", surface: "#ffffff80"}}),
 			"light",
 		);
-		expect(paperStyles(theme, {elevation: 8})).toEqual({backgroundImage: "unset", backgroundColor: "#808080"});
+		expect(paperStyles(theme, {elevation: 8})).toEqual({
+			backgroundImage: "unset",
+			color: "#000000",
+			backgroundColor: "#808080",
+		});
+	});
+
+	describe("text on surfaces", () => {
+		const themeWith = (mode: PaletteMode, colours: { background: string; surface: string }) =>
+			createBrandingV2Theme(branding({[mode]: {...LIGHT, ...colours}}), mode);
+
+		test.each([
+			// The grey closest to the surface that reaches 16:1.
+			["#ffffff", "#212121"],
+			["#fffac8", "#1c1c1c"],
+			["#fff02d", "#101010"],
+			["#1e1e1e", "#fbfbfb"],
+			// Even pure black or white falls short of 16:1.
+			["#e0e0e0", "#000000"],
+			["#282b33", "#ffffff"],
+			// Next to the point where black and white have the same contrast: the direction is the higher one.
+			["#808080", "#000000"],
+			["#707070", "#ffffff"],
+		])("the text on surface %s is %s", (surface, expected) => {
+			const theme = themeWith("light", {background: "#ffffff", surface});
+			for (const elevation of [0, 1, 8]) {
+				expect(paperStyles(theme, {elevation}).color).toBe(expected);
+			}
+			expect(paperStyles(theme, {variant: "outlined"}).color).toBe(expected);
+		});
+
+		test("a translucent surface counts as composited over the background", () => {
+			// The raw colours of these surfaces say the opposite: 25% black over white is #bfbfbf (dark text), 25%
+			// white over black is #404040 (light text).
+			expect(paperStyles(themeWith("light", {background: "#ffffff", surface: "#00000040"}), {}).color)
+				.toBe("#000000");
+			expect(paperStyles(themeWith("light", {background: "#000000", surface: "#ffffff40"}), {}).color)
+				.toBe("#ffffff");
+		});
+
+		test("a mode with empty or invalid colours keeps the Variocube text colours", () => {
+			const empty = {primary: "", secondary: "", background: "", surface: "", logoUrl: null};
+			const theme = createBrandingV2Theme(branding({light: empty}), "light");
+			expect(paperStyles(theme, {})).not.toHaveProperty("color");
+			expect(theme.palette.text.primary).toBe("#282b33");
+			// A valid surface with an invalid background has no global text of its own to derive.
+			const noBackground = createBrandingV2Theme(
+				branding({light: {...empty, surface: "#fff02d"}}),
+				"light",
+			);
+			expect(paperStyles(noBackground, {}).color).toBe("#101010");
+			expect(noBackground.palette.text.primary).toBe("#282b33");
+			// A valid background with an invalid surface has no surface text, so the global text does not follow either.
+			const noSurface = createBrandingV2Theme(branding({light: {...empty, background: "#ffffff"}}), "light");
+			expect(paperStyles(noSurface, {})).not.toHaveProperty("color");
+			expect(noSurface.palette.text.primary).toBe("#282b33");
+		});
+
+		test("a raised card and the Autocomplete list get the surface's text colour too", () => {
+			const theme = themeWith("light", {background: "#ffffff", surface: "#1e1e1e"});
+			const card = theme.components?.MuiCard?.styleOverrides?.root as (props: unknown) => CSSObject;
+			expect(card({ownerState: {raised: true}, theme})).toMatchObject({color: "#fbfbfb"});
+			expect(card({ownerState: {raised: false}, theme})).toEqual({});
+			const list = theme.components?.MuiAutocomplete?.styleOverrides?.paper as (props: unknown) => CSSObject;
+			expect(list({elevation: 1, theme})).toMatchObject({color: "#fbfbfb"});
+		});
+
+		test("background and surface in the same direction give the global text the higher contrast of the two", () => {
+			// Dark text: the darker grey, here the surface's (#1c1c1c, the background's is #212121) ...
+			const light = themeWith("light", {background: "#ffffff", surface: "#fffac8"}).palette.text;
+			expect([light.primary, light.secondary, light.disabled]).toEqual([
+				"#1c1c1c",
+				"rgba(28, 28, 28, 0.6)",
+				"rgba(28, 28, 28, 0.38)",
+			]);
+			// ... here the background's (#101010, the surface's is #212121).
+			expect(themeWith("light", {background: "#fff02d", surface: "#ffffff"}).palette.text.primary).toBe(
+				"#101010",
+			);
+			// Light text: the lighter grey, the surface's #fbfbfb (the background's is #ededed), with the dark alphas.
+			const dark = themeWith("dark", {background: "#121212", surface: "#1e1e1e"}).palette.text;
+			expect([dark.primary, dark.secondary, dark.disabled, (dark as { icon?: string }).icon]).toEqual([
+				"#fbfbfb",
+				"rgba(251, 251, 251, 0.7)",
+				"rgba(251, 251, 251, 0.5)",
+				"rgba(251, 251, 251, 0.5)",
+			]);
+		});
+
+		test("background and surface in different directions leave the global text as in the Variocube look", () => {
+			const theme = themeWith("light", {background: "#101010", surface: "#fff02d"});
+			expect(theme.palette.text.primary).toBe("#282b33");
+			expect(
+				createBrandingV2ThemeOptions(
+					branding({light: {...LIGHT, background: "#101010", surface: "#fff02d"}}),
+					"light",
+				)
+					.palette?.text,
+			).toEqual({primary: "#282b33"});
+			expect(paperStyles(theme, {}).color).toBe("#101010");
+		});
+
+		test("a mode the branding does not set keeps the Variocube text colours", () => {
+			const theme = createBrandingV2Theme(branding({dark: null}), "dark");
+			expect(paperStyles(theme, {})).not.toHaveProperty("color");
+			expect(theme.palette.text.primary).toBe("#fdfaf7");
+		});
 	});
 
 	test("paper is never tinted by MUI's dark-mode elevation gradient", () => {
