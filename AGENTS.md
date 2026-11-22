@@ -381,7 +381,7 @@ GitHub Actions workflow runs on push and PRs (Node 24):
 
 - `@js-temporal/polyfill` - Temporal API for date/time handling
 - `deepmerge` - Theme configuration merging
-- `roboto-fontface`, `@fontsource/jetbrains-mono` - Local fonts
+- `@fontsource-variable/roboto`, `@fontsource/jetbrains-mono` - Local fonts
 - `error-stack-parser` - Error stack analysis
 - `react-async-hook` - Async operations
 
@@ -454,6 +454,15 @@ export type { FilterTimeFrame } from "./file";
 
 This issue only occurs with Vite/native ESM, not with webpack's bundler.
 
+**Modules must not have import-time side effects:**
+
+`package.json` declares `"sideEffects": false`, which lets the consumer's bundler drop every module whose exports
+the app does not use, along with what only that module imports. That is what keeps `@js-temporal/polyfill` (about
+46 KB gzipped) and the fonts out of an app that never uses the Temporal exports or `VCThemeProvider`. Top-level code
+may define constants, contexts, styled components and singletons that are used through their export, but must not do
+work that is needed even when nothing of the module is imported: installing a polyfill on `globalThis`, registering
+something globally, importing CSS. Such a module would silently be dropped; list it in a `sideEffects` array instead.
+
 ## Splash Screen Integration
 
 **For Webpack users:**
@@ -488,6 +497,9 @@ render(<App />);
 ## Font Loading
 
 For local Google Fonts, add `VCThemeProvider` or `RobotoFont` component to your app. Vite handles font asset loading automatically.
+`RobotoFont` declares the Roboto variable font in script subsets with `unicode-range` and `font-display: swap`. Where
+ranges overlap, the browser tries the face declared last first, so keep Latin last and Greek after math. Consumers
+preload the Latin subset themselves (README, "Preloading Roboto").
 
 ## Troubleshooting
 

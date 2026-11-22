@@ -185,11 +185,16 @@ any other global state, so a preview nests it with a plain MUI `ThemeProvider` (
 `createBrandingV2ThemeOptions(branding, mode)` returns the options instead of the theme. The demo has a page for
 branding v2 with an editor and a preview of each mode.
 
-## Using local Google Fonts
+## Fonts
 
-1. Add `VCThemeProvider` or the `RobotoFont` component to your application.
+`VCThemeProvider` (or the `RobotoFont` component on its own) loads Roboto from `@fontsource-variable/roboto`: the
+variable font, so a single file covers every weight, split into subsets by script (Latin, Latin-ext, Greek, Cyrillic,
+Vietnamese, math, symbols) with matching `unicode-range`. The browser only downloads the subsets whose characters occur
+on the page, which for most pages is the Latin one (43 KB). Text is shown in a fallback font until the file has loaded
+(`font-display: swap`). `JetbrainsMonoFont` loads JetBrains Mono (Latin only) for `code`, `kbd`, `pre` and `samp`.
 
-2. Configure a loader rule for webfonts in your webpack config:
+The font files are imported as assets, so the bundler needs to handle `.woff2` imports. Vite does that out of the box;
+for webpack, add a loader rule:
 
 ```javascript
 {
@@ -206,6 +211,32 @@ branding v2 with an editor and a preview of each mode.
 	// ...other config
 }
 ```
+
+### Preloading Roboto
+
+The `@font-face` rules are injected when React renders, so the browser discovers the font late. Preloading the Latin
+subset in the application's `index.html` lets it start the download right away. With Vite, reference the file in
+`node_modules` by a path relative to `index.html`; Vite emits it once and rewrites the link to the same hashed URL
+the font face uses:
+
+```html
+<link
+	rel="preload"
+	href="./node_modules/@fontsource-variable/roboto/files/roboto-latin-wght-normal.woff2"
+	as="font"
+	type="font/woff2"
+	crossorigin
+>
+```
+
+In an npm workspace with hoisted dependencies, the path points at the root `node_modules`, e.g.
+`../../node_modules/@fontsource-variable/roboto/files/roboto-latin-wght-normal.woff2` for `apps/<app>/index.html`.
+Preload only the Latin subset: a preloaded file that the page does not use costs bandwidth and makes the browser warn.
+
+The link only works in a production build. The Vite dev server serves `index.html` with the `href` as written, while
+the font face loads the file from another URL (`/@fs/...`), so in dev the preload is a wasted request: with a hoisted
+path it even gets the SPA fallback page. Chrome then logs "preloaded but not used" on every page load, which you can
+ignore.
 
 ## Using for local development
 
