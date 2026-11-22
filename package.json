@@ -4,6 +4,7 @@
   "description": "Common UI components for Variocube applications.",
   "module": "esm/index.js",
   "types": "esm/index.d.ts",
+  "sideEffects": false,
   "scripts": {
     "dev": "vite",
     "clean": "rimraf esm/",
@@ -26,13 +27,13 @@
     "react": "17.x"
   },
   "dependencies": {
+    "@fontsource-variable/roboto": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.0.18",
     "@js-temporal/polyfill": "0.4.3",
     "deepmerge": "^4.3.0",
     "error-stack-parser": "^2.1.4",
     "json-lexer": "^1.2.0",
     "react-async-hook": "^4.0.0",
-    "roboto-fontface": "^0.10.0",
     "semver": "^7.7.2"
   },
   "devDependencies": {

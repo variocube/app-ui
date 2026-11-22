@@ -21,6 +21,7 @@ export const JetbrainsMonoFont = () => (
 					src: `url("${JetbrainsMono300Woff2}") format("woff2"), url("${JetbrainsMono300Woff}") format("woff")`,
 					fontWeight: 300,
 					fontStyle: "normal",
+					fontDisplay: "swap",
 				},
 			}}
 		/>
@@ -31,6 +32,7 @@ export const JetbrainsMonoFont = () => (
 					src: `url("${JetbrainsMono400Woff2}") format("woff2"), url("${JetbrainsMono400Woff}") format("woff")`,
 					fontWeight: 400,
 					fontStyle: "normal",
+					fontDisplay: "swap",
 				},
 			}}
 		/>
@@ -41,6 +43,7 @@ export const JetbrainsMonoFont = () => (
 					src: `url("${JetbrainsMono500Woff2}") format("woff2"), url("${JetbrainsMono500Woff}") format("woff")`,
 					fontWeight: 500,
 					fontStyle: "normal",
+					fontDisplay: "swap",
 				},
 			}}
 		/>
@@ -51,6 +54,7 @@ export const JetbrainsMonoFont = () => (
 					src: `url("${JetbrainsMono700Woff2}") format("woff2"), url("${JetbrainsMono700Woff}") format("woff")`,
 					fontWeight: 700,
 					fontStyle: "normal",
+					fontDisplay: "swap",
 				},
 			}}
 		/>
