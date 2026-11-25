@@ -1,3 +1,4 @@
+import {describe, expect, test} from "vitest";
 import {tokenize, tokensEqual} from "./tokens";
 
 describe("tokenize", () => {

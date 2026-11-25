@@ -1,10 +1,11 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import * as React from "react";
 import {useRef} from "react";
 import {act, create, ReactTestRenderer} from "react-test-renderer";
+import {afterEach, beforeEach, describe, expect, test, vi} from "vitest";
 import {StorageType} from "./types";
 import {StorageSetter, StorageUpdater, useStorage} from "./useStorage";
 
@@ -15,7 +16,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-	jest.restoreAllMocks();
+	vi.restoreAllMocks();
 });
 
 interface TestResult<T> {

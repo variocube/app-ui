@@ -1,11 +1,12 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import {SortDirection, TableSortLabel} from "@mui/material";
 import * as React from "react";
 import {useState} from "react";
 import {act, create, ReactTestRenderer} from "react-test-renderer";
+import {afterEach, beforeEach, describe, expect, test, vi} from "vitest";
 import {DataTable, DataTableColumn, DataTablePage} from "./DataTable";
 import {useDataTableStorage} from "./useDataTableStorage";
 
@@ -29,7 +30,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-	jest.restoreAllMocks();
+	vi.restoreAllMocks();
 });
 
 interface Sort {
@@ -44,8 +45,8 @@ interface OwnState extends Sort {
 }
 
 function renderTable(sort: Sort) {
-	const onPageChange = jest.fn();
-	const onSort = jest.fn();
+	const onPageChange = vi.fn();
+	const onSort = vi.fn();
 
 	function table(sort: Sort) {
 		return (
@@ -194,7 +195,7 @@ describe("DataTable", () => {
 		test("does not report a page change for an empty result set", () => {
 			// an empty result set has no pages, so page 0 counts as out of bounds - reporting 0 -> 0 would
 			// have a persisting consumer store settings the user never chose
-			const onPageChange = jest.fn();
+			const onPageChange = vi.fn();
 			act(() => {
 				create(
 					<DataTable
@@ -210,7 +211,7 @@ describe("DataTable", () => {
 		});
 
 		test("still resets a page index that is out of bounds", () => {
-			const onPageChange = jest.fn();
+			const onPageChange = vi.fn();
 			const outOfBounds = {pageIndex: 3, pageSize: 10, totalElements: 0};
 			act(() => {
 				create(
@@ -295,7 +296,7 @@ describe("DataTable", () => {
 
 			// a click the hook refuses while the columns are still empty must not arm anything either -
 			// the header is rendered from the table's own columns, so it looks clickable
-			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 			act(() => {
 				const header = renderer.root.findAll(node =>
 					node.type === TableSortLabel && node.props.children === "Price"

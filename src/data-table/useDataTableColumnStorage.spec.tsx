@@ -1,9 +1,10 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import * as React from "react";
 import {act, create, ReactTestRenderer} from "react-test-renderer";
+import {afterEach, beforeEach, describe, expect, test, vi} from "vitest";
 import {DataTableColumn} from "./DataTable";
 import {useDataTableColumnStorage} from "./useDataTableColumnStorage";
 
@@ -19,7 +20,7 @@ beforeEach(() => {
 
 // as in the other specs of this PR: a failing assertion must not leak a spy into later tests
 afterEach(() => {
-	jest.restoreAllMocks();
+	vi.restoreAllMocks();
 });
 
 function renderHook(available: () => ReadonlyArray<DataTableColumn<unknown>>) {

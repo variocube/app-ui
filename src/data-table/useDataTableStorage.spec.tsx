@@ -1,10 +1,11 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import * as React from "react";
 import {useEffect} from "react";
 import {act, create, ReactTestRenderer} from "react-test-renderer";
+import {afterEach, beforeEach, describe, expect, test, vi} from "vitest";
 import {DataTableColumn} from "./DataTable";
 import {DataTableStorage, useDataTableStorage, UseDataTableStorageResult} from "./useDataTableStorage";
 
@@ -23,7 +24,7 @@ beforeEach(() => {
 // spies are set up inside the tests below; without this, a failing assertion would leak a silenced
 // console or a spied storage into every later test in this file
 afterEach(() => {
-	jest.restoreAllMocks();
+	vi.restoreAllMocks();
 });
 
 function persist(value: DataTableStorage, storage: Storage = localStorage) {
@@ -198,7 +199,7 @@ describe("useDataTableStorage", () => {
 			expect(last()).toMatchObject({sortField: "name", sortDirection: "desc"});
 
 			// the callbacks have to see the resolved columns too, or the table stays unsortable forever
-			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 			act(() => {
 				last().onSort("name");
 			});
@@ -231,7 +232,7 @@ describe("useDataTableStorage", () => {
 		test("toggles the direction of the configured default sort field", () => {
 			// it is exempt from the mask, so the toggle has to recognise it as the current sort - it is
 			// the one field that is handed out while no sortable column matches it
-			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 			persist({pageIndex: 4});
 			const {last} = renderHook(() =>
 				useDataTableStorage(KEY, {defaults: {sortField: "createdAt", sortDirection: "desc"}, columns})
@@ -274,7 +275,7 @@ describe("useDataTableStorage", () => {
 		test("toggles the default sort field that a hidden field fell back to", () => {
 			// the shown sort is the configured default while the persisted field is hidden, so a click on
 			// its header has to move the arrow - not start the same sort over and give up the page
-			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 			persist({pageIndex: 4, sortField: "tags", sortDirection: "asc"});
 			const {last} = renderHook(() => useDataTableStorage(KEY, {defaults: {sortField: "createdAt"}, columns}));
 
@@ -292,7 +293,7 @@ describe("useDataTableStorage", () => {
 		test("accepts a click on the configured default sort field", () => {
 			// the data table may well render it as sortable - the mask hands it out, so a click on it
 			// has to take effect rather than be refused
-			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 			const {last} = renderHook(() =>
 				useDataTableStorage(KEY, {defaults: {sortField: "createdAt", sortDirection: "desc"}, columns})
 			);
@@ -325,7 +326,7 @@ describe("useDataTableStorage", () => {
 		test("leaves an unparsable persisted value to useStorage", () => {
 			localStorage.setItem(KEY, "not json");
 			// useStorage warns about the unparsable value and falls back to the defaults
-			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
 
@@ -398,8 +399,8 @@ describe("useDataTableStorage", () => {
 			persist({sortField: "name", sortDirection: "desc"});
 
 			const {last} = renderHook(() => useDataTableStorage(KEY, {columns}));
-			const setItem = jest.spyOn(Storage.prototype, "setItem");
-			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const setItem = vi.spyOn(Storage.prototype, "setItem");
+			const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 			act(() => {
 				last().onSort("tags");
@@ -418,8 +419,8 @@ describe("useDataTableStorage", () => {
 			// only reachable when the DataTable renders columns the hook was not given: the same rule that
 			// hides a sort field must reject the click, otherwise the click is a dead no-op
 			const {last} = renderHook(() => useDataTableStorage(KEY, {columns: []}));
-			const setItem = jest.spyOn(Storage.prototype, "setItem");
-			const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const setItem = vi.spyOn(Storage.prototype, "setItem");
+			const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
 			act(() => {
 				last().onSort("name");

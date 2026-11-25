@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import {createTheme, ThemeProvider} from "@mui/material";
@@ -7,11 +7,8 @@ import * as React from "react";
 import {unmountComponentAtNode} from "react-dom";
 import {render} from "react-dom";
 import {act} from "react-dom/test-utils";
+import {afterEach, beforeEach, describe, expect, test} from "vitest";
 import {AppShell} from "./AppShell";
-
-// Jest cannot load the font files the font components import.
-jest.mock("../VCThemeProvider/JetbrainsMonoFont", () => ({JetbrainsMonoFont: () => null}));
-jest.mock("../VCThemeProvider/RobotoFont", () => ({RobotoFont: () => null}));
 
 const THEME = createTheme({palette: {background: {default: "#102030", paper: "#405060"}}});
 const VARIOCUBE_LOGO = "svg[viewBox=\"0 0 74 86\"]";

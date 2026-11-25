@@ -50,7 +50,7 @@ export class PlainAdapterCommon<T extends PlainDate | PlainDateTime> extends Tem
 	}
 
 	isSameMonth(value: T, comparing: T): boolean {
-		return value.toPlainYearMonth().equals(comparing.toPlainYearMonth());
+		return value.year == comparing.year && value.month == comparing.month;
 	}
 
 	isSameYear(value: T, comparing: T): boolean {
@@ -118,6 +118,6 @@ export class PlainAdapterCommon<T extends PlainDate | PlainDateTime> extends Tem
 	}
 
 	getDiff(value: T, comparing: T | string, unit?: Unit) {
-		return durationToUnit(value.until(comparing), unit);
+		return durationToUnit(value.until(comparing), unit, value);
 	}
 }

@@ -53,10 +53,21 @@ export class TemporalAdapter<T extends PlainDate | PlainDateTime | PlainTime> {
 	}
 }
 
-export function durationToUnit(duration: Duration, unit?: Unit) {
+const CALENDAR_UNITS: ReadonlyArray<Unit | undefined> = ["years", "quarters", "months", "weeks"];
+
+/** Whether the length of the unit depends on the date: those can't be computed for a `PlainTime`. */
+export function isCalendarUnit(unit: Unit | undefined) {
+	return CALENDAR_UNITS.includes(unit);
+}
+
+/**
+ * Returns the duration in the unit (default milliseconds). A calendar unit needs the date the duration starts at as
+ * `relativeTo`, because months and years differ in length: `Duration.total()` throws a `RangeError` without it.
+ */
+export function durationToUnit(duration: Duration, unit: Unit | undefined, relativeTo?: PlainDate | PlainDateTime) {
 	return unit == "quarters"
-		? Math.floor(duration.total("months") / 4)
-		: duration.total(unit || "milliseconds");
+		? Math.floor(duration.total({unit: "months", relativeTo}) / 3)
+		: duration.total({unit: unit ?? "milliseconds", relativeTo});
 }
 
 function createFormats(locale = "default") {

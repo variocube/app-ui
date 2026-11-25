@@ -1,4 +1,5 @@
 import {CSSObject, PaletteMode, Theme} from "@mui/material";
+import {describe, expect, test} from "vitest";
 import {
 	BRANDING_V2_ANCHORS,
 	BrandingV2,

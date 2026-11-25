@@ -1,5 +1,6 @@
 import * as React from "react";
 import {act, create, ReactTestRenderer} from "react-test-renderer";
+import {describe, expect, test} from "vitest";
 import {DecimalFormat} from "./DecimalFormat";
 
 describe("DecimalFormat", () => {

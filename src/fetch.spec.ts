@@ -1,3 +1,4 @@
+import {describe, expect, test} from "vitest";
 import {createApiError, createQueryString} from "./fetch";
 
 describe("createQueryString", () => {

@@ -238,6 +238,54 @@ the font face loads the file from another URL (`/@fs/...`), so in dev the preloa
 path it even gets the SPA fallback page. Chrome then logs "preloaded but not used" on every page load, which you can
 ignore.
 
+## Temporal
+
+app-ui exports the Temporal API (`Instant`, `ZonedDateTime`, `PlainDateTime`, `PlainDate`, `PlainTime`, `Now`,
+`Duration`) plus `DateTimeFormat` and `toTemporalInstant`. Where the browser has a Temporal implementing the current
+spec, these are the native objects. Otherwise app-ui loads [`temporal-polyfill`](https://github.com/fullcalendar/temporal-polyfill)
+on demand, into a chunk of its own (about 20 KB gzipped), so browsers with native Temporal never download it. A browser
+with an outdated or incomplete Temporal gets the polyfill as well.
+
+Use app-ui's exports, not `globalThis.Temporal`. The polyfill is installed on `globalThis` only to provide those
+exports; app-ui declares `"sideEffects": false`, so a bundler drops the loader from an app that uses none of them.
+
+### Requirements
+
+- **Top-level `await`:** the loader waits for the polyfill with a top-level `await`, so every module importing app-ui
+  waits until Temporal is available and can use it at module load. The bundler must support it: Vite 7 and 8 do with
+  their defaults; Vite 6 and older need `build.target: "es2022"` and, for the dev server's dependency pre-bundling,
+  `optimizeDeps.esbuildOptions.target: "es2022"`; webpack does from 5.83 on.
+- **Tests:** they need a runner loading app-ui as ESM: Vitest, or Jest in ESM mode (`--experimental-vm-modules`). A
+  setup that transforms `node_modules` to CommonJS can't load it.
+
+### Migrating from 1.x (`@js-temporal/polyfill` 0.4)
+
+The polyfill app-ui used before implemented an older draft of the spec. APIs removed since then:
+
+| Before                                                          | Now                                                                           |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `Now.timeZone().id`, `Now.zonedDateTimeISO().timeZone`          | `Now.timeZoneId()`                                                            |
+| `zonedDateTime.timeZone`                                        | `zonedDateTime.timeZoneId`                                                    |
+| `instant.toZonedDateTime(Now.timeZone())`                       | `instant.toZonedDateTimeISO(Now.timeZoneId())`                                |
+| `TimeZone` export, time zone and calendar objects               | time zone and calendar IDs (strings)                                          |
+| `plainDateTime.toPlainYearMonth()`                              | `plainDateTime.toPlainDate().toPlainYearMonth()`                              |
+| `getISOFields()`                                                | the fields themselves (`year`, `month`, …)                                    |
+| `epochSeconds`, `epochMicroseconds`                             | `epochMilliseconds`, `epochNanoseconds`                                       |
+| `Instant.fromEpochSeconds()`, `Instant.fromEpochMicroseconds()` | `Instant.fromEpochMilliseconds()`, `…Nanoseconds()`                           |
+| `Now.zonedDateTime(calendar)`, `Now.plainDate(calendar)`, …     | the `…ISO()` variants, then `withCalendar()`                                  |
+| `new DateTimeFormat().format(zonedDateTime)`                    | `TemporalFormat` / `TemporalRangeFormat`, or `zonedDateTime.toLocaleString()` |
+
+`DateTimeFormat` formats an `Instant` and the plain types, not a `ZonedDateTime`, and the `Formattable` type follows
+that. `TemporalFormat` and `TemporalRangeFormat` still accept a `ZonedDateTime`: they format it in its own time zone,
+with the zone's name unless `dateStyle` or `timeStyle` is set, as before.
+
+`DateTimeFormat`, and so `TemporalFormat` and `TemporalRangeFormat`, throw a `TypeError` for a style or field the
+value's type does not have, where 0.4 ignored it and showed the type's default fields: a `dateStyle` or date field
+(`year`, `month`, `day`, `weekday`) for a `PlainTime`, a `timeStyle` or time field (`hour`, `minute`, `second`) for a
+`PlainDate`. Pass only what the type has, e.g. `dateStyle` for a `PlainDate`, `timeStyle` for a `PlainTime`. A
+`PlainDateTime` or `PlainTime` with `timeStyle` `"long"` or `"full"` no longer shows a time zone name: plain types have
+none.
+
 ## Using for local development
 
 1. In the project run:

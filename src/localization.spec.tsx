@@ -1,9 +1,10 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import * as React from "react";
 import {act, create, ReactTestRenderer} from "react-test-renderer";
+import {afterEach, describe, expect, test} from "vitest";
 import {createLocalizationContext} from "./localization";
 
 interface Messages {

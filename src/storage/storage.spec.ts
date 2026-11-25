@@ -1,7 +1,8 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
+import {beforeEach, describe, expect, test, vi} from "vitest";
 import {storage} from "./storage";
 
 describe("StorageWrapper", () => {
@@ -126,7 +127,7 @@ describe("StorageWrapper", () => {
 
 	describe("change listeners", () => {
 		test("notifies listeners on write", () => {
-			const listener = jest.fn();
+			const listener = vi.fn();
 			storage.addChangeListener("key", listener);
 
 			storage.write("key", "value");
@@ -138,7 +139,7 @@ describe("StorageWrapper", () => {
 		test("notifies listeners on delete", () => {
 			storage.write("key", "value");
 
-			const listener = jest.fn();
+			const listener = vi.fn();
 			storage.addChangeListener("key", listener);
 
 			storage.delete("key");
@@ -150,7 +151,7 @@ describe("StorageWrapper", () => {
 		test("notifies listeners on update", () => {
 			storage.write("key", "old-value");
 
-			const listener = jest.fn();
+			const listener = vi.fn();
 			storage.addChangeListener("key", listener);
 
 			storage.write("key", "new-value");
@@ -160,7 +161,7 @@ describe("StorageWrapper", () => {
 		});
 
 		test("does not notify after listener removal", () => {
-			const listener = jest.fn();
+			const listener = vi.fn();
 			storage.addChangeListener("key", listener);
 			storage.removeChangeListener("key", listener);
 
@@ -169,7 +170,7 @@ describe("StorageWrapper", () => {
 		});
 
 		test("notifies listeners for different storage types", () => {
-			const listener = jest.fn();
+			const listener = vi.fn();
 			storage.addChangeListener("key", listener);
 
 			storage.write("key", "local-value", "local");
