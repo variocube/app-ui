@@ -1,3 +1,4 @@
+import {describe, expect, test} from "vitest";
 import {PlainDate} from "../temporal";
 import {PlainDateAdapter} from "./PlainDateAdapter";
 
@@ -13,6 +14,19 @@ describe("PlainDateAdapter", () => {
 		expect(adapter.isSameYear(new PlainDate(2022, 5, 30), new PlainDate(2022, 5, 30))).toBe(true);
 		expect(adapter.isSameYear(new PlainDate(2022, 4, 30), new PlainDate(2022, 5, 30))).toBe(true);
 		expect(adapter.isSameYear(new PlainDate(2020, 4, 30), new PlainDate(2022, 5, 30))).toBe(false);
+	});
+
+	test("isSameMonth", () => {
+		expect(adapter.isSameMonth(new PlainDate(2022, 5, 1), new PlainDate(2022, 5, 30))).toBe(true);
+		expect(adapter.isSameMonth(new PlainDate(2022, 4, 30), new PlainDate(2022, 5, 30))).toBe(false);
+		expect(adapter.isSameMonth(new PlainDate(2021, 5, 30), new PlainDate(2022, 5, 30))).toBe(false);
+	});
+
+	test("getDiff in calendar units", () => {
+		// A spec-compliant Duration.total() throws for calendar units without relativeTo.
+		expect(adapter.getDiff(PlainDate.from("2022-01-15"), PlainDate.from("2022-07-15"), "months")).toBe(6);
+		expect(adapter.getDiff(PlainDate.from("2022-01-15"), PlainDate.from("2022-07-15"), "quarters")).toBe(2);
+		expect(adapter.getDiff(PlainDate.from("2022-01-15"), PlainDate.from("2022-07-15"), "days")).toBe(181);
 	});
 
 	test("startOfWeek", () => {

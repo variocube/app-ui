@@ -1,7 +1,16 @@
 import * as React from "react";
 import {act, create, ReactTestRenderer} from "react-test-renderer";
+import {describe, expect, test} from "vitest";
 import {Instant, PlainDate, PlainDateTime, PlainTime, ZonedDateTime} from "../temporal";
 import {TemporalRangeFormat} from "./TemporalRangeFormat";
+
+/**
+ * Since ICU 72, en-US puts a narrow no-break space (U+202F) before AM/PM. V8 replaces it with a plain space in
+ * `format()`, and in `formatRange()` only since Node 26, so the range's spacing depends on the engine, not on app-ui.
+ */
+function withPlainSpaces(value: unknown) {
+	return typeof value == "string" ? value.replace(/\u202f/g, " ") : value;
+}
 
 describe("TemporalRangeFormat", () => {
 	test("PlainDate de-AT", () => {
@@ -61,7 +70,7 @@ describe("TemporalRangeFormat", () => {
 			);
 		});
 		const value = element!.root.children[0];
-		expect(value).toBe("6/22/2022, 2:22:00 PM – 5:55:00 PM");
+		expect(withPlainSpaces(value)).toBe("6/22/2022, 2:22:00 PM – 5:55:00 PM");
 	});
 
 	test("PlainTime de-AT", () => {
@@ -91,7 +100,7 @@ describe("TemporalRangeFormat", () => {
 			);
 		});
 		const value = element!.root.children[0];
-		expect(value).toBe("2:22:00 PM – 6:00:03 PM");
+		expect(withPlainSpaces(value)).toBe("2:22:00 PM – 6:00:03 PM");
 	});
 
 	test("ZonedDateTime de-AT", () => {
@@ -121,7 +130,7 @@ describe("TemporalRangeFormat", () => {
 			);
 		});
 		const value = element!.root.children[0];
-		expect(value).toBe("6/22/2022, 2:22:00 PM GMT+2 – 7:22:00 PM GMT+2");
+		expect(withPlainSpaces(value)).toBe("6/22/2022, 2:22:00 PM GMT+2 – 7:22:00 PM GMT+2");
 	});
 
 	test("Instant de-AT", () => {
@@ -153,6 +162,6 @@ describe("TemporalRangeFormat", () => {
 			);
 		});
 		const value = element!.root.children[0];
-		expect(value).toBe("6/22/2022, 2:22:11 PM – 1/30/2024, 8:14:32 AM");
+		expect(withPlainSpaces(value)).toBe("6/22/2022, 2:22:11 PM – 1/30/2024, 8:14:32 AM");
 	});
 });

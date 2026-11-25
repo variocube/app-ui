@@ -1,3 +1,4 @@
+import {describe, expect, test} from "vitest";
 import {tryParseDuration} from "./parse";
 
 describe("tryParseDuration", () => {

@@ -1,14 +1,14 @@
 import * as React from "react";
 import {Fragment, useMemo} from "react";
-import {Formattable} from "../temporal";
 import {DateStyle, TimeStyle} from "./types";
 import {useDateTimeFormat} from "./useDateTimeFormat";
+import {TemporalFormattable, toFormattable, useTemporalFormatOptions} from "./useTemporalFormatOptions";
 
 export interface TemporalFormatProps {
 	/**
-	 * The date value to format.
+	 * The date value to format. A `ZonedDateTime` is formatted in its own time zone, unless `timeZone` is given.
 	 */
-	value?: Formattable | null | undefined;
+	value?: TemporalFormattable | null | undefined;
 
 	/**
 	 * The style of the date format.
@@ -40,16 +40,12 @@ export function useTemporalFormat(props: TemporalFormatProps) {
 		timeZone,
 	} = props;
 
-	const options = useMemo(() => ({
-		dateStyle,
-		timeStyle,
-		timeZone,
-	}), [dateStyle, timeStyle]);
+	const options = useTemporalFormatOptions({values: [value], dateStyle, timeStyle, timeZone});
 
 	const dateTimeFormat = useDateTimeFormat(options, locale);
 
 	return useMemo(() => {
-		return value != null ? dateTimeFormat.format(value) : "";
+		return value != null ? dateTimeFormat.format(toFormattable(value)) : "";
 	}, [dateTimeFormat, value]);
 }
 

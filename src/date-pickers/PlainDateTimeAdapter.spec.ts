@@ -1,3 +1,4 @@
+import {describe, expect, test} from "vitest";
 import {PlainDateTime} from "../temporal";
 import {PlainDateTimeAdapter} from "./PlainDateTimeAdapter";
 
@@ -13,6 +14,12 @@ describe("PlainDateTimeAdapter", () => {
 		expect(adapter.isSameYear(new PlainDateTime(2022, 5, 30), new PlainDateTime(2022, 5, 30))).toBe(true);
 		expect(adapter.isSameYear(new PlainDateTime(2022, 4, 30), new PlainDateTime(2022, 5, 30))).toBe(true);
 		expect(adapter.isSameYear(new PlainDateTime(2020, 4, 30), new PlainDateTime(2022, 5, 30))).toBe(false);
+	});
+
+	test("getDiff in calendar units", () => {
+		const from = PlainDateTime.from("2020-02-29T12:00");
+		expect(adapter.getDiff(from, PlainDateTime.from("2024-02-29T12:00"), "years")).toBe(4);
+		expect(adapter.getDiff(from, PlainDateTime.from("2020-03-14T12:00"), "weeks")).toBe(2);
 	});
 
 	test("startOfWeek", () => {

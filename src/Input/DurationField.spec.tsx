@@ -1,5 +1,6 @@
 import * as React from "react";
 import {act, create, ReactTestRenderer} from "react-test-renderer";
+import {describe, expect, test, vi} from "vitest";
 import {Duration} from "../temporal";
 import {DurationField} from "./DurationField";
 
@@ -51,7 +52,7 @@ describe("DurationField", () => {
 	});
 
 	test("typing an amount emits the duration", () => {
-		const handleChange = jest.fn();
+		const handleChange = vi.fn();
 		let rendered: ReactTestRenderer;
 		act(() => {
 			rendered = create(
@@ -66,7 +67,7 @@ describe("DurationField", () => {
 	});
 
 	test("clearing the amount emits null", () => {
-		const handleChange = jest.fn();
+		const handleChange = vi.fn();
 		let rendered: ReactTestRenderer;
 		act(() => {
 			rendered = create(

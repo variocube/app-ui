@@ -9,7 +9,21 @@ permissions:
   packages: write
   id-token: write
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Node 24 has no Temporal, so the tests run against temporal-polyfill; Node 26 has a native one.
+        node-version: [24, 26]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run test
   build:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +34,6 @@ jobs:
           scope: '@variocube'
       - run: npm ci
       - run: npm run build
-      - run: npm run test
       - run: npm run build:demo
       - if: startsWith(github.ref, 'refs/tags/')
         run: |
@@ -30,4 +43,3 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: build # The folder the action should deploy.
-

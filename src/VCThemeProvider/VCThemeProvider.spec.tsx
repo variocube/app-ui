@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import {
@@ -18,13 +18,10 @@ import * as React from "react";
 import {render, unmountComponentAtNode} from "react-dom";
 import {act as domAct} from "react-dom/test-utils";
 import {act, create} from "react-test-renderer";
+import {beforeAll, beforeEach, expect, test} from "vitest";
 import {BrandingV2, createBrandingV2Theme} from "./brandingV2";
 import {ThemeModeSwitcher} from "./ThemeModeSwitcher";
 import {CustomLogo, useCustomLogo, usePaletteMode, VCThemeProvider, VCThemeProviderProps} from "./VCThemeProvider";
-
-// Jest cannot load the font files the font components import.
-jest.mock("./JetbrainsMonoFont", () => ({JetbrainsMonoFont: () => null}));
-jest.mock("./RobotoFont", () => ({RobotoFont: () => null}));
 
 const MODE_KEY = "variocube-palette-mode";
 

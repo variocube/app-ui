@@ -1,10 +1,11 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {act, Simulate} from "react-dom/test-utils";
+import {afterEach, beforeEach, describe, expect, type Mock, test, vi} from "vitest";
 import {GlobalSearchDialog, GlobalSearchDialogProps} from "./GlobalSearchDialog";
 
 interface Result {
@@ -14,17 +15,17 @@ interface Result {
 
 describe("GlobalSearchDialog", () => {
 	let container: HTMLDivElement;
-	let search: jest.Mock;
-	let onClose: jest.Mock;
-	let onSelect: jest.Mock;
+	let search: Mock;
+	let onClose: Mock;
+	let onSelect: Mock;
 
 	beforeEach(() => {
-		jest.useFakeTimers();
+		vi.useFakeTimers();
 		container = document.createElement("div");
 		document.body.appendChild(container);
-		search = jest.fn().mockResolvedValue([]);
-		onClose = jest.fn();
-		onSelect = jest.fn();
+		search = vi.fn().mockResolvedValue([]);
+		onClose = vi.fn();
+		onSelect = vi.fn();
 	});
 
 	afterEach(() => {
@@ -32,7 +33,7 @@ describe("GlobalSearchDialog", () => {
 			ReactDOM.unmountComponentAtNode(container);
 		});
 		container.remove();
-		jest.useRealTimers();
+		vi.useRealTimers();
 	});
 
 	async function render(overrides: Partial<GlobalSearchDialogProps<Result>> = {}) {
@@ -74,7 +75,7 @@ describe("GlobalSearchDialog", () => {
 	/** Advances the fake timers and flushes resulting promise resolutions (react-async-hook state updates). */
 	async function advanceTimers(ms: number) {
 		await act(async () => {
-			jest.advanceTimersByTime(ms);
+			vi.advanceTimersByTime(ms);
 		});
 	}
 
@@ -317,7 +318,7 @@ describe("GlobalSearchDialog", () => {
 	});
 
 	test("unmounting cancels the pending debounce without a state update warning", async () => {
-		const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+		const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 		try {
 			await render();
 			type("john");

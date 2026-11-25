@@ -1,9 +1,8 @@
 import {Unit} from "@date-io/core/IUtils";
-import {Temporal} from "@js-temporal/polyfill";
 import {MuiPickersAdapter} from "@mui/x-date-pickers/internals";
 import {DateTimeFormat, Now, PlainTime} from "../temporal";
 import {parsePlainTime} from "./parse";
-import {durationToUnit, TemporalAdapter} from "./TemporalAdapter";
+import {durationToUnit, isCalendarUnit, TemporalAdapter} from "./TemporalAdapter";
 
 export class PlainTimeAdapter extends TemporalAdapter<PlainTime> implements MuiPickersAdapter<PlainTime> {
 	lib = "PlainTimeAdapter";
@@ -139,95 +138,96 @@ export class PlainTimeAdapter extends TemporalAdapter<PlainTime> implements MuiP
 		return value.add({months: count});
 	}
 
-	getDiff(value: PlainTime, comparing: string | Temporal.PlainTime, unit?: Unit | undefined): number {
-		return durationToUnit(value.until(comparing), unit);
+	getDiff(value: PlainTime, comparing: string | PlainTime, unit?: Unit | undefined): number {
+		// Two times of day are less than a day apart, and calendar units can't be computed without a date.
+		return isCalendarUnit(unit) ? 0 : durationToUnit(value.until(comparing), unit);
 	}
 
 	isSameDay(value: PlainTime, comparing: PlainTime): boolean {
 		return true;
 	}
 
-	isSameMonth(value: Temporal.PlainTime, comparing: Temporal.PlainTime): boolean {
+	isSameMonth(value: PlainTime, comparing: PlainTime): boolean {
 		return true;
 	}
 
-	isSameYear(value: Temporal.PlainTime, comparing: Temporal.PlainTime): boolean {
+	isSameYear(value: PlainTime, comparing: PlainTime): boolean {
 		return true;
 	}
 
-	isAfter(value: Temporal.PlainTime, comparing: Temporal.PlainTime): boolean {
+	isAfter(value: PlainTime, comparing: PlainTime): boolean {
 		return PlainTime.compare(value, comparing) > 0;
 	}
 
-	isAfterDay(value: Temporal.PlainTime, comparing: Temporal.PlainTime): boolean {
+	isAfterDay(value: PlainTime, comparing: PlainTime): boolean {
 		return false;
 	}
 
-	isAfterYear(value: Temporal.PlainTime, comparing: Temporal.PlainTime): boolean {
+	isAfterYear(value: PlainTime, comparing: PlainTime): boolean {
 		return false;
 	}
 
-	isBeforeDay(value: Temporal.PlainTime, comparing: Temporal.PlainTime): boolean {
+	isBeforeDay(value: PlainTime, comparing: PlainTime): boolean {
 		return false;
 	}
 
-	isBeforeYear(value: Temporal.PlainTime, comparing: Temporal.PlainTime): boolean {
+	isBeforeYear(value: PlainTime, comparing: PlainTime): boolean {
 		return false;
 	}
 
-	isBefore(value: Temporal.PlainTime, comparing: Temporal.PlainTime): boolean {
+	isBefore(value: PlainTime, comparing: PlainTime): boolean {
 		return PlainTime.compare(value, comparing) < 0;
 	}
 
-	isWithinRange(value: Temporal.PlainTime, [start, end]: [Temporal.PlainTime, Temporal.PlainTime]): boolean {
+	isWithinRange(value: PlainTime, [start, end]: [PlainTime, PlainTime]): boolean {
 		return PlainTime.compare(value, start) > 0 && PlainTime.compare(value, end) < 0;
 	}
 
-	startOfYear(value: Temporal.PlainTime): Temporal.PlainTime {
+	startOfYear(value: PlainTime): PlainTime {
 		return value;
 	}
 
-	endOfYear(value: Temporal.PlainTime): Temporal.PlainTime {
+	endOfYear(value: PlainTime): PlainTime {
 		return value;
 	}
 
-	startOfMonth(value: Temporal.PlainTime): Temporal.PlainTime {
+	startOfMonth(value: PlainTime): PlainTime {
 		return value;
 	}
 
-	endOfMonth(value: Temporal.PlainTime): Temporal.PlainTime {
+	endOfMonth(value: PlainTime): PlainTime {
 		return value;
 	}
 
-	startOfWeek(value: Temporal.PlainTime): Temporal.PlainTime {
+	startOfWeek(value: PlainTime): PlainTime {
 		return value;
 	}
 
-	endOfWeek(value: Temporal.PlainTime): Temporal.PlainTime {
+	endOfWeek(value: PlainTime): PlainTime {
 		return value;
 	}
 
-	getMonth(value: Temporal.PlainTime): number {
+	getMonth(value: PlainTime): number {
 		return 1;
 	}
 
-	getDaysInMonth(value: Temporal.PlainTime): number {
+	getDaysInMonth(value: PlainTime): number {
 		return 30;
 	}
 
-	getNextMonth(value: Temporal.PlainTime): Temporal.PlainTime {
+	getNextMonth(value: PlainTime): PlainTime {
 		return value;
 	}
 
-	getPreviousMonth(value: Temporal.PlainTime): Temporal.PlainTime {
+	getPreviousMonth(value: PlainTime): PlainTime {
 		return value;
 	}
 
-	getMonthArray(value: Temporal.PlainTime): Temporal.PlainTime[] {
+	getMonthArray(value: PlainTime): PlainTime[] {
 		throw new Error("Method not implemented.");
 	}
 
-	getYear(value: Temporal.PlainTime): number {
+	getYear(value: PlainTime): number {
 		throw new Error("Method not implemented.");
 	}
 
@@ -235,11 +235,11 @@ export class PlainTimeAdapter extends TemporalAdapter<PlainTime> implements MuiP
 		throw new Error("Method not implemented.");
 	}
 
-	getWeekArray(date: Temporal.PlainTime): Temporal.PlainTime[][] {
+	getWeekArray(date: PlainTime): PlainTime[][] {
 		throw new Error("Method not implemented.");
 	}
 
-	getYearRange(start: Temporal.PlainTime, end: Temporal.PlainTime): Temporal.PlainTime[] {
+	getYearRange(start: PlainTime, end: PlainTime): PlainTime[] {
 		throw new Error("Method not implemented.");
 	}
 }

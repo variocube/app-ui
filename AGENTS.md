@@ -23,7 +23,7 @@ npm run dev
 # Build the library (TypeScript compilation to esm/)
 npm run build
 
-# Run tests (Jest with ts-jest)
+# Run tests (Vitest)
 npm test
 
 # Build demo site (Vite production build)
@@ -270,6 +270,30 @@ and previews. Design decisions worth knowing before changing it:
   v2 only when it equals a known system preference, so an explicit choice survives a branding with another
   `defaultMode`.
 
+### Temporal
+
+`src/temporal/polyfill.ts` provides the Temporal exports (README, _Temporal_). Design decisions worth knowing before
+changing it:
+
+- Native first: the polyfill (`temporal-polyfill`, FullCalendar) is loaded with a dynamic `import()` only when there is
+  no spec-current Temporal, so it lands in a chunk of its own that browsers with native Temporal never download.
+- A top-level `await` waits for it, so importing modules can use Temporal at module load (no async API, no "not loaded
+  yet" state). It requires `target` ES2017 and a bundler supporting top-level await (consumers: README).
+- "Spec-current" is checked by `Now.timeZoneId` and `ZonedDateTime#timeZoneId`, not by `globalThis.Temporal` existing:
+  Node 24 with `--harmony-temporal` and outdated browser releases have a Temporal without them. For the same reason it
+  uses `installImplementation()` of `temporal-polyfill/shim`, which replaces an existing `globalThis.Temporal`, not
+  `temporal-polyfill/global`, which keeps it. Pinned by `polyfill.spec.ts`.
+- `installImplementation()` also installs a Temporal-aware `Intl.DateTimeFormat`, so `DateTimeFormat` is
+  `Intl.DateTimeFormat` in both cases. Types come from `temporal-polyfill` (`import type`), never its runtime.
+- Per spec, `Intl.DateTimeFormat` throws for a `ZonedDateTime`. `TemporalFormat` and `TemporalRangeFormat` keep
+  accepting one (`useTemporalFormatOptions`): they format its instant in its own time zone (or the `timeZone` prop),
+  with 0.4's default fields plus the zone name when neither `dateStyle` nor `timeStyle` is set, which reproduces the
+  output of `@js-temporal/polyfill` 0.4.
+- `Duration.total()` with a calendar unit (years, months, weeks) needs `relativeTo`: the date pickers' `getDiff` passes
+  its value; for `PlainTime` calendar units are 0.
+- Tests run on Vitest rather than Jest because the top-level await needs an ESM test runner; Jest only supports it
+  with `--experimental-vm-modules`.
+
 ### Type-Safe Localization
 
 The localization system uses recursive TypeScript types for deep object navigation:
@@ -291,18 +315,25 @@ The localization system uses recursive TypeScript types for deep object navigati
 
 ## Testing
 
-**Framework:** Jest with ts-jest preset
-**Default environment:** Node (some tests override to jsdom via `/** @jest-environment jsdom */` pragma)
-**Node version:** 24 (specified in `.nvmrc`)
-**Test files:** Located alongside source files with a `.spec.ts` / `.spec.tsx` extension
+**Framework:** Vitest (`vitest.config.ts`, separate from the demo's `vite.config.ts`)
+**Default environment:** Node (some tests override to jsdom via a `/** @vitest-environment jsdom */` docblock)
+**Node version:** 24 (specified in `.nvmrc`); CI also runs the tests on Node 26
+**Test files:** Located alongside source files with a `.spec.ts` / `.spec.tsx` extension. They import `describe`,
+`test`, `expect`, `vi`, … from `"vitest"` explicitly (no globals).
 
 ```bash
 # Run all tests
 npm test
 
 # Run specific test
-npx jest src/fetch.spec.ts
+npx vitest run src/fetch.spec.ts
+
+# Run the tests on Node 26 (native Temporal)
+nvm exec 26 npm test
 ```
+
+Node 24 has no Temporal, so the tests run against `temporal-polyfill`; Node 26 has a native, spec-current Temporal
+with the same ICU (78.3). Both must pass with the same expected strings, so CI runs the tests on both.
 
 ### Node Version Considerations
 
@@ -311,6 +342,9 @@ Each Node version ships its own ICU (International Components for Unicode) data,
 - **German locale (de-AT):** Timezone formatting changed from `"GMT+2"` to `"MESZ"` (localized abbreviation) in Node 22
 
 If upgrading Node versions and tests fail with formatting mismatches, the expected values likely need updating to match the new ICU data output. Some `Intl`-dependent tests (e.g. the `Intl.DurationFormat` cases in `DurationFormat.spec.tsx`) are skipped automatically on Node versions without the required API.
+
+V8 replaces the narrow no-break space (U+202F) that ICU puts before AM/PM with a plain space in `format()`, and in
+`formatRange()` only since Node 26. `TemporalRangeFormat.spec.tsx` therefore compares en-US ranges with plain spaces.
 
 ### Known Test Warnings
 
@@ -358,14 +392,15 @@ Before submitting a PR, ensure:
 
 ## CI/CD Pipeline
 
-GitHub Actions workflow runs on push and PRs (Node 24):
+GitHub Actions workflow runs on push and PRs:
 
-1. `npm ci` - Clean install
-2. `npm run build` - TypeScript compilation
-3. `npm run test` - Jest tests
-4. `npm run build:demo` - Vite demo build
-5. NPM publish on tags
-6. GitHub Pages deployment on tags
+1. `test` job, on Node 24 (Temporal polyfill) and Node 26 (native Temporal): `npm ci`, `npm run test`
+2. `build` job, on Node 24, after both test runs passed:
+   1. `npm ci` - Clean install
+   2. `npm run build` - TypeScript compilation
+   3. `npm run build:demo` - Vite demo build
+   4. NPM publish on tags
+   5. GitHub Pages deployment on tags
 
 ## Dependencies
 
@@ -379,7 +414,7 @@ GitHub Actions workflow runs on push and PRs (Node 24):
 
 **Key Dependencies:**
 
-- `@js-temporal/polyfill` - Temporal API for date/time handling
+- `temporal-polyfill` - Temporal API for date/time handling where the browser has no spec-current native one
 - `deepmerge` - Theme configuration merging
 - `@fontsource-variable/roboto`, `@fontsource/jetbrains-mono` - Local fonts
 - `error-stack-parser` - Error stack analysis
@@ -457,11 +492,13 @@ This issue only occurs with Vite/native ESM, not with webpack's bundler.
 **Modules must not have import-time side effects:**
 
 `package.json` declares `"sideEffects": false`, which lets the consumer's bundler drop every module whose exports
-the app does not use, along with what only that module imports. That is what keeps `@js-temporal/polyfill` (about
-46 KB gzipped) and the fonts out of an app that never uses the Temporal exports or `VCThemeProvider`. Top-level code
+the app does not use, along with what only that module imports. That is what keeps the Temporal loader and the fonts
+out of an app that never uses the Temporal exports or `VCThemeProvider`. Top-level code
 may define constants, contexts, styled components and singletons that are used through their export, but must not do
 work that is needed even when nothing of the module is imported: installing a polyfill on `globalThis`, registering
 something globally, importing CSS. Such a module would silently be dropped; list it in a `sideEffects` array instead.
+The Temporal loader is no exception: it installs the polyfill on `globalThis` only to provide its own exports, so
+consumers must use those, not `globalThis.Temporal`.
 
 ## Splash Screen Integration
 

@@ -6,3 +6,4 @@ export * from "./RelativeTemporalFormat";
 export * from "./SwitchableTemporalFormat";
 export * from "./TemporalFormat";
 export * from "./TemporalRangeFormat";
+export type { TemporalFormattable } from "./useTemporalFormatOptions";

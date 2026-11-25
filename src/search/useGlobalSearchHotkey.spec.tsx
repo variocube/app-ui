@@ -1,9 +1,10 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import * as React from "react";
 import {act, create, ReactTestRenderer} from "react-test-renderer";
+import {afterEach, beforeEach, describe, expect, type Mock, test, vi} from "vitest";
 import {useGlobalSearchHotkey} from "./useGlobalSearchHotkey";
 
 function TestComponent({onOpen}: { onOpen: () => void }) {
@@ -21,10 +22,10 @@ function dispatchKeyDown(init: KeyboardEventInit) {
 
 describe("useGlobalSearchHotkey", () => {
 	let renderer: ReactTestRenderer;
-	let onOpen: jest.Mock;
+	let onOpen: Mock;
 
 	beforeEach(() => {
-		onOpen = jest.fn();
+		onOpen = vi.fn();
 		act(() => {
 			renderer = create(<TestComponent onOpen={onOpen} />);
 		});

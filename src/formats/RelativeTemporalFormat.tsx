@@ -38,6 +38,9 @@ export function useRelativeTemporalFormat(props: RelativeTemporalFormatProps) {
 	// Convert the given value to a duration relative to "now", rounded to the largest unit.
 	// Unfortunately this is not straightforward and there might even be bugs in the polyfill.
 	const duration = useMemo(() => {
+		if (value == null) {
+			return undefined;
+		}
 		if (value instanceof PlainDate) {
 			const relativeTo = Now.plainDateISO();
 			return value.since(relativeTo, {largestUnit: "auto"})
@@ -55,7 +58,7 @@ export function useRelativeTemporalFormat(props: RelativeTemporalFormatProps) {
 		}
 		if (value instanceof Instant) {
 			const now = Now.instant();
-			const relativeTo = now.toZonedDateTimeISO(Now.timeZone());
+			const relativeTo = now.toZonedDateTimeISO(Now.timeZoneId());
 			return value.since(now, {largestUnit: "auto"})
 				.round({largestUnit: "years", relativeTo}) // first time rounds to hours
 				.round({largestUnit: "years", relativeTo}); // second time round to years

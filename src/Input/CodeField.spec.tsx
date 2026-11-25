@@ -1,21 +1,22 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 
 import * as React from "react";
 import {useState} from "react";
 import * as ReactDOM from "react-dom";
 import {act, Simulate} from "react-dom/test-utils";
+import {afterEach, beforeEach, describe, expect, type Mock, test, vi} from "vitest";
 import {CodeField, CodeFieldProps} from "./CodeField";
 
 describe("CodeField", () => {
 	let container: HTMLDivElement;
-	let onChange: jest.Mock;
+	let onChange: Mock;
 
 	beforeEach(() => {
 		container = document.createElement("div");
 		document.body.appendChild(container);
-		onChange = jest.fn();
+		onChange = vi.fn();
 	});
 
 	afterEach(() => {
@@ -370,7 +371,7 @@ describe("CodeField", () => {
 		});
 
 		test("calls onSubmit when the form is submitted", () => {
-			const onSubmit = jest.fn();
+			const onSubmit = vi.fn();
 			render({value: "12", onSubmit});
 			const form = container.querySelector("form")!;
 			act(() => {
@@ -380,7 +381,7 @@ describe("CodeField", () => {
 		});
 
 		test("prevents the native submission", () => {
-			render({value: "12", onSubmit: jest.fn()});
+			render({value: "12", onSubmit: vi.fn()});
 			const event = new Event("submit", {bubbles: true, cancelable: true});
 			act(() => {
 				container.querySelector("form")!.dispatchEvent(event);
@@ -389,7 +390,7 @@ describe("CodeField", () => {
 		});
 
 		test("does not call onSubmit while disabled", () => {
-			const onSubmit = jest.fn();
+			const onSubmit = vi.fn();
 			render({value: "12", onSubmit, disabled: true});
 			act(() => {
 				Simulate.submit(container.querySelector("form")!);
@@ -425,7 +426,7 @@ describe("CodeField", () => {
 			act(() => getInput().focus());
 			render({disabled: true});
 			blurDisabled();
-			const focus = jest.spyOn(getInput(), "focus");
+			const focus = vi.spyOn(getInput(), "focus");
 
 			render({disabled: false});
 			expect(focus).toHaveBeenCalled();
@@ -436,7 +437,7 @@ describe("CodeField", () => {
 			act(() => getInput().focus());
 			act(() => getInput().blur());
 			render({disabled: true});
-			const focus = jest.spyOn(getInput(), "focus");
+			const focus = vi.spyOn(getInput(), "focus");
 
 			render({disabled: false});
 			expect(focus).not.toHaveBeenCalled();
@@ -539,7 +540,7 @@ describe("CodeField", () => {
 		});
 
 		test("closes on Escape without closing an enclosing dialog", () => {
-			const onParentKeyDown = jest.fn();
+			const onParentKeyDown = vi.fn();
 			act(() => {
 				ReactDOM.render(
 					<div onKeyDown={onParentKeyDown}>
@@ -558,7 +559,7 @@ describe("CodeField", () => {
 		});
 
 		test("stays open on Enter and submit, for the next attempt should the check fail", () => {
-			renderPopup({value: "12", onSubmit: jest.fn()});
+			renderPopup({value: "12", onSubmit: vi.fn()});
 			focus();
 			keyDown("Enter");
 			act(() => {
@@ -568,7 +569,7 @@ describe("CodeField", () => {
 		});
 
 		test("does not open when the field can't take the focus, e.g. while hidden", () => {
-			const focusSpy = jest.spyOn(HTMLInputElement.prototype, "focus").mockImplementation(() => {});
+			const focusSpy = vi.spyOn(HTMLInputElement.prototype, "focus").mockImplementation(() => {});
 			try {
 				renderPopup({autoFocus: true});
 				expect(document.activeElement).not.toBe(getInput());

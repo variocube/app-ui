@@ -1,6 +1,7 @@
 import {createTheme, ThemeProvider} from "@mui/material";
 import * as React from "react";
 import {create} from "react-test-renderer";
+import {describe, expect, test} from "vitest";
 import {Highlight} from "./Highlight";
 
 describe("Highlight", () => {

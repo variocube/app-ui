@@ -1,19 +1,20 @@
 import {Fragment, useMemo} from "react";
 import * as React from "react";
-import {Formattable} from "../temporal";
 import {DateStyle, TimeStyle} from "./types";
 import {useDateTimeFormat} from "./useDateTimeFormat";
+import {TemporalFormattable, toFormattable, useTemporalFormatOptions} from "./useTemporalFormatOptions";
 
 export interface TemporalRangeFormatProps {
 	/**
-	 * The beginning of the temporal range.
+	 * The beginning of the temporal range. A `ZonedDateTime` is formatted in its own time zone, unless `timeZone` is
+	 * given. Should `from` and `until` be in different time zones, both are formatted in that of `from`.
 	 */
-	from: Formattable;
+	from: TemporalFormattable;
 
 	/**
 	 * The end of the temporal range.
 	 */
-	until: Formattable;
+	until: TemporalFormattable;
 
 	/**
 	 * The style of the date format.
@@ -46,16 +47,12 @@ export function TemporalRangeFormat(props: TemporalRangeFormatProps) {
 		timeZone,
 	} = props;
 
-	const options = useMemo(() => ({
-		dateStyle,
-		timeStyle,
-		timeZone,
-	}), [dateStyle, timeStyle]);
+	const options = useTemporalFormatOptions({values: [from, until], dateStyle, timeStyle, timeZone});
 
 	const dateTimeFormat = useDateTimeFormat(options, locale);
 
 	const str = useMemo(() => {
-		return dateTimeFormat.formatRange(from, until);
+		return dateTimeFormat.formatRange(toFormattable(from), toFormattable(until));
 	}, [dateTimeFormat, from, until]);
 
 	return <Fragment>{str}</Fragment>;
